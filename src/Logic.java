@@ -47,7 +47,7 @@ class Logic {
 		_storage = storage;
 	}
 	
-	private void initializeInternalStorage() {
+	public void initializeInternalStorage() {
 		_dataList = _storage.readFromFile();
 	}
 	
@@ -58,23 +58,34 @@ class Logic {
 		return "OK.";
 	}
 	
+	// TODO: default - adds to end of list
 	private String addToFile(String input) {
 		_dataList.add(input);
 		_storage.writeToFile(_dataList);
+		_undoStack.push("add");
 		return "OK.";
 	}
 	
+	// TODO: remove: by matching task name as well as by index
 	private String removeFromFile(String input) {
 		_dataList.remove(input);
 		_storage.writeToFile(_dataList);
+		_undoStack.push("remove");
 		return "OK.";
 	}
 	
+	// TODO: update task with matching task name
 	private String updateToFile(String current, String updated) {
 		int updateIndex = _dataList.indexOf(current);
 		_dataList.set(updateIndex, updated);
 		_storage.writeToFile(_dataList);
 		return "OK.";
+	}
+	
+	
+	// --- TO BE IMPLEMENTED IN LATER VERSIONS --- //
+	private ArrayList<String> displayAll() {
+		return _dataList;
 	}
 	
 	private String sortFile() {
@@ -83,5 +94,10 @@ class Logic {
 		return "OK.";
 	}
 	
+	private String undo() {
+		_undoStack.pop();
+		return "OK.";
+	}
+	// --- !TO BE IMPLEMENTED IN LATER VERSIONS --- //
 	// ============= !METHODS FOR USER OPERATIONS ============= //
 }
