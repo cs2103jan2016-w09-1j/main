@@ -19,9 +19,7 @@
 //import java.util.Calendar;
 import java.util.Date;
 
-// Remove the unused class (either Calendar or Date) when
-// the class to be used is finalized.
-class Task implements Comparable</*Calendar*/Date> {
+class Task implements Comparable<Task> {
 
 	private String _name;
 	//private Calendar date;
@@ -36,6 +34,13 @@ class Task implements Comparable</*Calendar*/Date> {
 		_command = command;
 		_priority = priority;
 		_isCompleted = isCompleted;
+	}
+	
+	/**
+	 * @author Go Hui Shan
+	 */
+	public Task(String userInput) {
+		// TODO: Hui Shan to implement
 	}
 	
 	// ========== GETTERS AND SETTERS ========== //
@@ -81,19 +86,32 @@ class Task implements Comparable</*Calendar*/Date> {
 	// ========== !GETTERS AND SETTERS ========== //
 	
 	// How shall a task be displayed to the user?
+	/**
+	 * @author Go Hui Shan
+	 */
 	@Override
 	public String toString() {
-		// TODO: method stub
+		// TODO: method stub, Hui Shan to implement
 		String taskString = "";
 		return taskString;
 	}
 
-	// After deciding on whether to use Date or Calendar,
-	// implement the compareTo() function for sorting 
 	@Override
-	public int compareTo(Date o) {
-		// TODO Auto-generated method stub
-		return 0;
+	public int compareTo(Task task) {
+		if (_priority == task.getPriority()) {
+			if (_date == task.getDate()) {
+				// priority and date is the same,
+				// compare lexicographically
+				return _name.compareTo(task.getName());
+			}
+			// TODO: same priority but different date,
+			//       compare date (use Date or Calendar?)
+			return 0;
+		}
+		else {
+			// compare by priority
+			return _priority - task.getPriority();
+		}
 	}
 	
 }
