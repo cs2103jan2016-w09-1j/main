@@ -7,7 +7,12 @@ class Storage {
 		return null;
 	}
 	
-	public void writeToFile(ArrayList<String> _dataList) {
+	public void writeToFile(ArrayList<Task> _taskList) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void flushFile() {
 		// TODO Auto-generated method stub
 		
 	}
