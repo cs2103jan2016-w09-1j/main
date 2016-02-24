@@ -1,27 +1,49 @@
 /**
  * ============= [LOGIC TEST FOR ESTHER] =============
  * List of things to be tested:
- * (all operations are strictly done one at a time)
- * 1. test initialization success (assert the internal memory state)
- *   1a - initialize on empty file (internal memory should be BLANK)
- *   1b - initialize on non-empty file (internal memory should HAVE CONTENTS)
  * 
- * 2. test add-task function (assert internal memory state)
+ * 1. test initialization success
+ *    (assert the internal memory state)
+ *   1a - initialize on empty file
+ *   	  (internal memory should be BLANK)
+ *   1b - initialize on non-empty file
+ *   	  (internal memory should HAVE CONTENTS)
+ * 
+ * 2. test add-task function
+ *    (assert internal memory state)
  *   2a - valid task add (should PASS)
- *   2b - invalid task add (missing details) (should prompt user)
+ *   2b - invalid task add (missing details)
+ *   	  (should prompt user)
  *   
- * 3. test update-task function (assert internal memory state)
- *   3a - update a task found in file (should PASS)
- *   3b - updating a task that does not exist (nothing should happen)
+ * 3. test delete-task function
+ *    (assert internal memory state)
+ *   3a - delete a task that exists (should PASS)
+ *   3b - delete a non-existent task
+ *        (nothing should happen)
  *   
- * 4. test delete-task function (assert internal memory state)
- *   4a - delete a task that exists (should PASS)
- *   4b - delete a non-existent task (nothing should happen)
+ * 4. test update-task function
+ *    (assert internal memory state)
+ *   4a - update a task found in file (should PASS)
+ *   4b - updating a task that does not exist
+ *        (nothing should happen)
+ *        
+ * 5. test set-task-completed function
+ *    (assert internal memory state and task state)
+ *    5a - set existent task as completed (should PASS)
+ *    5b - set non-existent task as completed
+ *         (nothing should happen)
+ *   
+ * 6. test undo function
+ *   5a - undo add
+ *   5b - undo delete
+ *   5c - undo update
  * 
  * 
  * =========== [LOGIC TEST CURRENT STATUS] ===========
- * Test cases shall be written after the stub template
- * of the Logic component has been written.
+ * All test cases are written and are presumed to be
+ * sufficient enough. However, if there are more
+ * situations to account for, more test cases will be
+ * written, where needed.
  * 
  * @author Tay Guo Qiang
  */
@@ -242,6 +264,58 @@ public class LogicTest {
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		Task updatedTask = internalStorage.get(0);
 		assertEquals("task1 should not have been renamed.", "task1", updatedTask.getName());
+	}
+	
+	/*
+	 * ========== [ SET TASK COMPLETED FUNCTIONALITY TESTS ] ==========
+	 * These group of methods are for checking set-task-completed functionality.
+	 * Generally, these tests check for 3 things:
+	 * 1. This operation should not change the list size.
+	 * 2. The correct task should be updated to 'done' status
+	 * 2. If task does not exist, no changes should occur.
+	 */
+	
+	@Test
+	public void testValidSetCompletedExistentTaskCorrectListSize() {
+		logic.flushInternalStorage();
+		logic.executeCommand(new Task("add task1"));
+		Task updateTask = new Task("completed task1");
+		logic.executeCommand(updateTask);
+		ArrayList<Task> internalStorage = logic.getInternalStorage();
+		assertEquals("No change in list size should occur in this operation.", 1, internalStorage.size());
+	}
+	
+	@Test
+	public void testValidSetCompletedExistentTaskCorrectTaskUpdated() {
+		logic.flushInternalStorage();
+		logic.executeCommand(new Task("add task1"));
+		logic.executeCommand(new Task("add task2"));
+		Task updateTask = new Task("completed task1");
+		logic.executeCommand(updateTask);
+		ArrayList<Task> internalStorage = logic.getInternalStorage();
+		Task targetTask = internalStorage.get(0);
+		assertTrue("task1 should have been marked as completed.", targetTask.isCompleted());
+	}
+	
+	@Test
+	public void testValidSetCompletedNonExistentTaskCorrectListSize() {
+		logic.flushInternalStorage();
+		logic.executeCommand(new Task("add task1"));
+		Task updateTask = new Task("completed task2");
+		logic.executeCommand(updateTask);
+		ArrayList<Task> internalStorage = logic.getInternalStorage();
+		assertEquals("No change in list size should occur in this operation.", 1, internalStorage.size());
+	}
+	
+	@Test
+	public void testValidSetCompletedNonExistentTaskCorrectUpdatedState() {
+		logic.flushInternalStorage();
+		logic.executeCommand(new Task("add task1"));
+		Task updateTask = new Task("completed task2");
+		logic.executeCommand(updateTask);
+		ArrayList<Task> internalStorage = logic.getInternalStorage();
+		Task targetTask = internalStorage.get(0);
+		assertFalse("task1 should reflect 'not completed' status.", targetTask.isCompleted());
 	}
 	
 	/*
