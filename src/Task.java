@@ -24,7 +24,10 @@ class Task implements Comparable<Task> {
 	//private Calendar date;
 	private Date _date;
 	private String _command;
+	private static String _sortCriterion = "priority";
 	private int _priority;
+	private int _id;
+	private static int _assignId = 0;
 	private boolean _isCompleted;
 	
 	/**
@@ -35,15 +38,30 @@ class Task implements Comparable<Task> {
 	 * @param date
 	 * @param command
 	 * @param priority
+	 * @param id
 	 * @param isCompleted
 	 * @author Tay Guo Qiang
 	 */
-	public Task(String name, Date date, String command, int priority, boolean isCompleted) {
+	public Task(String name, Date date, String command, int priority, int id, boolean isCompleted) {
 		_name = name;
 		_date = date;
 		_command = command;
 		_priority = priority;
 		_isCompleted = isCompleted;
+		
+		// for adding new tasks
+		if (_command.equals("add")) {
+			_id = _assignId;
+			_assignId++;
+		}
+		// for deleting or updating existing tasks
+		else if (_command.equals("delete") || _command.equals("update")) {
+			_id = id;
+		}
+		// for other operations that do not require task ID
+		else {
+			_id = -1;
+		}
 	}
 	
 	/**
@@ -55,7 +73,8 @@ class Task implements Comparable<Task> {
 	 * @author Go Hui Shan
 	 */
 	public Task(String userInput) {
-		// TODO: Hui Shan to implement
+		// TODO: method stub, Hui Shan to implement
+		this(null, null, null, -1, -1, false);
 	}
 	
 	/**
@@ -125,6 +144,30 @@ class Task implements Comparable<Task> {
 	}
 
 	/**
+	 * Getter method for sorting criterion.
+	 * 
+	 * The default sorting criterion is by task priority.
+	 * 
+	 * @see		Task#compareTo(Task)
+	 * @return	a String representing the sorting criterion
+	 * @author	Tay Guo Qiang
+	 */
+	public static String getSortCriterion() {
+		return _sortCriterion;
+	}
+
+	/**
+	 * Setter method for sorting criterion.
+	 * 
+	 * @see					Task#compareTo(Task)
+	 * @param sortCriterion	the criteria to sort tasks by
+	 * @author				Tay Guo Qiang
+	 */
+	public static void setSortCriterion(String sortCriterion) {
+		Task._sortCriterion = sortCriterion;
+	}
+
+	/**
 	 * Getter method for the priority level of the task.
 	 * 
 	 * Logic will use this to access the task's priority level.
@@ -144,6 +187,26 @@ class Task implements Comparable<Task> {
 	 */
 	public void setPriority(int priority) {
 		_priority = priority;
+	}
+	
+	/**
+	 * Getter method for task ID.
+	 * 
+	 * @return the task ID
+	 * @author Tay Guo Qiang
+	 */
+	public int getId() {
+		return _id;
+	}
+	
+	/**
+	 * Setter method for task ID.
+	 * 
+	 * @param id	the task ID
+	 * @author		Tay Guo Qiang
+	 */
+	public void setId(int id) {
+		_id = id;
 	}
 
 	/**
@@ -185,24 +248,95 @@ class Task implements Comparable<Task> {
 
 	/**
 	 * The comparison method for comparing tasks. This method
-	 * is used for sorting tasks in certain order. The current
-	 * (and default) sorting order is by task priority, then
-	 * by task deadline and finally by name of task.
-	 * 
-	 * This method shall be refined when dealing with varying
-	 * sorting criteria defined by the user.
+	 * is used for sorting tasks in certain order. The default
+	 * sorting order is by task priority, then by task deadline
+	 * and finally by name of task. However, other sorting
+	 * criterion, such as by name or by date, is also supported.
 	 * 
 	 * @author Tay Guo Qiang
 	 */
 	@Override
 	public int compareTo(Task task) {
+		int compareValue = 0;
+		switch (_sortCriterion) {
+			case "date" :
+				compareValue = compareByDate(task);
+				break;
+				
+			case "name" :
+				compareValue = compareByName(task);
+				break;
+				
+			default :
+				compareValue = compareByPriority(task);
+				break;
+		}
+		return compareValue;
+	}
+	
+	/**
+	 * The comparison method invoked when sorting criteria is by task deadline.
+	 * 
+	 * Comparison order is by date, then by priority and then by name.
+	 * 
+	 * @param task	the Task object to compare to
+	 * @return		0 if the Task compared to is equal to itself;
+	 * 				a value less than 0 if the Task compared to comes after itself;
+	 * 				and a value more than 0 if the Task compared to comes before itself.
+	 * @author		Tay Guo Qiang
+	 */
+	private int compareByDate(Task task) {
+		if (_date.equals(task.getDate())) {
+			if (_priority == task.getPriority()) {
+				return _name.compareTo(task.getName());
+			} else {
+				return Integer.compare(_priority, task.getPriority());
+			}
+		} else {
+			return _date.compareTo(task.getDate());
+		}
+	}
+	
+	/**
+	 * The comparison method invoked when sorting criteria is by task name.
+	 * 
+	 * Comparison order is by name, then by priority and then by date.
+	 * 
+	 * @param task	the Task object to compare to
+	 * @return		0 if the Task compared to is equal to itself;
+	 * 				a value less than 0 if the Task compared to comes after itself;
+	 * 				and a value more than 0 if the Task compared to comes before itself.
+	 * @author		Tay Guo Qiang
+	 */
+	private int compareByName(Task task) {
+		if (_name.equals(task.getName())) {
+			if (_priority == task.getPriority()) {
+				return _date.compareTo(task.getDate());
+			} else {
+				return Integer.compare(_priority, task.getPriority());
+			}
+		} else {
+			return _name.compareTo(task.getName());
+		}
+	}
+	
+	/**
+	 * The comparison method invoked when sorting criteria is by task priority.
+	 * 
+	 * @param task	the Task object to compare to
+	 * @return		0 if the Task compared to is equal to itself;
+	 * 				a value less than 0 if the Task compared to comes after itself;
+	 * 				and a value more than 0 if the Task compared to comes before itself.
+	 * @author		Tay Guo Qiang
+	 */
+	private int compareByPriority(Task task) {
 		if (_priority == task.getPriority()) {
 			if (_date.equals(task.getDate())) {
 				return _name.compareTo(task.getName());
+			} else {
+				return _date.compareTo(task.getDate());
 			}
-			return _date.compareTo(task.getDate());
-		}
-		else {
+		} else {
 			return Integer.compare(_priority, task.getPriority());
 		}
 	}
