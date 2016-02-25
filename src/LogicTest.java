@@ -402,4 +402,71 @@ public class LogicTest {
 		assertEquals("Original name of task should be 'task1'.", "task1", taskInList.getName());
 	}
 	
+	/*
+	 * ============== [ DISPLAY-ALL FUNCTIONALITY TESTS ] ==============
+	 * These group of methods are for checking display-all functionality.
+	 * Generally, these tests check for 2 things:
+	 * 1. The list of tasks displayed have correct number of entries.
+	 * 2. The order of tasks in the list remain intact.
+	 */
+	
+	public void testDisplayAllInEmptyFile() {
+		// display on empty file
+	}
+	
+	public void testDisplayAllInNonEmptyFile() {
+		// display on non-empty file
+		// check list size
+	}
+	
+	public void testDisplayAllInNonEmptyFileCorrectOrdering() {
+		// iterate through the task list to check ordering
+	}
+	
+	/*
+	 * ================= [ SORT FUNCTIONALITY TESTS ] =================
+	 * These group of methods are for checking sort functionality.
+	 * Generally, these tests check for 2 things:
+	 * 1. The size of task list does not change.
+	 * 2. The order of tasks in the list meet sorting criteria.
+	 */
+	
+	public void testSortOnEmptyFile() {
+		// sort empty file
+	}
+	
+	public void testSortOnNonEmptyFileCorrectListSize() {
+		// sort non-empty file
+		// check list size
+	}
+	
+	public void testSortOnNonEmptyFileCorrectOrdering() {
+		// sort non-empty file
+		// check ordering in task list
+	}
+	
+	/*
+	 * ================= [ SEARCH FUNCTIONALITY TESTS ] =================
+	 * These group of methods are for checking search functionality.
+	 * Generally, these tests check for 1 thing:
+	 * 1. Search should return all those tasks meeting criteria.
+	 */
+	
+	public void testSearchOnEmptyFile() {
+		// search in empty file
+		// should have nothing inside
+	}
+	
+	public void testValidSearchOnNonEmptyFileHasResult() {
+		// search in non-empty file
+		// search in this test case has matches
+		// check results
+	}
+	
+	public void testValidSearchOnNonEmptyFileNoResult() {
+		// search in non-empty file
+		// search in this test case has no matches
+		// check results
+	}
+	
 }

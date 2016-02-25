@@ -171,8 +171,7 @@ class Logic {
 				break;
 				
 			case "done" :
-				// TODO: implement markDone(task) method
-				statusMessage = "Not valid.";
+				statusMessage = markDone(task);
 				break;
 				
 			case "show" :
@@ -451,7 +450,7 @@ class Logic {
 	 * @return a list of all tasks to show to the user.
 	 */
 	private ArrayList<Task> displayAll() {
-		_undoStack.push(null);
+		//_undoStack.push(null);
 		return _taskList;
 	}
 	
@@ -463,14 +462,36 @@ class Logic {
 	 * NOTE: implementation can be extended to sort the
 	 * list of tasks by user-defined criteria.
 	 * 
-	 * @see Task#compareTo(Task)
-	 * @return a message indicating the status of the sort operation
+	 * @see 	Task#compareTo(Task)
+	 * @return	a message indicating the status of the sort operation
 	 */
 	private String sortFile() {
-		_undoStack.push(null);
+		_undoStack.push(null); // TODO: need to store a previous ordering
 		Collections.sort(_taskList);
 		_storage.writeToFile(_taskList);
 		return "OK.";
+	}
+	
+	/**
+	 * Searches for a task based on the user's desired criteria.
+	 * 
+	 * NOTE: default search is by whether a task contains a specified
+	 * task name or not. This implementation can be extended to support
+	 * varying user criteria.
+	 * 
+	 * @param task	a Task object representation of a keyword to lookup
+	 * @return		a list of Task objects that match the search criteria
+	 */
+	private ArrayList<Task> searchFile(Task task) {
+		ArrayList<Task> results = new ArrayList<Task>();
+		//_undoStack.push(null);
+		updateInternalStorage();
+		for (Task entry: _taskList) {
+			if (entry.getName().contains(task.getName())) {
+				results.add(entry);
+			}
+		}
+		return results;
 	}
 
 }
