@@ -127,6 +127,9 @@ class Logic {
 		ArrayList<Task> _taskList = new ArrayList<Task>();
 		// TODO: might want to consider inserting try-catch block here
 		ArrayList<String> entriesList = _storage.readFromFile();
+		if (entriesList == null) {
+			return ;
+		}
 		for (String entry: entriesList) {
 			_taskList.add(new Task(entry));
 		}
@@ -170,7 +173,7 @@ class Logic {
 				statusMessage = updateToFile(task);
 				break;
 				
-			case "done" :
+			case "completed" :
 				statusMessage = markDone(task);
 				break;
 				
@@ -220,11 +223,8 @@ class Logic {
 				break;
 
 			case "update" :
-				// TODO: reset file state to previous state
-				break;
-
-			case "done" :
-				reversed.setCompleted(!task.isCompleted());
+				// nothing happens here because the updated task
+				// already contains the previous state
 				break;
 
 			case "show" :
@@ -241,6 +241,7 @@ class Logic {
 				break;
 				
 			default :
+				System.out.println("Not supposed to happen.");
 				break;
 		}
 		return reversed;
@@ -339,15 +340,19 @@ class Logic {
 				break;
 			}
 		}
-		_taskList.remove(removed);
-		// TODO: insert try-catch block here
-		_storage.writeToFile(_taskList);
-		_undoStack.push(createReverseOperation(removed));
-		_status = Status.STATUS_SUCCESS_DELETE;
-		return getStatusMessage(removed);
+		if (removed != null) {
+			_taskList.remove(removed);
+			// TODO: insert try-catch block here
+			_storage.writeToFile(_taskList);
+			_undoStack.push(createReverseOperation(removed));
+			_status = Status.STATUS_SUCCESS_DELETE;
+			return getStatusMessage(removed);
+		} else {
+			_status = Status.STATUS_ERROR_DELETE;
+			return getStatusMessage(task);
+		}
 	}
 	
-	// TODO: update task with matching task name
 	/**
 	 * Updates a particular task entry in the text file.
 	 * 
@@ -358,21 +363,43 @@ class Logic {
 		Task toUpdate = null;
 		int updateIndex = -1;
 		for (int i = 0; i < _taskList.size(); i++) {
-			if (_taskList.get(i).getName().equals("something") /* TODO: to be changed */) {
+			if (_taskList.get(i).getName().equals(task.getName()) ||
+				_taskList.get(i).getId() == task.getId()) {
 				toUpdate = _taskList.get(i);
 				updateIndex = i;
 				break;
 			}
 		}
-		toUpdate.setName(task.getName());
-		_taskList.set(updateIndex, toUpdate);
-		// TODO: insert try-catch block here
-		_storage.writeToFile(_taskList);
-		_undoStack.push(createReverseOperation(toUpdate));
-		_status = Status.STATUS_SUCCESS_UPDATE;
-		return getStatusMessage(task);
+		if (toUpdate != null) {
+			Task updatedTask = returnUpdatedTask(toUpdate, task.getUpdateState());
+			_taskList.set(updateIndex, updatedTask);
+			// TODO: insert try-catch block here
+			_storage.writeToFile(_taskList);
+			_undoStack.push(createReverseOperation(updatedTask));
+			_status = Status.STATUS_SUCCESS_UPDATE;
+			return getStatusMessage(task);
+		} else {
+			_status = Status.STATUS_ERROR_UPDATE;
+			return getStatusMessage(task);
+		}
 	}
 	
+	/**
+	 * Updates a selected task with the desired updated state and
+	 * returns an instance of the updated task.
+	 * 
+	 * @param originalTask	the Task to be updated
+	 * @param updatedTask	the state that the original task should be
+	 */
+	private Task returnUpdatedTask(Task originalTask, Task updatedState) {
+		// TODO Auto-generated method stub
+		Task result = new Task(updatedState.getName(), updatedState.getDate(),
+							   "update", updatedState.getPriority(),
+							   originalTask.getId(), updatedState.isCompleted(),
+							   originalTask);
+		return result;
+	}
+
 	/**
 	 * Sets a task as completed.
 	 * 
@@ -381,21 +408,30 @@ class Logic {
 	 */
 	private String markDone(Task task) {
 		Task toUpdate = null;
+		Task previousState = task;
 		int updateIndex = -1;
 		for (int i = 0; i < _taskList.size(); i++) {
-			if (_taskList.get(i).getName().equals(task.getName()) /* TODO: to be changed */) {
+			if (_taskList.get(i).getName().equals(task.getName()) ||
+				_taskList.get(i).getId() == task.getId()) {
 				toUpdate = _taskList.get(i);
 				updateIndex = i;
 				break;
 			}
 		}
-		toUpdate.setCompleted(true);
-		_taskList.set(updateIndex, toUpdate);
-		// TODO: insert try-catch block here
-		_storage.writeToFile(_taskList);
-		_undoStack.push(createReverseOperation(toUpdate));
-		_status = Status.STATUS_SUCCESS_SET_COMPLETED;
-		return getStatusMessage(task);
+		if (toUpdate != null) {
+			toUpdate.setCompleted(true);
+			_taskList.set(updateIndex, toUpdate);
+			// TODO: insert try-catch block here
+			_storage.writeToFile(_taskList);
+			toUpdate.setUpdateState(previousState);
+			toUpdate.setCommand("update");
+			_undoStack.push(createReverseOperation(toUpdate));
+			_status = Status.STATUS_SUCCESS_SET_COMPLETED;
+			return getStatusMessage(task);
+		} else {
+			_status = Status.STATUS_ERROR_SET_COMPLETED;
+			return getStatusMessage(task);
+		}
 	} 
 	
 	/**

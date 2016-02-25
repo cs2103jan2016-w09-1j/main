@@ -80,7 +80,7 @@ public class LogicTest {
 	@Test
 	public void testInitializationWithNonEmptyFile() {
 		logic.flushInternalStorage();
-		logic.executeCommand(new Task("add task1"));
+		logic.executeCommand(new Task("task1", null, "add", 4, 1, false, null));
 		logic.updateInternalStorage();
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		assertEquals("There should only be 1 item in the file.", 1, internalStorage.size());
@@ -99,7 +99,7 @@ public class LogicTest {
 	@Test
 	public void testValidAddTaskToEmptyFileListSizeIncrease() {
 		logic.flushInternalStorage();
-		Task addTask = new Task("add task1");
+		Task addTask = new Task("task1", null, "add", 4, 1, false, null);
 		logic.executeCommand(addTask);
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		assertEquals("task1 should have been added into file.", 1, internalStorage.size());
@@ -108,7 +108,7 @@ public class LogicTest {
 	@Test
 	public void testValidAddTaskToEmptyFileCorrectContentsAdded() {
 		logic.flushInternalStorage();
-		Task addTask = new Task("add task1");
+		Task addTask = new Task("task1", null, "add", 4, 1, false, null);
 		logic.executeCommand(addTask);
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		Task taskInList = internalStorage.get(0);
@@ -118,8 +118,8 @@ public class LogicTest {
 	@Test
 	public void testValidAddTaskToNonEmptyFileListSizeIncrease() {
 		logic.flushInternalStorage();
-		logic.executeCommand(new Task("add task1"));
-		Task addTask = new Task("add task2");
+		logic.executeCommand(new Task("task1", null, "add", 4, 1, false, null));
+		Task addTask = new Task("task2", null, "add", 4, 1, false, null);
 		logic.executeCommand(addTask);
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		assertEquals("task2 should have been added into file.", 2, internalStorage.size());
@@ -128,8 +128,8 @@ public class LogicTest {
 	@Test
 	public void testValidAddTaskToNonEmptyFileCorrectAddIndex() {
 		logic.flushInternalStorage();
-		logic.executeCommand(new Task("add task1"));
-		Task addTask = new Task("add task2");
+		logic.executeCommand(new Task("task1", null, "add", 4, 1, false, null));
+		Task addTask = new Task("task2", null, "add", 4, 1, false, null);
 		logic.executeCommand(addTask);
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		int index = -1;
@@ -145,8 +145,8 @@ public class LogicTest {
 	@Test
 	public void testValidAddTaskToNonEmptyFileCorrectContentsAdded() {
 		logic.flushInternalStorage();
-		logic.executeCommand(new Task("add task1"));
-		Task addTask = new Task("add task2");
+		logic.executeCommand(new Task("task1", null, "add", 4, 1, false, null));
+		Task addTask = new Task("task2", null, "add", 4, 1, false, null);
 		logic.executeCommand(addTask);
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		Task addedTask = internalStorage.get(1);
@@ -154,12 +154,13 @@ public class LogicTest {
 	}
 	
 	// this test should prompt user (e.g. missing details)
-	@Test
+	// for now just throw error
+	@Test(expected=Error.class)
 	public void testInvalidAddTask() {
 		logic.flushInternalStorage();
-		logic.executeCommand(new Task("add task1"));
-		logic.executeCommand(new Task("add task2"));
-		Task addTask = new Task("add task3 on blah");
+		logic.executeCommand(new Task("task1", null, "add", 4, 1, false, null));
+		logic.executeCommand(new Task("task2", null, "add", 4, 1, false, null));
+		Task addTask = new Task("task3", "blah", "add", 4, 1, false, null);
 		logic.executeCommand(addTask);
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		assertEquals("task3 should not have been added to file.", 2, internalStorage.size());
@@ -176,8 +177,8 @@ public class LogicTest {
 	@Test
 	public void testValidDeleteExistentTaskListSizeDecrease() {
 		logic.flushInternalStorage();
-		logic.executeCommand(new Task("add task1"));
-		Task deleteTask = new Task("delete task1");
+		logic.executeCommand(new Task("task1", null, "add", 4, 1, false, null));
+		Task deleteTask = new Task("task1", null, "delete", 4, 1, false, null);
 		logic.executeCommand(deleteTask);
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		assertEquals("task1 should have been deleted from file.", 0, internalStorage.size());
@@ -186,9 +187,9 @@ public class LogicTest {
 	@Test
 	public void testValidDeleteExistentTaskCorrectTaskDeleted() {
 		logic.flushInternalStorage();
-		logic.executeCommand(new Task("add task1"));
-		logic.executeCommand(new Task("add task2"));
-		Task deleteTask = new Task("delete task1");
+		logic.executeCommand(new Task("task1", null, "add", 4, 1, false, null));
+		logic.executeCommand(new Task("task2", null, "add", 4, 1, false, null));
+		Task deleteTask = new Task("task1", null, "delete", 4, 1, false, null);
 		logic.executeCommand(deleteTask);
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		Task remainingTask = internalStorage.get(0);
@@ -198,8 +199,8 @@ public class LogicTest {
 	@Test
 	public void testValidDeleteNonExistentTask() {
 		logic.flushInternalStorage();
-		logic.executeCommand(new Task("add task1"));
-		Task deleteTask = new Task("delete task3");
+		logic.executeCommand(new Task("task1", null, "add", 4, 1, false, null));
+		Task deleteTask = new Task("task3", null, "delete", 4, 1, false, null);
 		logic.executeCommand(deleteTask);
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		assertEquals("No deletion should have occured for task3.", 1, internalStorage.size());
@@ -208,8 +209,8 @@ public class LogicTest {
 	@Test
 	public void testValidDeleteNonExistentTaskCorrectTaskLeft() {
 		logic.flushInternalStorage();
-		logic.executeCommand(new Task("add task1"));
-		Task deleteTask = new Task("delete task3");
+		logic.executeCommand(new Task("task1", null, "add", 4, 1, false, null));
+		Task deleteTask = new Task("task3", null, "delete", 4, 1, false, null);
 		logic.executeCommand(deleteTask);
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		Task remainingTask = internalStorage.get(0);
@@ -227,8 +228,9 @@ public class LogicTest {
 	@Test
 	public void testValidUpdateExistentTask() {
 		logic.flushInternalStorage();
-		logic.executeCommand(new Task("add task1"));
-		Task updateTask = new Task("update task1 to task3");
+		logic.executeCommand(new Task("task1", null, "add", 4, 1, false, null));
+		Task updateTask = new Task("task1", null, "update", 4, 1, false,
+								   new Task("task3", null, "", 4, 1, false, null));
 		logic.executeCommand(updateTask);
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		assertEquals("No change in list size should occur in update.", 1, internalStorage.size());
@@ -237,8 +239,9 @@ public class LogicTest {
 	@Test
 	public void testValidUpdateExistentTaskCorrectUpdateState() {
 		logic.flushInternalStorage();
-		logic.executeCommand(new Task("add task1"));
-		Task updateTask = new Task("update task1 to task3");
+		logic.executeCommand(new Task("task1", null, "add", 4, 1, false, null));
+		Task updateTask = new Task("task1", null, "update", 4, 1, false,
+								   new Task("task3", null, "", 4, 1, false, null));
 		logic.executeCommand(updateTask);
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		Task updatedTask = internalStorage.get(0);
@@ -248,8 +251,9 @@ public class LogicTest {
 	@Test
 	public void testValidUpdateNonExistentTask() {
 		logic.flushInternalStorage();
-		logic.executeCommand(new Task("add task1"));
-		Task updateTask = new Task("update task2 to task3");
+		logic.executeCommand(new Task("task1", null, "add", 4, 1, false, null));
+		Task updateTask = new Task("task2", null, "update", 4, 1, false,
+								   new Task("task3", null, "", 4, 1, false, null));
 		logic.executeCommand(updateTask);
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		assertEquals("No change in list size should occur in update.", 1, internalStorage.size());
@@ -258,8 +262,9 @@ public class LogicTest {
 	@Test
 	public void testValidUpdateNonExistentTaskCorrectUpdateState() {
 		logic.flushInternalStorage();
-		logic.executeCommand(new Task("add task1"));
-		Task updateTask = new Task("update task2 to task3");
+		logic.executeCommand(new Task("task1", null, "add", 4, 1, false, null));
+		Task updateTask = new Task("task2", null, "update", 4, 1, false,
+								   new Task("task3", null, "", 4, 1, false, null));
 		logic.executeCommand(updateTask);
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		Task updatedTask = internalStorage.get(0);
@@ -278,8 +283,8 @@ public class LogicTest {
 	@Test
 	public void testValidSetCompletedExistentTaskCorrectListSize() {
 		logic.flushInternalStorage();
-		logic.executeCommand(new Task("add task1"));
-		Task updateTask = new Task("completed task1");
+		logic.executeCommand(new Task("task1", null, "add", 4, 1, false, null));
+		Task updateTask = new Task("task1", null, "completed", 4, 1, false, null);
 		logic.executeCommand(updateTask);
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		assertEquals("No change in list size should occur in this operation.", 1, internalStorage.size());
@@ -288,9 +293,9 @@ public class LogicTest {
 	@Test
 	public void testValidSetCompletedExistentTaskCorrectTaskUpdated() {
 		logic.flushInternalStorage();
-		logic.executeCommand(new Task("add task1"));
-		logic.executeCommand(new Task("add task2"));
-		Task updateTask = new Task("completed task1");
+		logic.executeCommand(new Task("task1", null, "add", 4, 1, false, null));
+		logic.executeCommand(new Task("task2", null, "add", 4, 1, false, null));
+		Task updateTask = new Task("task1", null, "completed", 4, 1, false, null);
 		logic.executeCommand(updateTask);
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		Task targetTask = internalStorage.get(0);
@@ -300,8 +305,8 @@ public class LogicTest {
 	@Test
 	public void testValidSetCompletedNonExistentTaskCorrectListSize() {
 		logic.flushInternalStorage();
-		logic.executeCommand(new Task("add task1"));
-		Task updateTask = new Task("completed task2");
+		logic.executeCommand(new Task("task1", null, "add", 4, 1, false, null));
+		Task updateTask = new Task("task2", null, "completed", 4, 1, false, null);
 		logic.executeCommand(updateTask);
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		assertEquals("No change in list size should occur in this operation.", 1, internalStorage.size());
@@ -310,8 +315,8 @@ public class LogicTest {
 	@Test
 	public void testValidSetCompletedNonExistentTaskCorrectUpdatedState() {
 		logic.flushInternalStorage();
-		logic.executeCommand(new Task("add task1"));
-		Task updateTask = new Task("completed task2");
+		logic.executeCommand(new Task("task1", null, "add", 4, 1, false, null));
+		Task updateTask = new Task("task2", null, "completed", 4, 1, false, null);
 		logic.executeCommand(updateTask);
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		Task targetTask = internalStorage.get(0);
@@ -333,8 +338,8 @@ public class LogicTest {
 	@Test
 	public void testUndoAddTaskToEmptyFileCorrectListSize() {
 		logic.flushInternalStorage();
-		logic.executeCommand(new Task("add task1"));
-		logic.executeCommand(new Task("undo"));
+		logic.executeCommand(new Task("task1", null, "add", 4, 1, false, null));
+		logic.executeCommand(new Task(null, null, "undo", -1, -1, false, null));
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		assertEquals("Task list should be empty.", 0, internalStorage.size());
 	}
@@ -342,9 +347,9 @@ public class LogicTest {
 	@Test
 	public void testUndoAddTaskToNonEmptyFileCorrectListSize() {
 		logic.flushInternalStorage();
-		logic.executeCommand(new Task("add task1"));
-		logic.executeCommand(new Task("add task2"));
-		logic.executeCommand(new Task("undo"));
+		logic.executeCommand(new Task("task1", null, "add", 4, 1, false, null));
+		logic.executeCommand(new Task("task2", null, "add", 4, 1, false, null));
+		logic.executeCommand(new Task(null, null, "undo", -1, -1, false, null));
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		assertEquals("Task list should only have 1 item.", 1, internalStorage.size());
 	}
@@ -352,9 +357,9 @@ public class LogicTest {
 	@Test
 	public void testUndoAddTaskToNonEmptyFileCorrectTaskRemoved() {
 		logic.flushInternalStorage();
-		logic.executeCommand(new Task("add task1"));
-		logic.executeCommand(new Task("add task2"));
-		logic.executeCommand(new Task("undo"));
+		logic.executeCommand(new Task("task1", null, "add", 4, 1, false, null));
+		logic.executeCommand(new Task("task2", null, "add", 4, 1, false, null));
+		logic.executeCommand(new Task(null, null, "undo", -1, -1, false, null));
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		Task taskInList = internalStorage.get(0);
 		assertEquals("task2 should not be inside task list.", "task1", taskInList.getName());
@@ -363,9 +368,9 @@ public class LogicTest {
 	@Test
 	public void testUndoDeleteTaskFromNonEmptyFileCorrectListSize() {
 		logic.flushInternalStorage();
-		logic.executeCommand(new Task("add task1"));
-		logic.executeCommand(new Task("delete task1"));
-		logic.executeCommand(new Task("undo"));
+		logic.executeCommand(new Task("task1", null, "add", 4, 1, false, null));
+		logic.executeCommand(new Task("task1", null, "delete", 4, 1, false, null));
+		logic.executeCommand(new Task(null, null, "undo", -1, -1, false, null));
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		assertEquals("There should only be 1 item in task list.", 1, internalStorage.size());
 	}
@@ -373,9 +378,9 @@ public class LogicTest {
 	@Test
 	public void testUndoDeleteTaskFromNonEmptyFileCorrectTaskRestored() {
 		logic.flushInternalStorage();
-		logic.executeCommand(new Task("add task1"));
-		logic.executeCommand(new Task("delete task1"));
-		logic.executeCommand(new Task("undo"));
+		logic.executeCommand(new Task("task1", null, "add", 4, 1, false, null));
+		logic.executeCommand(new Task("task1", null, "delete", 4, 1, false, null));
+		logic.executeCommand(new Task(null, null, "undo", -1, -1, false, null));
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		Task taskInList = internalStorage.get(0);
 		assertEquals("task1 should be back inside the task list.", "task1", taskInList.getName());
@@ -384,9 +389,10 @@ public class LogicTest {
 	@Test
 	public void testUndoUpdateExistentTaskCorrectListSize() {
 		logic.flushInternalStorage();
-		logic.executeCommand(new Task("add task1"));
-		logic.executeCommand(new Task("update task1 to task2"));
-		logic.executeCommand(new Task("undo"));
+		logic.executeCommand(new Task("task1", null, "add", 4, 1, false, null));
+		logic.executeCommand(new Task("task1", null, "update", 4, 1, false,
+							 new Task("task2", null, "", 4, 1, false, null)));
+		logic.executeCommand(new Task(null, null, "undo", -1, -1, false, null));
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		assertEquals("Size of task list should not change.", 1, internalStorage.size());
 	}
@@ -394,9 +400,10 @@ public class LogicTest {
 	@Test
 	public void testUndoUpdateExistentTaskCorrectTaskStateRestored() {
 		logic.flushInternalStorage();
-		logic.executeCommand(new Task("add task1"));
-		logic.executeCommand(new Task("update task1 to task2"));
-		logic.executeCommand(new Task("undo"));
+		logic.executeCommand(new Task("task1", null, "add", 4, 1, false, null));
+		logic.executeCommand(new Task("task1", null, "update", 4, 1, false,
+				 			 new Task("task2", null, "", 4, 1, false, null)));
+		logic.executeCommand(new Task(null, null, "undo", -1, -1, false, null));
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		Task taskInList = internalStorage.get(0);
 		assertEquals("Original name of task should be 'task1'.", "task1", taskInList.getName());
