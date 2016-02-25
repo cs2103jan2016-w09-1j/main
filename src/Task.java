@@ -29,6 +29,7 @@ class Task implements Comparable<Task> {
 	private int _id;
 	private static int _assignId = 0;
 	private boolean _isCompleted;
+	private Task _updateTo; // for update commands: represents the Task's updated state
 	
 	/**
 	 * Creates a Task object with all the supplied arguments.
@@ -42,12 +43,14 @@ class Task implements Comparable<Task> {
 	 * @param isCompleted
 	 * @author Tay Guo Qiang
 	 */
-	public Task(String name, Date date, String command, int priority, int id, boolean isCompleted) {
+	public Task(String name, Date date, String command, int priority, 
+				int id, boolean isCompleted, Task updateTo) {
 		_name = name;
 		_date = date;
 		_command = command;
 		_priority = priority;
 		_isCompleted = isCompleted;
+		_updateTo = updateTo;
 		
 		// for adding new tasks
 		if (_command.equals("add")) {
@@ -74,7 +77,7 @@ class Task implements Comparable<Task> {
 	 */
 	public Task(String userInput) {
 		// TODO: method stub, Hui Shan to implement
-		this(null, null, null, -1, -1, false);
+		this(null, null, null, -1, -1, false, null);
 	}
 	
 	/**
@@ -231,6 +234,28 @@ class Task implements Comparable<Task> {
 		_isCompleted = isCompleted;
 	}
 	
+	/**
+	 * Getter method for the state of the task, when updated according
+	 * to the user's preference.
+	 * 
+	 * @return a Task object representation of the updated state of the task
+	 * @author Tay Guo Qiang
+	 */
+	public Task getUpdateState() {
+		return _updateTo;
+	}
+
+	/**
+	 * Setter method for the state of the task, when updated according
+	 * to the user's preference.
+	 * 
+	 * @param _updateTo	a Task object representation of its updated state
+	 * @author			Tay Guo Qiang
+	 */
+	public void setUpdateState(Task updateTo) {
+		_updateTo = updateTo;
+	}
+
 	// How shall a task be displayed to the user?
 	/**
 	 * Provides a human-readable String representation of a task.
