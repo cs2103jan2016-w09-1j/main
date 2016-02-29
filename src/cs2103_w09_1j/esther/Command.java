@@ -1,4 +1,4 @@
-package esther;
+package cs2103_w09_1j.esther;
 
 /**
  * ========= [ COMMAND OBJECT DEFINITIONS ] =========
@@ -11,7 +11,7 @@ package esther;
 
 import java.util.HashMap;
 
-class Command {
+public class Command {
 	
 	private String _command;
 	private HashMap<String, String> _parameters;

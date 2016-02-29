@@ -1,6 +1,10 @@
-package esther;
+package cs2103_w09_1j.esther;
 
-import java.lang.Exception;
+/**
+ * A custom exception class to be used in ESTHER.
+ * 
+ * @author Tay Guo Qiang
+ */
 
 public class InvalidInputException extends Exception {
 

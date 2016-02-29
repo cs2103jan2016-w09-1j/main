@@ -1,4 +1,4 @@
-package esther;
+package cs2103_w09_1j.esther;
 
 /**
  * ========== [ TASK OBJECT DEFINITIONS ] ==========
@@ -22,7 +22,7 @@ package esther;
 //import java.util.Calendar;
 import java.util.Date;
 
-class Task implements Comparable<Task> {
+public class Task implements Comparable<Task> {
 
 	private String _name;
 	//private Calendar date;

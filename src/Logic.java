@@ -26,6 +26,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EmptyStackException;
 import java.util.Stack;
+import cs2103_w09_1j.esther.Command;
+import cs2103_w09_1j.esther.Task;
+import cs2103_w09_1j.esther.InvalidInputException;
 
 class Logic {
 	
