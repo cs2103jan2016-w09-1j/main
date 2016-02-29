@@ -1,3 +1,5 @@
+package esther;
+
 /**
  * ========== [ TASK OBJECT DEFINITIONS ] ==========
  * This class contains the representation of the
@@ -9,6 +11,8 @@
  * NOTE: Date (java.util.Date) class methods are
  * largely deprecated and it has been recommended
  * by Java that we use Calendar class instead.
+ * 
+ * To implement makeReverse() operation.
  * 
  * @author Tay Guo Qiang
  * (add your name to list of authors if you made
@@ -23,48 +27,38 @@ class Task implements Comparable<Task> {
 	private String _name;
 	//private Calendar date;
 	private Date _date;
-	private String _command;
 	private static String _sortCriterion = "priority";
 	private int _priority;
 	private int _id;
 	private static int _assignId = 0;
 	private boolean _isCompleted;
-	private Task _updateTo; // for update commands: represents the Task's updated state
+	
+	/**
+	 * A null constructor.
+	 * 
+	 * @author Tay Guo Qiang
+	 */
+	public Task() {
+		
+	}
 	
 	/**
 	 * Creates a Task object with all the supplied arguments.
 	 * This shall be used as the default constructor.
 	 * 
-	 * @param name
-	 * @param date
-	 * @param command
-	 * @param priority
-	 * @param id
-	 * @param isCompleted
+	 * @param  name
+	 * @param  date
+	 * @param  priority
+	 * @param  isCompleted
 	 * @author Tay Guo Qiang
 	 */
-	public Task(String name, Date date, String command, int priority, 
-				int id, boolean isCompleted, Task updateTo) {
+	public Task(String name, Date date, int priority, boolean isCompleted) {
 		_name = name;
 		_date = date;
-		_command = command;
 		_priority = priority;
 		_isCompleted = isCompleted;
-		_updateTo = updateTo;
-		
-		// for adding new tasks
-		if (_command.equals("add")) {
-			_id = _assignId;
-			_assignId++;
-		}
-		// for deleting or updating existing tasks
-		else if (_command.equals("delete") || _command.equals("update")) {
-			_id = id;
-		}
-		// for other operations that do not require task ID
-		else {
-			_id = -1;
-		}
+		_id = _assignId;
+		_assignId++;
 	}
 	
 	/**
@@ -73,11 +67,10 @@ class Task implements Comparable<Task> {
 	 * then constructs the Task object with all the information extracted
 	 * from the user input.
 	 * 
-	 * @author Go Hui Shan
+	 * @author Tay Guo Qiang
 	 */
 	public Task(String userInput) {
-		// TODO: method stub, Hui Shan to implement
-		this(null, null, null, -1, -1, false, null);
+		this(null, null, -1, false);
 	}
 	
 	/**
@@ -95,8 +88,8 @@ class Task implements Comparable<Task> {
 	/**
 	 * Setter method for task name.
 	 * 
-	 * @param name	the desired task name
-	 * @author		Tay Guo Qiang
+	 * @param  name	the desired task name
+	 * @author Tay Guo Qiang
 	 */
 	public void setName(String name) {
 		_name = name;
@@ -117,33 +110,11 @@ class Task implements Comparable<Task> {
 	/**
 	 * Setter method for task deadline.
 	 * 
-	 * @param date	the desired task deadline
-	 * @author 		Tay Guo Qiang
+	 * @param  date	the desired task deadline
+	 * @author Tay Guo Qiang
 	 */
 	public void setDate(Date date) {
 		_date = date;
-	}
-
-	/**
-	 * Getter method for the command associated with the task.
-	 * 
-	 * Logic will use this to determine the command to execute on the task.
-	 * 
-	 * @return the command to execute on the task
-	 * @author Tay Guo Qiang
-	 */
-	public String getCommand() {
-		return _command;
-	}
-
-	/**
-	 * Setter method for the command associated with the task.
-	 * 
-	 * @param command	the command to execute on the task
-	 * @author 			Tay Guo Qiang
-	 */
-	public void setCommand(String command) {
-		_command = command;
 	}
 
 	/**
@@ -162,9 +133,9 @@ class Task implements Comparable<Task> {
 	/**
 	 * Setter method for sorting criterion.
 	 * 
-	 * @see					Task#compareTo(Task)
-	 * @param sortCriterion	the criteria to sort tasks by
-	 * @author				Tay Guo Qiang
+	 * @see    Task#compareTo(Task)
+	 * @param  sortCriterion	the criteria to sort tasks by
+	 * @author Tay Guo Qiang
 	 */
 	public static void setSortCriterion(String sortCriterion) {
 		Task._sortCriterion = sortCriterion;
@@ -185,7 +156,7 @@ class Task implements Comparable<Task> {
 	/**
 	 * Setter method for the priority level of the task.
 	 * 
-	 * @param priority	the desired task's priority level
+	 * @param  priority	the desired task's priority level
 	 * @author Tay Guo Qiang
 	 */
 	public void setPriority(int priority) {
@@ -205,8 +176,8 @@ class Task implements Comparable<Task> {
 	/**
 	 * Setter method for task ID.
 	 * 
-	 * @param id	the task ID
-	 * @author		Tay Guo Qiang
+	 * @param  id	the task ID
+	 * @author Tay Guo Qiang
 	 */
 	public void setId(int id) {
 		_id = id;
@@ -227,35 +198,25 @@ class Task implements Comparable<Task> {
 	/**
 	 * Setter method for task status.
 	 * 
-	 * @param isCompleted	the status of the task (completed or not)
-	 * @author 				Tay Guo Qiang
+	 * @param  isCompleted	the status of the task (completed or not)
+	 * @author Tay Guo Qiang
 	 */
 	public void setCompleted(boolean isCompleted) {
 		_isCompleted = isCompleted;
 	}
 	
 	/**
-	 * Getter method for the state of the task, when updated according
-	 * to the user's preference.
+	 * Returns an instance of the task's original state.
 	 * 
-	 * @return a Task object representation of the updated state of the task
-	 * @author Tay Guo Qiang
+	 * TODO
+	 * @param  task the task object being operated on
+	 * @return the original state of the task.
+	 * @author Tay Guo Qiang 
 	 */
-	public Task getUpdateState() {
-		return _updateTo;
+	public Task getOriginalState(Task task) {
+		return null;
 	}
-
-	/**
-	 * Setter method for the state of the task, when updated according
-	 * to the user's preference.
-	 * 
-	 * @param _updateTo	a Task object representation of its updated state
-	 * @author			Tay Guo Qiang
-	 */
-	public void setUpdateState(Task updateTo) {
-		_updateTo = updateTo;
-	}
-
+	
 	// How shall a task be displayed to the user?
 	/**
 	 * Provides a human-readable String representation of a task.
@@ -304,11 +265,11 @@ class Task implements Comparable<Task> {
 	 * 
 	 * Comparison order is by date, then by priority and then by name.
 	 * 
-	 * @param task	the Task object to compare to
-	 * @return		0 if the Task compared to is equal to itself;
-	 * 				a value less than 0 if the Task compared to comes after itself;
-	 * 				and a value more than 0 if the Task compared to comes before itself.
-	 * @author		Tay Guo Qiang
+	 * @param  task	the Task object to compare to
+	 * @return 0 if the Task compared to is equal to itself;
+	 * 		   a value less than 0 if the Task compared to comes after itself;
+	 * 		   and a value more than 0 if the Task compared to comes before itself.
+	 * @author Tay Guo Qiang
 	 */
 	private int compareByDate(Task task) {
 		if (_date.equals(task.getDate())) {
@@ -327,11 +288,11 @@ class Task implements Comparable<Task> {
 	 * 
 	 * Comparison order is by name, then by priority and then by date.
 	 * 
-	 * @param task	the Task object to compare to
-	 * @return		0 if the Task compared to is equal to itself;
-	 * 				a value less than 0 if the Task compared to comes after itself;
-	 * 				and a value more than 0 if the Task compared to comes before itself.
-	 * @author		Tay Guo Qiang
+	 * @param  task	the Task object to compare to
+	 * @return 0 if the Task compared to is equal to itself;
+	 * 		   a value less than 0 if the Task compared to comes after itself;
+	 * 		   and a value more than 0 if the Task compared to comes before itself.
+	 * @author Tay Guo Qiang
 	 */
 	private int compareByName(Task task) {
 		if (_name.equals(task.getName())) {
@@ -348,11 +309,11 @@ class Task implements Comparable<Task> {
 	/**
 	 * The comparison method invoked when sorting criteria is by task priority.
 	 * 
-	 * @param task	the Task object to compare to
-	 * @return		0 if the Task compared to is equal to itself;
-	 * 				a value less than 0 if the Task compared to comes after itself;
-	 * 				and a value more than 0 if the Task compared to comes before itself.
-	 * @author		Tay Guo Qiang
+	 * @param  task	the Task object to compare to
+	 * @return 0 if the Task compared to is equal to itself;
+	 * 		   a value less than 0 if the Task compared to comes after itself;
+	 * 		   and a value more than 0 if the Task compared to comes before itself.
+	 * @author Tay Guo Qiang
 	 */
 	private int compareByPriority(Task task) {
 		if (_priority == task.getPriority()) {
