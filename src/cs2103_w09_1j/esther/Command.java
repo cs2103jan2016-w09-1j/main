@@ -67,7 +67,7 @@ public class Command {
 	 * @param  parameters	the representation of user-supplied parameters
 	 * @author Tay Guo Qiang
 	 */
-	public void set_parameters(HashMap<String, String> parameters) {
+	public void setParameters(HashMap<String, String> parameters) {
 		_parameters = parameters;
 	}
 
