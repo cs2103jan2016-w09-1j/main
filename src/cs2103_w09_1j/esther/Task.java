@@ -3,16 +3,12 @@ package cs2103_w09_1j.esther;
 /**
  * ========== [ TASK OBJECT DEFINITIONS ] ==========
  * This class contains the representation of the
- * task object that will be passed around by the
- * program.
- * 
+ * task object that will be used by the program.
  * 
  * ============= [ IMPORTANT NOTICES ] =============
  * NOTE: Date (java.util.Date) class methods are
  * largely deprecated and it has been recommended
  * by Java that we use Calendar class instead.
- * 
- * To implement makeReverse() operation.
  * 
  * @author Tay Guo Qiang
  * (add your name to list of authors if you made
@@ -20,63 +16,55 @@ package cs2103_w09_1j.esther;
  */
 
 //import java.util.Calendar;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
 import java.util.Date;
 
 public class Task implements Comparable<Task> {
 
-	private String _name;
-	//private Calendar date;
-	private Date _date;
+	private static SimpleDateFormat _dateFormatter = new SimpleDateFormat();
 	private static String _sortCriterion = "priority";
-	private int _priority;
-	private int _id;
 	private static int _assignId = 0;
+	private String _name;
+	private Date _date;
+	private int _priority; // higher number indicates higher priority
+	private int _id;
 	private boolean _isCompleted;
 	
 	/**
-	 * A null constructor.
+	 * Constructs an empty Task object with an ID attached to it.
 	 * 
 	 * @author Tay Guo Qiang
 	 */
 	public Task() {
-		
-	}
-	
-	/**
-	 * Creates a Task object with all the supplied arguments.
-	 * This shall be used as the default constructor.
-	 * 
-	 * @param  name
-	 * @param  date
-	 * @param  priority
-	 * @param  isCompleted
-	 * @author Tay Guo Qiang
-	 */
-	public Task(String name, Date date, int priority, boolean isCompleted) {
-		_name = name;
-		_date = date;
-		_priority = priority;
-		_isCompleted = isCompleted;
 		_id = _assignId;
 		_assignId++;
 	}
 	
 	/**
-	 * Parses the user input to split and extract out necessary details
-	 * (e.g. task name, task deadline, task priority, etc),
-	 * then constructs the Task object with all the information extracted
-	 * from the user input.
+	 * Constructs a Task with reference to a Command object.
 	 * 
+	 * @param  command	the Command object containing the required parameters
+	 * @throws ParseException
+	 * @return a Task with the attributes set with the parameters
 	 * @author Tay Guo Qiang
 	 */
-	public Task(String userInput) {
-		this(null, null, -1, false);
+	public Task(Command command) throws ParseException {
+		this();
+		String taskName = command.getSpecificParameter("taskName");
+		Date date = command.hasParameter("date")
+					? _dateFormatter.parse(command.getSpecificParameter("date"))
+					: null;
+		int priority = command.hasParameter("priority")
+					   ? Integer.parseInt(command.getSpecificParameter("priority"))
+					   : 0;
+		this.setName(taskName);
+		this.setDate(date);
+		this.setPriority(priority);
 	}
 	
 	/**
-	 * Getter method for task name.
-	 * 
-	 * Logic will use this to access the task's name.
+	 * Gets the name of the Task.
 	 * 
 	 * @return the name of the task
 	 * @author Tay Guo Qiang
@@ -86,7 +74,7 @@ public class Task implements Comparable<Task> {
 	}
 
 	/**
-	 * Setter method for task name.
+	 * Sets the name of the Task.
 	 * 
 	 * @param  name	the desired task name
 	 * @author Tay Guo Qiang
@@ -96,9 +84,7 @@ public class Task implements Comparable<Task> {
 	}
 
 	/**
-	 * Getter method for task deadline.
-	 * 
-	 * Logic will use this to access the deadline of the task.
+	 * Gets the deadline of the Task.
 	 * 
 	 * @return the deadline of the task
 	 * @author Tay Guo Qiang
@@ -108,7 +94,7 @@ public class Task implements Comparable<Task> {
 	}
 
 	/**
-	 * Setter method for task deadline.
+	 * Sets the deadline of the Task.
 	 * 
 	 * @param  date	the desired task deadline
 	 * @author Tay Guo Qiang
@@ -118,7 +104,7 @@ public class Task implements Comparable<Task> {
 	}
 
 	/**
-	 * Getter method for sorting criterion.
+	 * Gets the sorting criterion to sort Tasks by.
 	 * 
 	 * The default sorting criterion is by task priority.
 	 * 
@@ -131,7 +117,7 @@ public class Task implements Comparable<Task> {
 	}
 
 	/**
-	 * Setter method for sorting criterion.
+	 * Sets the sorting criterion to sort Tasks by.
 	 * 
 	 * @see    Task#compareTo(Task)
 	 * @param  sortCriterion	the criteria to sort tasks by
@@ -142,9 +128,7 @@ public class Task implements Comparable<Task> {
 	}
 
 	/**
-	 * Getter method for the priority level of the task.
-	 * 
-	 * Logic will use this to access the task's priority level.
+	 * Gets the priority of the Task.
 	 * 
 	 * @return the priority level of the task
 	 * @author Tay Guo Qiang
@@ -154,7 +138,7 @@ public class Task implements Comparable<Task> {
 	}
 
 	/**
-	 * Setter method for the priority level of the task.
+	 * Sets the priority of the Task.
 	 * 
 	 * @param  priority	the desired task's priority level
 	 * @author Tay Guo Qiang
@@ -164,7 +148,7 @@ public class Task implements Comparable<Task> {
 	}
 	
 	/**
-	 * Getter method for task ID.
+	 * Gets the ID of the Task.
 	 * 
 	 * @return the task ID
 	 * @author Tay Guo Qiang
@@ -174,7 +158,7 @@ public class Task implements Comparable<Task> {
 	}
 	
 	/**
-	 * Setter method for task ID.
+	 * Sets the ID of the Task.
 	 * 
 	 * @param  id	the task ID
 	 * @author Tay Guo Qiang
@@ -184,9 +168,7 @@ public class Task implements Comparable<Task> {
 	}
 
 	/**
-	 * Getter method for whether the task is completed or not.
-	 * 
-	 * Logic will use this to check if task is completed.
+	 * Gets completion status of the Task. 
 	 * 
 	 * @return task status (whether it is completed or not)
 	 * @author Tay Guo Qiang
@@ -196,7 +178,7 @@ public class Task implements Comparable<Task> {
 	}
 
 	/**
-	 * Setter method for task status.
+	 * Sets completion status of the Task.
 	 * 
 	 * @param  isCompleted	the status of the task (completed or not)
 	 * @author Tay Guo Qiang
@@ -206,23 +188,35 @@ public class Task implements Comparable<Task> {
 	}
 	
 	/**
-	 * Returns an instance of the task's original state.
+	 * Updates the state of the Task object based on the Command object parameters.
 	 * 
-	 * TODO
-	 * @param  task the task object being operated on
-	 * @return the original state of the task.
-	 * @author Tay Guo Qiang 
+	 * @param  command	the Command object containing the required parameters
+	 * @throws ParseException
+	 * @author Tay Guo Qiang
 	 */
-	public Task getOriginalState(Task task) {
-		return null;
+	public void updateTask(Command command) throws ParseException {
+		if (command.hasParameter("taskName")) {
+			this.setName(command.getSpecificParameter("taskName"));
+		}
+		if (command.hasParameter("date")) {
+			this.setDate(_dateFormatter.parse(command.getSpecificParameter("date")));
+		}
+		if (command.hasParameter("priority")) {
+			this.setPriority(Integer.parseInt(command.getSpecificParameter("priority")));
+		}
+		if (command.hasParameter("taskId")) {
+			this.setId(Integer.parseInt(command.getSpecificParameter("taskId")));
+		}
+		if (command.hasParameter("completed")) {
+			this.setCompleted(Boolean.parseBoolean(command.getSpecificParameter("completed")));
+		}
 	}
 	
 	// How shall a task be displayed to the user?
 	/**
-	 * Provides a human-readable String representation of a task.
+	 * Returns a human-readable String representation of a Task.
 	 * 
-	 * UI will display this to the user.
-	 * 
+	 * @return a String representation of the Task
 	 * @author Go Hui Shan
 	 */
 	@Override
@@ -237,8 +231,12 @@ public class Task implements Comparable<Task> {
 	 * is used for sorting tasks in certain order. The default
 	 * sorting order is by task priority, then by task deadline
 	 * and finally by name of task. However, other sorting
-	 * criterion, such as by name or by date, is also supported.
+	 * criteria, such as by name or by date, is also supported.
 	 * 
+	 * @param  task	the Task object to compare to
+	 * @return 0 if the Task compared to is equal to itself;
+	 * 		   a value less than 0 if the Task compared to comes after itself;
+	 * 		   and a value more than 0 if the Task compared to comes before itself.
 	 * @author Tay Guo Qiang
 	 */
 	@Override

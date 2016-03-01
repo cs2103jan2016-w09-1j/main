@@ -25,8 +25,8 @@ public class Command {
 	 * @author Tay Guo Qiang
 	 */
 	public Command(String command, HashMap<String, String> parameters) {
-		_command = command;
-		_parameters = parameters;
+		setCommand(command);
+		setParameters(parameters);
 	}
 	
 	/**
@@ -59,6 +59,59 @@ public class Command {
 	 */
 	public HashMap<String, String> getParameters() {
 		return _parameters;
+	}
+	
+	/**
+	 * Returns the String value associated with the parameter key.
+	 * 
+	 * @param  parameter	the parameter being requested
+	 * @return the String value associated with the parameter
+	 * @author Tay Guo Qiang
+	 */
+	public String getSpecificParameter(String parameter) {
+		String value;
+		switch (parameter) {
+			case "taskName" :
+				value = _parameters.get(parameter);
+				break;
+				
+			case "date" :
+				value = _parameters.get(parameter);
+				break;
+			
+			case "priority" :
+				value = _parameters.get(parameter);
+				break;
+				
+			case "taskId" :
+				value = _parameters.get(parameter);
+				break;
+			
+			case "completed" :
+				value = _parameters.get(parameter);
+				break;
+			
+			case "order" :
+				value = _parameters.get(parameter);
+				break;
+				
+			default:
+				value = "Unrecognized key.";
+				break;
+		}
+		return value;
+	}
+	
+	/**
+	 * Checks if a parameter exists or not.
+	 * 
+	 * @param  parameter	the parameter being requested 
+	 * @return true if parameter key does not map to null value;
+	 * 		   false otherwise.
+	 * @author Tay Guo Qiang
+	 */
+	public boolean hasParameter(String parameter) {
+		return _parameters.get(parameter) != null;
 	}
 
 	/**
