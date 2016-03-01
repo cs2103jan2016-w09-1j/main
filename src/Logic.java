@@ -25,6 +25,7 @@
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EmptyStackException;
+import java.util.HashMap;
 import java.util.Stack;
 import cs2103_w09_1j.esther.Command;
 import cs2103_w09_1j.esther.Task;
@@ -34,8 +35,8 @@ class Logic {
 	
 	private Parser _parser;
 	private Storage _storage;
-	private ArrayList<Task> _taskList;
-	private Stack<Task> _undoStack;
+	private ArrayList<Task> _tasks;
+	private Stack<State> _undoStack;
 	
 	private enum Status {
 		STATUS_SUCCESS_ADD, STATUS_ERROR_ADD,
@@ -52,8 +53,8 @@ class Logic {
 	private static final String MESSAGE_ERROR_ADD = "[ERROR] Failed to add %1$s to file.\n";
 	private static final String MESSAGE_SUCCESS_DELETE = "%1$s is successfully deleted from file.\n";
 	private static final String MESSAGE_ERROR_DELETE = "[ERROR] Failed to delete %1$s from file.\n";
-	private static final String MESSAGE_SUCCESS_UPDATE = "Task is successfully updated.\n";
-	private static final String MESSAGE_ERROR_UPDATE = "[ERROR] Failed to update task.\n";
+	private static final String MESSAGE_SUCCESS_UPDATE = "%1$s is successfully updated.\n";
+	private static final String MESSAGE_ERROR_UPDATE = "[ERROR] Failed to update %1$s.\n";
 	private static final String MESSAGE_SUCCESS_SET_COMPLETED = "%1$s is marked as completed.\n";
 	private static final String MESSAGE_ERROR_SET_COMPLETED = "[ERROR] Failed to mark %1$s as completed.\n";
 	private static final String MESSAGE_SUCCESS_UNDO = "Undo is successful.\n";
@@ -89,37 +90,18 @@ class Logic {
 	 * Creates a Logic instance. Also initializes the undo stack.
 	 */
 	public Logic() {
-		_undoStack = new Stack<Task>();
-	}
-	
-	/**
-	 * Setter method to establish a system that allows Logic
-	 * to communicate with Parser.
-	 * 
-	 * @param parser an instance of the Parser component
-	 */
-	public void setParser(Parser parser) {
-		_parser = parser;
-	}
-	
-	/**
-	 * Setter method to establish a system that allows Logic
-	 * to communicate with Storage.
-	 * 
-	 * @param storage
-	 */
-	public void setStorage(Storage storage) {
-		_storage = storage;
+		_undoStack = new Stack<State>();
 	}
 
 	/**
 	 * Retrieves the internal memory that is used by Logic.
+	 * Used only for internal testing.
 	 * 
 	 * @return the internal memory representation of the
 	 * 		   contents stored in the text file.
 	 */
-	public ArrayList<Task> getInternalStorage() {
-		return _taskList;
+	ArrayList<Task> getInternalStorage() {
+		return _tasks;
 	}
 	
 	/**
@@ -127,14 +109,11 @@ class Logic {
 	 * for any changes done to the text file.
 	 */
 	public void updateInternalStorage() {
-		ArrayList<Task> _taskList = new ArrayList<Task>();
+		ArrayList<Task> _tasks = new ArrayList<Task>();
 		// TODO: might want to consider inserting try-catch block here
 		ArrayList<String> entriesList = _storage.readFromFile();
-		if (entriesList == null) {
-			return ;
-		}
-		for (String entry: entriesList) {
-			_taskList.add(new Task(entry));
+		for (int i = 0; i < entriesList.size(); i++) {
+			// TODO: add [String --> Task] into _tasks
 		}
 	}
 	
@@ -146,38 +125,39 @@ class Logic {
 	 * @see 	Logic#undo()
 	 * @return	the undo stack of the program logic
 	 */
-	public Stack<Task> getUndoStack() {
+	public Stack<State> getUndoStack() {
 		return _undoStack;
 	}
 
-	// TODO: switch statement to handle differing operations
+	// TODO: switch statement to at least be able to handle
+	// add, update, delete, show_all, sort, undo
 	/**
 	 * This method acts as the main handler for all user
 	 * operations. This handler will attempt to execute a
 	 * command and informs the user of the status of the
 	 * operation that is carried out.
 	 * 
-	 * @param task	a Task object representation of the user's input
-	 * @return 		a message indicating the status of the operation carried out
+	 * @param  command	the Command object containing all required information
+	 * @return a message indicating the status of the operation carried out
 	 */
-	public String executeCommand(Task task) {
-		String command = task.getCommand();
+	public String executeCommand(Command command) {
+		String commandType = command.getCommand();
 		String statusMessage;
-		switch (command) {
+		switch (commandType) {
 			case "add" : 
-				statusMessage = addToFile(task);
+				statusMessage = addToFile(command);
 				break;
 				
 			case "delete" :
-				statusMessage = removeFromFile(task);
+				statusMessage = removeFromFile(command);
 				break;
 				
 			case "update" :
-				statusMessage = updateToFile(task);
+				statusMessage = updateToFile(command);
 				break;
 				
 			case "completed" :
-				statusMessage = markDone(task);
+				statusMessage = markDone(command);
 				break;
 				
 			case "show" :
@@ -199,7 +179,7 @@ class Logic {
 				
 			default :
 				_status = Status.STATUS_UNKNOWN_STATE;
-				statusMessage = getStatusMessage(task); 
+				statusMessage = getStatusMessage(null); 
 				break;
 		}
 		return statusMessage;
@@ -213,21 +193,20 @@ class Logic {
 	 * @return		a Task object that has an opposite command to be
 	 * 				performed on it, where applicable.
 	 */
-	private Task createReverseOperation(Task task) {
-		Task reversed = task;
-		String command = task.getCommand();
-		switch (command) {
+	private State storePreviousState(Command command, Task original) {
+		State previous = new State();
+		String commandType = command.getCommand();
+		switch (commandType) {
 			case "add" :
-				reversed.setCommand("delete");
+				//reversed.setCommand("delete");
 				break;
 
 			case "delete" :
-				reversed.setCommand("add");
+				//reversed.setCommand("add");
 				break;
 
 			case "update" :
-				// nothing happens here because the updated task
-				// already contains the previous state
+				// 
 				break;
 
 			case "show" :
@@ -247,49 +226,73 @@ class Logic {
 				System.out.println("Not supposed to happen.");
 				break;
 		}
-		return reversed;
+		return previous;
 	}
 	
+	// TODO: also accommodate for sort and show_all
 	/**
 	 * Retrieves the status message depending on the status
 	 * of an operation being carried out by the program logic.
 	 * 
-	 * @param task	the Task object being processed
-	 * @return		the corresponding status message based on operation status
+	 * @return the corresponding status message based on operation status
 	 */
-	private String getStatusMessage(Task task) {
+	private String getStatusMessage(String taskName, String taskId) {
 		String message;
 		switch (_status) {
 			case STATUS_SUCCESS_ADD :
-				message = String.format(MESSAGE_SUCCESS_ADD, task.getName());
+				message = String.format(MESSAGE_SUCCESS_ADD, taskName);
 				break;
 				
 			case STATUS_ERROR_ADD :
-				message = String.format(MESSAGE_ERROR_ADD, task.getName());
+				message = String.format(MESSAGE_ERROR_ADD, taskName);
 				break;
 				
 			case STATUS_SUCCESS_DELETE :
-				message = String.format(MESSAGE_SUCCESS_DELETE, task.getName());
+				if (taskName != null) {
+					message = String.format(MESSAGE_SUCCESS_DELETE, taskName);
+				} else {
+					message = String.format(MESSAGE_SUCCESS_DELETE, taskId);
+				}
 				break;
 				
 			case STATUS_ERROR_DELETE :
-				message = String.format(MESSAGE_ERROR_DELETE, task.getName());
+				if (taskName != null) {
+					message = String.format(MESSAGE_ERROR_DELETE, taskName);
+				} else {
+					message = String.format(MESSAGE_ERROR_DELETE, taskId);
+				}
 				break;
 				
 			case STATUS_SUCCESS_UPDATE :
-				message = MESSAGE_SUCCESS_UPDATE;
+				if (taskName != null) {
+					message = String.format(MESSAGE_SUCCESS_UPDATE, taskName);
+				} else {
+					message = String.format(MESSAGE_SUCCESS_UPDATE, taskId);
+				}
 				break;
 				
 			case STATUS_ERROR_UPDATE :
-				message = MESSAGE_ERROR_UPDATE;
+				if (taskName != null) {
+					message = String.format(MESSAGE_ERROR_UPDATE, taskName);
+				} else {
+					message = String.format(MESSAGE_ERROR_UPDATE, taskId);
+				}
 				break;
 				
 			case STATUS_SUCCESS_SET_COMPLETED :
-				message = String.format(MESSAGE_SUCCESS_SET_COMPLETED, task.getName());
+				if (taskName != null) {
+					message = String.format(MESSAGE_SUCCESS_SET_COMPLETED, taskName);
+				} else {
+					message = String.format(MESSAGE_SUCCESS_SET_COMPLETED, taskId);
+				}
 				break;
 				
 			case STATUS_ERROR_SET_COMPLETED :
-				message = String.format(MESSAGE_ERROR_SET_COMPLETED, task.getName());
+				if (taskName != null) {
+					message = String.format(MESSAGE_ERROR_SET_COMPLETED, taskName);
+				} else {
+					message = String.format(MESSAGE_ERROR_SET_COMPLETED, taskId);
+				}
 				break;
 				
 			case STATUS_SUCCESS_UNDO :
@@ -319,13 +322,14 @@ class Logic {
 	 * @param task	a Task object representation of the user's input
 	 * @return		a message indicating the status of the add-task operation
 	 */
-	private String addToFile(Task task) {
-		_taskList.add(task);
+	private String addToFile(Command command) {
+		Task task = new Task(command);
+		_tasks.add(task);
 		// TODO: insert try-catch block here
-		_storage.writeToFile(_taskList);
-		_undoStack.push(createReverseOperation(task));
+		_storage.writeToFile(_tasks);
+		_undoStack.push(storePreviousState(command, task));
 		_status = Status.STATUS_SUCCESS_ADD;
-		return getStatusMessage(task);
+		return getStatusMessage(task.getName(), null);
 	}
 	
 	// TODO: remove: by matching task name as well as by ID
@@ -335,24 +339,28 @@ class Logic {
 	 * @param task	a Task object representation of the user's input
 	 * @return		a message indicating the status of the delete-task operation
 	 */
-	private String removeFromFile(Task task) {
+	private String removeFromFile(Command command) {
 		Task removed = null;
-		for (Task existingTask: _taskList) {
-			if (existingTask.getName().equals(task.getName())) {
+		String taskName = command.getSpecificParameter("taskName");
+		String taskId = command.hasParameter("taskId")
+						? command.getSpecificParameter("taskId")
+						: "-1";
+		for (Task existingTask: _tasks) {
+			if (existingTask.getName().equals(taskName) ||
+				existingTask.getId() == Integer.parseInt(taskId)) {
 				removed = existingTask;
 				break;
 			}
 		}
 		if (removed != null) {
-			_taskList.remove(removed);
-			// TODO: insert try-catch block here
-			_storage.writeToFile(_taskList);
-			_undoStack.push(createReverseOperation(removed));
+			_tasks.remove(removed);
+			_storage.writeToFile(_tasks);
+			_undoStack.push(storePreviousState(command, removed));
 			_status = Status.STATUS_SUCCESS_DELETE;
-			return getStatusMessage(removed);
+			return getStatusMessage(taskName, command.getSpecificParameter("taskId"));
 		} else {
 			_status = Status.STATUS_ERROR_DELETE;
-			return getStatusMessage(task);
+			return getStatusMessage(taskName, command.getSpecificParameter("taskId"));
 		}
 	}
 	
@@ -362,45 +370,34 @@ class Logic {
 	 * @param task a Task object representation of the user's input
 	 * @return 	   a message indicating the status of the update-task operation
 	 */
-	private String updateToFile(Task task) {
+	private String updateToFile(Command command) {
 		Task toUpdate = null;
 		int updateIndex = -1;
-		for (int i = 0; i < _taskList.size(); i++) {
-			if (_taskList.get(i).getName().equals(task.getName()) ||
-				_taskList.get(i).getId() == task.getId()) {
-				toUpdate = _taskList.get(i);
+		String taskName = command.getSpecificParameter("taskName");
+		String taskId = command.hasParameter("taskId")
+						? command.getSpecificParameter("taskId")
+						: "-1";
+		for (int i = 0; i < _tasks.size(); i++) {
+			if (_tasks.get(i).getName().equals(taskName) ||
+				_tasks.get(i).getId() == Integer.parseInt(taskId)) {
+				toUpdate = _tasks.get(i);
 				updateIndex = i;
 				break;
 			}
 		}
 		if (toUpdate != null) {
-			Task updatedTask = returnUpdatedTask(toUpdate, task.getUpdateState());
-			_taskList.set(updateIndex, updatedTask);
+			_undoStack.push(storePreviousState(command, toUpdate));
+			Task updatedTask = toUpdate;
+			updatedTask.updateTask(command);
+			_tasks.set(updateIndex, updatedTask);
 			// TODO: insert try-catch block here
-			_storage.writeToFile(_taskList);
-			_undoStack.push(createReverseOperation(updatedTask));
+			_storage.writeToFile(_tasks);
 			_status = Status.STATUS_SUCCESS_UPDATE;
-			return getStatusMessage(task);
+			return getStatusMessage(taskName, command.getSpecificParameter("taskId"));
 		} else {
 			_status = Status.STATUS_ERROR_UPDATE;
-			return getStatusMessage(task);
+			return getStatusMessage(taskName, command.getSpecificParameter("taskId"));
 		}
-	}
-	
-	/**
-	 * Updates a selected task with the desired updated state and
-	 * returns an instance of the updated task.
-	 * 
-	 * @param originalTask	the Task to be updated
-	 * @param updatedTask	the state that the original task should be
-	 */
-	private Task returnUpdatedTask(Task originalTask, Task updatedState) {
-		// TODO Auto-generated method stub
-		Task result = new Task(updatedState.getName(), updatedState.getDate(),
-							   "update", updatedState.getPriority(),
-							   originalTask.getId(), updatedState.isCompleted(),
-							   originalTask);
-		return result;
 	}
 
 	/**
@@ -409,31 +406,33 @@ class Logic {
 	 * @param task	a Task object representation of the user's input
 	 * @return		a message indicating the status of the set-task-completed operation
 	 */
-	private String markDone(Task task) {
+	private String markDone(Command command) {
 		Task toUpdate = null;
-		Task previousState = task;
+		String taskName = command.getSpecificParameter("taskName");
+		String taskId = command.hasParameter("taskId")
+						? command.getSpecificParameter("taskId")
+						: "-1";
 		int updateIndex = -1;
-		for (int i = 0; i < _taskList.size(); i++) {
-			if (_taskList.get(i).getName().equals(task.getName()) ||
-				_taskList.get(i).getId() == task.getId()) {
-				toUpdate = _taskList.get(i);
+		for (int i = 0; i < _tasks.size(); i++) {
+			if (_tasks.get(i).getName().equals(taskName) ||
+				_tasks.get(i).getId() == Integer.parseInt(taskId)) {
+				toUpdate = _tasks.get(i);
 				updateIndex = i;
 				break;
 			}
 		}
 		if (toUpdate != null) {
-			toUpdate.setCompleted(true);
-			_taskList.set(updateIndex, toUpdate);
+			_undoStack.push(storePreviousState(command, toUpdate));
+			Task updatedTask = toUpdate;
+			updatedTask.setCompleted(true);
+			_tasks.set(updateIndex, updatedTask);
 			// TODO: insert try-catch block here
-			_storage.writeToFile(_taskList);
-			toUpdate.setUpdateState(previousState);
-			toUpdate.setCommand("update");
-			_undoStack.push(createReverseOperation(toUpdate));
+			_storage.writeToFile(_tasks);
 			_status = Status.STATUS_SUCCESS_SET_COMPLETED;
-			return getStatusMessage(task);
+			return getStatusMessage(taskName, command.getSpecificParameter("taskId"));
 		} else {
 			_status = Status.STATUS_ERROR_SET_COMPLETED;
-			return getStatusMessage(task);
+			return getStatusMessage(taskName, command.getSpecificParameter("taskId"));
 		}
 	} 
 	
@@ -442,16 +441,17 @@ class Logic {
 	 * 
 	 * @return a message indicating status of the undo operation
 	 */
+	// TODO: to fix
 	private String undo() {
 		try {
-			Task originalState = _undoStack.pop();
+			State originalState = _undoStack.pop();
 			executeCommand(originalState);
 			updateInternalStorage();
 			_status = Status.STATUS_SUCCESS_UNDO;
-			return getStatusMessage(originalState);
+			return getStatusMessage(null, null);
 		} catch (EmptyStackException e) {
 			_status = Status.STATUS_ERROR_UNDO;
-			return getStatusMessage(null);
+			return getStatusMessage(null, null);
 		} finally {
 			
 		}
@@ -477,9 +477,10 @@ class Logic {
 		 * this method can just be removed totally. 
 		 */
 		_storage.flushFile();
-		_taskList = new ArrayList<Task>();
+		_tasks = new ArrayList<Task>();
 	}
 	
+	// TODO: implement this
 	/**
 	 * Displays all tasks recorded in the text file.
 	 * 
@@ -490,7 +491,7 @@ class Logic {
 	 */
 	private ArrayList<Task> displayAll() {
 		//_undoStack.push(null);
-		return _taskList;
+		return _tasks;
 	}
 	
 	/**
@@ -506,8 +507,8 @@ class Logic {
 	 */
 	private String sortFile() {
 		_undoStack.push(null); // TODO: need to store a previous ordering
-		Collections.sort(_taskList);
-		_storage.writeToFile(_taskList);
+		Collections.sort(_tasks);
+		_storage.writeToFile(_tasks);
 		return "OK.";
 	}
 	
@@ -525,7 +526,7 @@ class Logic {
 		ArrayList<Task> results = new ArrayList<Task>();
 		//_undoStack.push(null);
 		updateInternalStorage();
-		for (Task entry: _taskList) {
+		for (Task entry: _tasks) {
 			if (entry.getName().contains(task.getName())) {
 				results.add(entry);
 			}
