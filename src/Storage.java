@@ -16,11 +16,12 @@ public class Storage {
 	private final Path defaultSaveLocation = Paths.get(defaultFileName);
 
 	/**
-	 * Empty constructor
+	 * Constructor for Storage class
 	 * 
-	 * @throws IOException
+	 * Checks default save location to see if it is a file or redirect
+	 * Sets the current save location correspondingly
 	 */
-	public Storage() throws IOException {
+	public Storage() {
 		// check default save location
 		if (isValidFile(defaultSaveLocation)) {
 			String firstLine = getFirstLineFromFile(defaultSaveLocation);
@@ -39,16 +40,19 @@ public class Storage {
 	 * @param filePath
 	 *            Path to load the file from
 	 * @return ArrayList of tasks as loaded from the file if successful
-	 * @throws IOException
-	 *             if an IO error occurs during loading
 	 */
-	public ArrayList<Task> readFromFile(Path filePath) throws IOException {
-		if (isValidFile(filePath)) {
-			tryLoadFile(filePath);
-			setSaveLocation(filePath);
-			return tasksBuffer;
+	public ArrayList<Task> readFromFile(Path filePath) {
+		try {
+			if (isValidFile(filePath)) {
+				tryLoadFile(filePath);
+				setSaveLocation(filePath);
+				return tasksBuffer;
+			}
+			return null;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
 		}
-		return null;
 	}
 
 	/**
@@ -58,7 +62,7 @@ public class Storage {
 	 * @throws IOException
 	 *             if an IO error occurs during loading
 	 */
-	public ArrayList<Task> readFromFile() throws IOException {
+	public ArrayList<Task> readFromFile() {
 		checkValidSaveLocation();
 		return readFromFile(saveLocation);
 	}
@@ -71,16 +75,22 @@ public class Storage {
 	 * @throws IOException
 	 *             if an IO error occurs during writing
 	 */
-	public void writeToFile(ArrayList<Task> tasks) throws IOException {
+	public void writeToFile(ArrayList<Task> tasks) {
 		tasksBuffer = tasks;
 		checkValidSaveLocation();
-		BufferedWriter writer = Files.newBufferedWriter(saveLocation);
-		writer.write("");
-		for (int i = 0; i < tasksBuffer.size(); i++) {
-			writer.write(tasksBuffer.get(i).toString());
-			writer.newLine();
+		BufferedWriter writer;
+		try {
+			writer = Files.newBufferedWriter(saveLocation);
+			writer.write("");
+			for (int i = 0; i < tasksBuffer.size(); i++) {
+				writer.write(tasksBuffer.get(i).toString());
+				writer.newLine();
+			}
+			writer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		writer.close();
 	}
 
 	/**
@@ -88,9 +98,9 @@ public class Storage {
 	 * default, setup a redirect at the default.
 	 * 
 	 * @param filePath
-	 * 			New path to save to
+	 *            New path to save to
 	 * @throws IOException
-	 * 			If an IO error occurs during setting up the redirect.
+	 *             If an IO error occurs during setting up the redirect.
 	 */
 	public void setSaveLocation(Path filePath) throws IOException {
 		saveLocation = filePath;
@@ -99,31 +109,51 @@ public class Storage {
 		}
 	}
 
-	private void setupRedirect(Path redirectLocation) throws IOException {
-		BufferedWriter writer = Files.newBufferedWriter(saveLocation);
-		writer.write(redirectLocation.toAbsolutePath().toString());
-		writer.close();
+	private void setupRedirect(Path redirectLocation) {
+		BufferedWriter writer;
+		try {
+			writer = Files.newBufferedWriter(saveLocation);
+			writer.write(redirectLocation.toAbsolutePath().toString());
+			writer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private void checkValidSaveLocation() throws Error {
 	}
 
-	private ArrayList<Task> tryLoadFile(Path filePath) throws IOException {
+	private ArrayList<Task> tryLoadFile(Path filePath) {
 		tasksBuffer.clear();
-		BufferedReader reader = Files.newBufferedReader(filePath);
-		while (reader.ready()) {
-			loadTextString(reader.readLine());
+		BufferedReader reader;
+		try {
+			reader = Files.newBufferedReader(filePath);
+			while (reader.ready()) {
+				loadTextString(reader.readLine());
+			}
+			reader.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		reader.close();
 
 		return tasksBuffer;
 	}
 
-	private String getFirstLineFromFile(Path path) throws IOException {
-		BufferedReader reader = Files.newBufferedReader(path);
-		String firstLine = reader.readLine();
-		reader.close();
-		return firstLine;
+	private String getFirstLineFromFile(Path path) {
+		BufferedReader reader;
+		try {
+			reader = Files.newBufferedReader(path);
+			String firstLine = reader.readLine();
+			reader.close();
+			return firstLine;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
 
 	public void flushFile() {
 		// TODO Auto-generated method stub
@@ -133,7 +163,7 @@ public class Storage {
 		return string.contains("://");
 	}
 
-	private void loadTextString(String nextLine) throws IOException {
+	private void loadTextString(String nextLine) {
 		if (!nextLine.isEmpty()) {
 			tasksBuffer.add(new Task(nextLine));
 		}
