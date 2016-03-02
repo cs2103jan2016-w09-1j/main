@@ -74,6 +74,10 @@ public class Command {
 			case "taskName" :
 				value = _parameters.get(parameter);
 				break;
+			
+			case "updatedTaskName" :
+				value = _parameters.get(parameter);
+				break;
 				
 			case "date" :
 				value = _parameters.get(parameter);
@@ -111,7 +115,7 @@ public class Command {
 	 * @author Tay Guo Qiang
 	 */
 	public boolean hasParameter(String parameter) {
-		return _parameters.get(parameter) != null;
+		return _parameters.containsKey(parameter);
 	}
 
 	/**
