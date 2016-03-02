@@ -16,12 +16,14 @@
  * 
  * 
  * =================== [CURRENT STATUS] ===================
- * Logical code needs to be refined.
+ * Logical code needs to be refined. Also need to write
+ * overload method for executeCommand()
  * 
  * 
  * @author Tay Guo Qiang
  */
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EmptyStackException;
@@ -29,6 +31,7 @@ import java.util.HashMap;
 import java.util.Stack;
 import cs2103_w09_1j.esther.Command;
 import cs2103_w09_1j.esther.Task;
+import cs2103_w09_1j.esther.State;
 import cs2103_w09_1j.esther.InvalidInputException;
 
 class Logic {
@@ -39,12 +42,10 @@ class Logic {
 	private Stack<State> _undoStack;
 	
 	private enum Status {
-		STATUS_SUCCESS_ADD, STATUS_ERROR_ADD,
-		STATUS_SUCCESS_DELETE, STATUS_ERROR_DELETE,
-		STATUS_SUCCESS_UPDATE, STATUS_ERROR_UPDATE,
-		STATUS_SUCCESS_SET_COMPLETED, STATUS_ERROR_SET_COMPLETED,
-		STATUS_SUCCESS_UNDO, STATUS_ERROR_UNDO,
-		STATUS_UNKNOWN_STATE
+		STATUS_SUCCESS_ADD, STATUS_ERROR_ADD, STATUS_SUCCESS_DELETE, STATUS_ERROR_DELETE,
+		STATUS_SUCCESS_UPDATE, STATUS_ERROR_UPDATE, STATUS_ERROR_UPDATE_NOT_FOUND,
+		STATUS_SUCCESS_SET_COMPLETED, STATUS_ERROR_SET_COMPLETED, STATUS_SUCCESS_UNDO,
+		STATUS_ERROR_UNDO, STATUS_UNKNOWN_STATE
 	}
 	
 	Status _status;
@@ -54,6 +55,7 @@ class Logic {
 	private static final String MESSAGE_SUCCESS_DELETE = "%1$s is successfully deleted from file.\n";
 	private static final String MESSAGE_ERROR_DELETE = "[ERROR] Failed to delete %1$s from file.\n";
 	private static final String MESSAGE_SUCCESS_UPDATE = "%1$s is successfully updated.\n";
+	private static final String MESSAGE_ERROR_UPDATE_NOT_FOUND = "[ERROR] Task with supplied name or ID not found.\n";
 	private static final String MESSAGE_ERROR_UPDATE = "[ERROR] Failed to update %1$s.\n";
 	private static final String MESSAGE_SUCCESS_SET_COMPLETED = "%1$s is marked as completed.\n";
 	private static final String MESSAGE_ERROR_SET_COMPLETED = "[ERROR] Failed to mark %1$s as completed.\n";
@@ -90,6 +92,8 @@ class Logic {
 	 * Creates a Logic instance. Also initializes the undo stack.
 	 */
 	public Logic() {
+		_parser = new Parser();
+		_storage = new Storage();
 		_undoStack = new Stack<State>();
 	}
 
@@ -109,7 +113,7 @@ class Logic {
 	 * for any changes done to the text file.
 	 */
 	public void updateInternalStorage() {
-		ArrayList<Task> _tasks = new ArrayList<Task>();
+		_tasks = new ArrayList<Task>();
 		// TODO: might want to consider inserting try-catch block here
 		ArrayList<String> entriesList = _storage.readFromFile();
 		for (int i = 0; i < entriesList.size(); i++) {
@@ -145,19 +149,19 @@ class Logic {
 		String statusMessage;
 		switch (commandType) {
 			case "add" : 
-				statusMessage = addToFile(command);
+				statusMessage = addTask(command);
 				break;
 				
 			case "delete" :
-				statusMessage = removeFromFile(command);
+				statusMessage = removeTask(command);
 				break;
 				
 			case "update" :
-				statusMessage = updateToFile(command);
+				statusMessage = updateTask(command);
 				break;
 				
 			case "completed" :
-				statusMessage = markDone(command);
+				statusMessage = completeTask(command);
 				break;
 				
 			case "show" :
@@ -179,7 +183,7 @@ class Logic {
 				
 			default :
 				_status = Status.STATUS_UNKNOWN_STATE;
-				statusMessage = getStatusMessage(null); 
+				statusMessage = getStatusMessage(null, null); 
 				break;
 		}
 		return statusMessage;
@@ -194,26 +198,32 @@ class Logic {
 	 * 				performed on it, where applicable.
 	 */
 	private State storePreviousState(Command command, Task original) {
-		State previous = new State();
 		String commandType = command.getCommand();
+		State previous = null;
 		switch (commandType) {
 			case "add" :
-				//reversed.setCommand("delete");
+				previous = new State("delete");
+				previous.storeOriginalTaskState(original);
 				break;
 
 			case "delete" :
-				//reversed.setCommand("add");
+				previous = new State("add");
+				previous.storeOriginalTaskState(original);
 				break;
 
 			case "update" :
-				// 
+				previous = new State("update");
+				previous.storeOriginalTaskState(original);
 				break;
 
 			case "show" :
+				previous = new State("show");
+				previous.storeInnerMemoryState(_tasks);
 				break;
 
 			case "sort" :
-				// TODO: store original order of task list
+				previous = new State("sort");
+				previous.storeInnerMemoryState(_tasks);
 				break;
 
 			case "undo" :
@@ -223,6 +233,7 @@ class Logic {
 				break;
 				
 			default :
+				previous = new State("Invalid");
 				System.out.println("Not supposed to happen.");
 				break;
 		}
@@ -279,6 +290,10 @@ class Logic {
 				}
 				break;
 				
+			case STATUS_ERROR_UPDATE_NOT_FOUND :
+				message = MESSAGE_ERROR_UPDATE_NOT_FOUND;
+				break;
+				
 			case STATUS_SUCCESS_SET_COMPLETED :
 				if (taskName != null) {
 					message = String.format(MESSAGE_SUCCESS_SET_COMPLETED, taskName);
@@ -310,7 +325,6 @@ class Logic {
 		return message;
 	}
 	
-	// TODO: default - adds to end of list
 	/**
 	 * Adds the task to the text file.
 	 * By default, all tasks are added to the end of the list
@@ -322,24 +336,27 @@ class Logic {
 	 * @param task	a Task object representation of the user's input
 	 * @return		a message indicating the status of the add-task operation
 	 */
-	private String addToFile(Command command) {
-		Task task = new Task(command);
-		_tasks.add(task);
-		// TODO: insert try-catch block here
-		_storage.writeToFile(_tasks);
-		_undoStack.push(storePreviousState(command, task));
-		_status = Status.STATUS_SUCCESS_ADD;
-		return getStatusMessage(task.getName(), null);
+	private String addTask(Command command) {
+		String taskName = command.getSpecificParameter("taskName");
+		try {
+			Task task = new Task(command);
+			_tasks.add(task);
+			_storage.writeToFile(_tasks);
+			_undoStack.push(storePreviousState(command, task));
+			_status = Status.STATUS_SUCCESS_ADD;
+		} catch (ParseException pe) {
+			_status = Status.STATUS_ERROR_ADD;
+		}
+		return getStatusMessage(taskName, null);
 	}
 	
-	// TODO: remove: by matching task name as well as by ID
 	/**
 	 * Removes the task from the text file.
 	 * 
 	 * @param task	a Task object representation of the user's input
 	 * @return		a message indicating the status of the delete-task operation
 	 */
-	private String removeFromFile(Command command) {
+	private String removeTask(Command command) {
 		Task removed = null;
 		String taskName = command.getSpecificParameter("taskName");
 		String taskId = command.hasParameter("taskId")
@@ -357,11 +374,10 @@ class Logic {
 			_storage.writeToFile(_tasks);
 			_undoStack.push(storePreviousState(command, removed));
 			_status = Status.STATUS_SUCCESS_DELETE;
-			return getStatusMessage(taskName, command.getSpecificParameter("taskId"));
 		} else {
 			_status = Status.STATUS_ERROR_DELETE;
-			return getStatusMessage(taskName, command.getSpecificParameter("taskId"));
 		}
+		return getStatusMessage(taskName, command.getSpecificParameter("taskId"));
 	}
 	
 	/**
@@ -370,34 +386,37 @@ class Logic {
 	 * @param task a Task object representation of the user's input
 	 * @return 	   a message indicating the status of the update-task operation
 	 */
-	private String updateToFile(Command command) {
+	private String updateTask(Command command) {
 		Task toUpdate = null;
 		int updateIndex = -1;
 		String taskName = command.getSpecificParameter("taskName");
-		String taskId = command.hasParameter("taskId")
+		String checkTaskId = command.hasParameter("taskId")
 						? command.getSpecificParameter("taskId")
 						: "-1";
 		for (int i = 0; i < _tasks.size(); i++) {
 			if (_tasks.get(i).getName().equals(taskName) ||
-				_tasks.get(i).getId() == Integer.parseInt(taskId)) {
+				_tasks.get(i).getId() == Integer.parseInt(checkTaskId)) {
 				toUpdate = _tasks.get(i);
 				updateIndex = i;
 				break;
 			}
 		}
-		if (toUpdate != null) {
-			_undoStack.push(storePreviousState(command, toUpdate));
-			Task updatedTask = toUpdate;
-			updatedTask.updateTask(command);
-			_tasks.set(updateIndex, updatedTask);
-			// TODO: insert try-catch block here
-			_storage.writeToFile(_tasks);
-			_status = Status.STATUS_SUCCESS_UPDATE;
-			return getStatusMessage(taskName, command.getSpecificParameter("taskId"));
-		} else {
+		
+		try {
+			if (toUpdate != null) {
+				_undoStack.push(storePreviousState(command, toUpdate));
+				Task updatedTask = toUpdate;
+				updatedTask.updateTask(command);
+				_tasks.set(updateIndex, updatedTask);
+				_storage.writeToFile(_tasks);
+				_status = Status.STATUS_SUCCESS_UPDATE;
+			} else {
+				_status = Status.STATUS_ERROR_UPDATE_NOT_FOUND;
+			}
+		} catch (ParseException pe) {
 			_status = Status.STATUS_ERROR_UPDATE;
-			return getStatusMessage(taskName, command.getSpecificParameter("taskId"));
 		}
+		return getStatusMessage(taskName, command.getSpecificParameter("taskId"));
 	}
 
 	/**
@@ -406,7 +425,7 @@ class Logic {
 	 * @param task	a Task object representation of the user's input
 	 * @return		a message indicating the status of the set-task-completed operation
 	 */
-	private String markDone(Command command) {
+	private String completeTask(Command command) {
 		Task toUpdate = null;
 		String taskName = command.getSpecificParameter("taskName");
 		String taskId = command.hasParameter("taskId")
@@ -429,11 +448,10 @@ class Logic {
 			// TODO: insert try-catch block here
 			_storage.writeToFile(_tasks);
 			_status = Status.STATUS_SUCCESS_SET_COMPLETED;
-			return getStatusMessage(taskName, command.getSpecificParameter("taskId"));
 		} else {
 			_status = Status.STATUS_ERROR_SET_COMPLETED;
-			return getStatusMessage(taskName, command.getSpecificParameter("taskId"));
 		}
+		return getStatusMessage(taskName, command.getSpecificParameter("taskId"));
 	} 
 	
 	/**
@@ -444,17 +462,13 @@ class Logic {
 	// TODO: to fix
 	private String undo() {
 		try {
-			State originalState = _undoStack.pop();
-			executeCommand(originalState);
-			updateInternalStorage();
+			State previousState = _undoStack.pop();
+			//_tasks = previousState.getState();
 			_status = Status.STATUS_SUCCESS_UNDO;
-			return getStatusMessage(null, null);
 		} catch (EmptyStackException e) {
 			_status = Status.STATUS_ERROR_UNDO;
-			return getStatusMessage(null, null);
-		} finally {
-			
 		}
+		return getStatusMessage(null, null);
 	}
 	
 	
@@ -470,6 +484,7 @@ class Logic {
 
 	/**
 	 * Empties the text file of any contents.
+	 * Only used for internal testing.
 	 */
 	public void flushInternalStorage() {
 		/* Might want to consider insert try-catch block here
