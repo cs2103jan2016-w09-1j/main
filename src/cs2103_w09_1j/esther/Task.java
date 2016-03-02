@@ -22,7 +22,7 @@ import java.util.Date;
 
 public class Task implements Comparable<Task> {
 
-	private static SimpleDateFormat _dateFormatter = new SimpleDateFormat();
+	private static SimpleDateFormat _dateFormatter = new SimpleDateFormat("dd/MM/yyyy"); // TODO: to change over time
 	private static String _sortCriterion = "priority";
 	private static int _assignId = 0;
 	private String _name;
