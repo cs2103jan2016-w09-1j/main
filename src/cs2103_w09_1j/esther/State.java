@@ -15,10 +15,15 @@ import java.util.ArrayList;
 public class State {
 	
 	private String _command;
+	private String _sortOrder;
 	private ArrayList<Task> _tasks = new ArrayList<Task>();
 	
 	public State(String command) {
 		_command = command;
+	}
+	
+	public void setSortOrder(String order) {
+		_sortOrder = order;
 	}
 	
 	public void storeOriginalTaskState(Task task) {
@@ -27,6 +32,18 @@ public class State {
 	
 	public void storeInnerMemoryState(ArrayList<Task> tasks) {
 		_tasks = tasks;
+	}
+	
+	public String getCommand() {
+		return _command;
+	}
+	
+	public String getSortOrder() {
+		return _sortOrder;
+	}
+	
+	public ArrayList<Task> getState() {
+		return _tasks;
 	}
 	
 }

@@ -32,13 +32,12 @@ public class Task implements Comparable<Task> {
 	private boolean _isCompleted;
 	
 	/**
-	 * Constructs an empty Task object with an ID attached to it.
+	 * Constructs an empty Task object.
 	 * 
 	 * @author Tay Guo Qiang
 	 */
 	public Task() {
-		_id = _assignId;
-		_assignId++;
+		
 	}
 	
 	/**
@@ -61,6 +60,9 @@ public class Task implements Comparable<Task> {
 		this.setName(taskName);
 		this.setDate(date);
 		this.setPriority(priority);
+		this.setCompleted(false);
+		_id = _assignId;
+		_assignId++;
 	}
 	
 	/**
@@ -188,6 +190,22 @@ public class Task implements Comparable<Task> {
 	}
 	
 	/**
+	 * Creates a copy of this Task object.
+	 * 
+	 * @return a copy of the Task object
+	 * @author Tay Guo Qiang
+	 */
+	public Task clone() {
+		Task copy = new Task();
+		copy.setName(_name);
+		copy.setDate(_date);
+		copy.setId(_id);
+		copy.setPriority(_priority);
+		copy.setCompleted(_isCompleted);
+		return copy;
+	}
+	
+	/**
 	 * Updates the state of the Task object based on the Command object parameters.
 	 * 
 	 * @param  command	the Command object containing the required parameters
@@ -197,6 +215,9 @@ public class Task implements Comparable<Task> {
 	public void updateTask(Command command) throws ParseException {
 		if (command.hasParameter("taskName")) {
 			this.setName(command.getSpecificParameter("taskName"));
+		}
+		if (command.hasParameter("updatedTaskName")) {
+			this.setName(command.getSpecificParameter("updatedTaskName"));
 		}
 		if (command.hasParameter("date")) {
 			this.setDate(_dateFormatter.parse(command.getSpecificParameter("date")));

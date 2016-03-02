@@ -94,6 +94,7 @@ class Logic {
 	public Logic() {
 		_parser = new Parser();
 		_storage = new Storage();
+		_tasks = new ArrayList<Task>();
 		_undoStack = new Stack<State>();
 	}
 
@@ -104,7 +105,7 @@ class Logic {
 	 * @return the internal memory representation of the
 	 * 		   contents stored in the text file.
 	 */
-	ArrayList<Task> getInternalStorage() {
+	public ArrayList<Task> getInternalStorage() {
 		return _tasks;
 	}
 	
@@ -113,28 +114,13 @@ class Logic {
 	 * for any changes done to the text file.
 	 */
 	public void updateInternalStorage() {
-		_tasks = new ArrayList<Task>();
-		// TODO: might want to consider inserting try-catch block here
-		ArrayList<String> entriesList = _storage.readFromFile();
-		for (int i = 0; i < entriesList.size(); i++) {
-			// TODO: add [String --> Task] into _tasks
-		}
-	}
-	
-	/**
-	 * Retrieves the undo stack of the program logic.
-	 * The undo stack is maintained to accommodate the
-	 * undo functionality.
-	 * 
-	 * @see 	Logic#undo()
-	 * @return	the undo stack of the program logic
-	 */
-	public Stack<State> getUndoStack() {
-		return _undoStack;
+		/*
+		_tasks = _storage.readFromFile();
+		Collections.sort(_tasks);
+		*/
 	}
 
-	// TODO: switch statement to at least be able to handle
-	// add, update, delete, show_all, sort, undo
+	// TODO: show_all, sort, undo (needs fixing)
 	/**
 	 * This method acts as the main handler for all user
 	 * operations. This handler will attempt to execute a
@@ -165,12 +151,12 @@ class Logic {
 				break;
 				
 			case "show" :
-				displayAll();
+				displayAll(command);
 				statusMessage = "Not valid.";
 				break;
 				
 			case "sort" :
-				statusMessage = sortFile();
+				statusMessage = sortFile(command);
 				break;
 				
 			case "undo" :
@@ -189,7 +175,6 @@ class Logic {
 		return statusMessage;
 	}
 	
-	// TODO: create a Task object that is the reverse of the one supplied
 	/**
 	 * 
 	 * 
@@ -202,27 +187,34 @@ class Logic {
 		State previous = null;
 		switch (commandType) {
 			case "add" :
-				previous = new State("delete");
+				previous = new State(commandType);
 				previous.storeOriginalTaskState(original);
 				break;
 
 			case "delete" :
-				previous = new State("add");
+				previous = new State(commandType);
 				previous.storeOriginalTaskState(original);
 				break;
 
 			case "update" :
-				previous = new State("update");
+				previous = new State(commandType);
+				previous.storeOriginalTaskState(original);
+				break;
+				
+			case "completed" :
+				previous = new State(commandType);
 				previous.storeOriginalTaskState(original);
 				break;
 
 			case "show" :
-				previous = new State("show");
+				previous = new State(commandType);
+				previous.setSortOrder(command.getSpecificParameter("order"));
 				previous.storeInnerMemoryState(_tasks);
 				break;
 
 			case "sort" :
-				previous = new State("sort");
+				previous = new State(commandType);
+				previous.setSortOrder(command.getSpecificParameter("order"));
 				previous.storeInnerMemoryState(_tasks);
 				break;
 
@@ -404,10 +396,9 @@ class Logic {
 		
 		try {
 			if (toUpdate != null) {
-				_undoStack.push(storePreviousState(command, toUpdate));
-				Task updatedTask = toUpdate;
-				updatedTask.updateTask(command);
-				_tasks.set(updateIndex, updatedTask);
+				_undoStack.push(storePreviousState(command, toUpdate.clone()));
+				toUpdate.updateTask(command);
+				_tasks.set(updateIndex, toUpdate);
 				_storage.writeToFile(_tasks);
 				_status = Status.STATUS_SUCCESS_UPDATE;
 			} else {
@@ -441,10 +432,9 @@ class Logic {
 			}
 		}
 		if (toUpdate != null) {
-			_undoStack.push(storePreviousState(command, toUpdate));
-			Task updatedTask = toUpdate;
-			updatedTask.setCompleted(true);
-			_tasks.set(updateIndex, updatedTask);
+			_undoStack.push(storePreviousState(command, toUpdate.clone()));
+			toUpdate.setCompleted(true);
+			_tasks.set(updateIndex, toUpdate);
 			// TODO: insert try-catch block here
 			_storage.writeToFile(_tasks);
 			_status = Status.STATUS_SUCCESS_SET_COMPLETED;
@@ -453,6 +443,49 @@ class Logic {
 		}
 		return getStatusMessage(taskName, command.getSpecificParameter("taskId"));
 	} 
+	
+	// TODO: implement this
+	/**
+	 * Displays all tasks recorded in the text file.
+	 * 
+	 * NOTE: implementation can be extended to display
+	 * only certain tasks to the user.
+	 * 
+	 * @return a list of all tasks to show to the user.
+	 */
+	private String displayAll(Command command) {
+		_undoStack.push(storePreviousState(command, null));
+		String sortOrder = command.getSpecificParameter("order");
+		if (sortOrder != null) {
+			Task.setSortCriterion(sortOrder);
+			Collections.sort(_tasks);
+			_storage.writeToFile(_tasks);
+		}
+		String listToDisplay = "";
+		// listToDisplay = _parser.parse(_tasks);
+		return listToDisplay;
+	}
+		
+	// TODO: implement this
+	/**
+	 * Sorts the list of tasks recorded in the text file.
+	 * By default, tasks are sorted by the order defined
+	 * in the Task class.
+	 * 
+	 * NOTE: implementation can be extended to sort the
+	 * list of tasks by user-defined criteria.
+	 * 
+	 * @see 	Task#compareTo(Task)
+	 * @return	a message indicating the status of the sort operation
+	 */
+	private String sortFile(Command command) {
+		_undoStack.push(storePreviousState(command, null));
+		String sortOrder = command.getSpecificParameter("order");
+		Task.setSortCriterion(sortOrder);
+		Collections.sort(_tasks);
+		_storage.writeToFile(_tasks);
+		return "OK."; // TODO: change to a status message
+	}
 	
 	/**
 	 * Undo one step back into the previous state of the program.
@@ -463,7 +496,40 @@ class Logic {
 	private String undo() {
 		try {
 			State previousState = _undoStack.pop();
-			//_tasks = previousState.getState();
+			String commandType = previousState.getCommand();
+			switch (commandType) {
+				case "add" :
+					undoAdd(previousState.getState().get(0));
+					break;
+					
+				case "delete" :
+					undoDelete(previousState.getState().get(0));
+					break;
+					
+				case "update" :
+					undoUpdate(previousState.getState().get(0));
+					break;
+					
+				case "completed" :
+					undoCompleted(previousState.getState().get(0));
+					break;
+					
+				case "show" :
+					undoDisplay(previousState.getState());
+					break;
+					
+				case "sort" :
+					undoSort(previousState.getState());
+					break;
+					
+				case "help" :
+					break;
+			
+				default :
+					_status = Status.STATUS_ERROR_UNDO;
+					System.out.println("Unknown error in undo.");
+					return getStatusMessage(null, null);
+			}
 			_status = Status.STATUS_SUCCESS_UNDO;
 		} catch (EmptyStackException e) {
 			_status = Status.STATUS_ERROR_UNDO;
@@ -471,6 +537,59 @@ class Logic {
 		return getStatusMessage(null, null);
 	}
 	
+	private void undoAdd(Task task) {
+		int taskId = task.getId();
+		int removeIndex = -1;
+		for (int i = 0; i < _tasks.size(); i++) {
+			if (_tasks.get(i).getId() == taskId) {
+				removeIndex = i;
+				break;
+			}
+		}
+		_tasks.remove(removeIndex);
+		_storage.writeToFile(_tasks);
+	}
+	
+	private void undoDelete(Task task) {
+		_tasks.add(task);
+		_storage.writeToFile(_tasks);
+	}
+	
+	private void undoUpdate(Task task) {
+		int taskId = task.getId();
+		int updateIndex = -1;
+		for (int i = 0; i < _tasks.size(); i++) {
+			if (_tasks.get(i).getId() == taskId) {
+				updateIndex = i;
+				break;
+			}
+		}
+		_tasks.set(updateIndex, task);
+		_storage.writeToFile(_tasks);
+	}
+	
+	private void undoCompleted(Task task) {
+		int taskId = task.getId();
+		int updateIndex = -1;
+		for (int i = 0; i < _tasks.size(); i++) {
+			if (_tasks.get(i).getId() == taskId) {
+				updateIndex = i;
+				break;
+			}
+		}
+		_tasks.set(updateIndex, task);
+		_storage.writeToFile(_tasks);
+	}
+	
+	private void undoDisplay(ArrayList<Task> tasks) {
+		_tasks = tasks;
+		_storage.writeToFile(_tasks);
+	}
+	
+	private void undoSort(ArrayList<Task> tasks) {
+		_tasks = tasks;
+		_storage.writeToFile(_tasks);
+	}
 	
 	/*
 	 * --- TO BE IMPLEMENTED IN LATER VERSIONS ---
@@ -493,38 +612,6 @@ class Logic {
 		 */
 		_storage.flushFile();
 		_tasks = new ArrayList<Task>();
-	}
-	
-	// TODO: implement this
-	/**
-	 * Displays all tasks recorded in the text file.
-	 * 
-	 * NOTE: implementation can be extended to display
-	 * only certain tasks to the user.
-	 * 
-	 * @return a list of all tasks to show to the user.
-	 */
-	private ArrayList<Task> displayAll() {
-		//_undoStack.push(null);
-		return _tasks;
-	}
-	
-	/**
-	 * Sorts the list of tasks recorded in the text file.
-	 * By default, tasks are sorted by the order defined
-	 * in the Task class.
-	 * 
-	 * NOTE: implementation can be extended to sort the
-	 * list of tasks by user-defined criteria.
-	 * 
-	 * @see 	Task#compareTo(Task)
-	 * @return	a message indicating the status of the sort operation
-	 */
-	private String sortFile() {
-		_undoStack.push(null); // TODO: need to store a previous ordering
-		Collections.sort(_tasks);
-		_storage.writeToFile(_tasks);
-		return "OK.";
 	}
 	
 	/**
