@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import cs2103_w09_1j.esther.Task;
 
 public class Storage {
 	private Path saveLocation;
@@ -123,6 +124,9 @@ public class Storage {
 		String firstLine = reader.readLine();
 		reader.close();
 		return firstLine;
+
+	public void flushFile() {
+		// TODO Auto-generated method stub
 	}
 
 	private boolean isPath(String string) {
