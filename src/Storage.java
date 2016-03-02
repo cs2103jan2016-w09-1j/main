@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import cs2103_w09_1j.esther.Task;
 
 class Storage {
 
@@ -7,7 +8,12 @@ class Storage {
 		return null;
 	}
 	
-	public void writeToFile(ArrayList<String> _dataList) {
+	public void writeToFile(ArrayList<Task> _taskList) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void flushFile() {
 		// TODO Auto-generated method stub
 		
 	}
