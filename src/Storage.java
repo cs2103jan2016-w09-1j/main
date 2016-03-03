@@ -11,6 +11,7 @@ import cs2103_w09_1j.esther.Task;
 public class Storage {
 	private Path saveLocation;
 	private ArrayList<Task> tasksBuffer;
+	private boolean isRedirect = false;
 
 	private final String defaultFileName = "esther.txt";
 	private final Path defaultSaveLocation = Paths.get(defaultFileName);
@@ -27,6 +28,7 @@ public class Storage {
 			String firstLine = getFirstLineFromFile(defaultSaveLocation);
 			if (isPath(firstLine)) {
 				saveLocation = Paths.get(firstLine);
+				isRedirect = true;
 			}
 		} else {
 			saveLocation = defaultSaveLocation;
@@ -88,7 +90,7 @@ public class Storage {
 			}
 			writer.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			// TODO Auto-generated catch block for WriteToFile
 			e.printStackTrace();
 		}
 	}
@@ -106,6 +108,7 @@ public class Storage {
 		saveLocation = filePath;
 		if (!saveLocation.equals(defaultSaveLocation)) {
 			setupRedirect(saveLocation);
+			isRedirect = true;
 		}
 	}
 
@@ -116,7 +119,7 @@ public class Storage {
 			writer.write(redirectLocation.toAbsolutePath().toString());
 			writer.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			// TODO Auto-generated catch block for setupRedirect
 			e.printStackTrace();
 		}
 	}
@@ -134,7 +137,7 @@ public class Storage {
 			}
 			reader.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			// TODO Auto-generated catch block for tryLoadFile
 			e.printStackTrace();
 		}
 
@@ -149,14 +152,25 @@ public class Storage {
 			reader.close();
 			return firstLine;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			// TODO Auto-generated catch block for getFirstLine
 			e.printStackTrace();
 			return null;
 		}
 	}
+	
+	public void flushFileAtLocation(Path filePath){
+		try {
+			Files.delete(filePath);
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+	}
 
 	public void flushFile() {
-		// TODO Auto-generated method stub
+		if (isRedirect) {
+			flushFileAtLocation(saveLocation);
+		}
+		flushFileAtLocation(defaultSaveLocation);
 	}
 
 	private boolean isPath(String string) {

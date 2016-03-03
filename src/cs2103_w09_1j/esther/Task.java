@@ -74,7 +74,17 @@ public class Task implements Comparable<Task> {
 	 * @author Jeremy Hon
 	 */
 	public Task(String string) {
-		this();
+		/*
+			String taskString = "";
+			taskString += "ID: " + _id + ", ";
+			taskString += "[" + _date.toString() + "] ";
+			taskString += _name + ", ";
+			taskString += "Priority: " + _priority + ", ";
+			taskString += "Completed: " + _isCompleted + ", ";
+			taskString += "\n";
+			return taskString;
+		*/
+		
 	}
 
 	/**
@@ -264,7 +274,7 @@ public class Task implements Comparable<Task> {
 		// TODO: method stub, Hui Shan to implement
 		String taskString = "";
 		taskString += "ID: " + _id + ", ";
-		taskString += "[" + _date.toString() + "] ";
+		taskString += "[" + _dateFormatter.format(_date) + "] ";
 		taskString += _name + ", ";
 		taskString += "Priority: " + _priority + ", ";
 		taskString += "Completed: " + _isCompleted + ", ";
