@@ -97,8 +97,8 @@ public class Task implements Comparable<Task> {
 			_id = localID;
 		}
 	}
-
-	public String constructPattern() {
+	
+	String constructPattern() {
 		String idnoString = "ID\\: (\\d+)\\| ";
 		String dateString = "\\[([^\\]]+)\\] ";
 		String nameString = "([^\\|]+)\\| ";
