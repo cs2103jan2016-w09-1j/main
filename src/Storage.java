@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.ParseException;
 import java.util.ArrayList;
 import cs2103_w09_1j.esther.Task;
 
@@ -127,7 +128,7 @@ public class Storage {
 	private void checkValidSaveLocation() throws Error {
 	}
 
-	private ArrayList<Task> tryLoadFile(Path filePath) {
+	private ArrayList<Task> tryLoadFile(Path filePath) throws ParseException {
 		tasksBuffer.clear();
 		BufferedReader reader;
 		try {
@@ -177,7 +178,7 @@ public class Storage {
 		return string.contains("://");
 	}
 
-	private void loadTextString(String nextLine) {
+	private void loadTextString(String nextLine) throws ParseException {
 		if (!nextLine.isEmpty()) {
 			tasksBuffer.add(new Task(nextLine));
 		}

@@ -19,6 +19,11 @@ package cs2103_w09_1j.esther;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import sun.util.resources.cldr.id.LocaleNames_id;
 
 public class Task implements Comparable<Task> {
 
@@ -68,23 +73,39 @@ public class Task implements Comparable<Task> {
 	}
 
 	/**
-	 * Builds a task from an input String
+	 * Builds a task from a String with specific format "ID: {id}| [{dd/MM/yyyy}] {name}| Priority: {prio}| Completed: {com}"
 	 * 
 	 * @param string
 	 * @author Jeremy Hon
+	 * @throws ParseException 
 	 */
-	public Task(String string) {
-		/*
-			String taskString = "";
-			taskString += "ID: " + _id + ", ";
-			taskString += "[" + _date.toString() + "] ";
-			taskString += _name + ", ";
-			taskString += "Priority: " + _priority + ", ";
-			taskString += "Completed: " + _isCompleted + ", ";
-			taskString += "\n";
-			return taskString;
-		*/
-		
+	public Task(String string) throws ParseException {
+		this();
+		Pattern taskPattern = Pattern.compile(constructPattern());
+		Matcher taskMatcher = taskPattern.matcher(string);
+		if(taskMatcher.find()){
+			int localID = Integer.parseInt(taskMatcher.group(1));
+			Date date = _dateFormatter.parse(taskMatcher.group(2));
+			String taskName = taskMatcher.group(3);
+			int priority = Integer.parseInt(taskMatcher.group(4));
+			boolean complete = Boolean.parseBoolean(taskMatcher.group(5));
+
+			this.setName(taskName);
+			this.setDate(date);
+			this.setPriority(priority);
+			this.setCompleted(complete);
+			_id = localID;
+		}
+	}
+
+	public String constructPattern() {
+		String idnoString = "ID\\: (\\d+)\\| ";
+		String dateString = "\\[([^\\]]+)\\] ";
+		String nameString = "([^\\|]+)\\| ";
+		String prioString = "Priority: (\\d+)\\| ";
+		String compString = "Completed: (true|false)";
+		String finalPattern = idnoString + dateString + nameString + prioString + compString + "\\n";
+		return finalPattern;
 	}
 
 	/**
@@ -273,11 +294,11 @@ public class Task implements Comparable<Task> {
 	public String toString() {
 		// TODO: method stub, Hui Shan to implement
 		String taskString = "";
-		taskString += "ID: " + _id + ", ";
+		taskString += "ID: " + _id + "| ";
 		taskString += "[" + _dateFormatter.format(_date) + "] ";
-		taskString += _name + ", ";
-		taskString += "Priority: " + _priority + ", ";
-		taskString += "Completed: " + _isCompleted + ", ";
+		taskString += _name + "| ";
+		taskString += "Priority: " + _priority + "| ";
+		taskString += "Completed: " + _isCompleted;
 		taskString += "\n";
 		return taskString;
 	}
