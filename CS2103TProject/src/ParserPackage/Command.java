@@ -11,7 +11,7 @@ public class Command {
 	private HashMap<TaskField, String> fieldMap;
 
 	public enum CommandKey {
-		ADD("add"), UPDATE("update"), DELETE("delete"), UNDO("undo"), COMPLETED("completed"), SHOW("show"), SORT(
+		ADD("add"), UPDATE("update"), DELETE("delete"), UNDO("undo"), COMPLETED("complete"), SHOW("show"), SORT(
 				"sort"), HELP("help");
 
 		private String commandKeyName;

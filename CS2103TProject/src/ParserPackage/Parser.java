@@ -16,7 +16,8 @@ public class Parser {
 
 	public static final String SPLITBY_WHITESPACE = " ";
 	public Command currentCommand;
-	public static final String[] parseKeys = { ".on", ".by", ".from", ".to" };
+	// public static final String[] parseKeys = { ".on", ".by", ".from", ".to"
+	// };
 
 	public enum ParseKey {
 		ON(".on"), BY(".by"), FROM(".from"), TO(".to");
@@ -52,16 +53,33 @@ public class Parser {
 
 	}
 
+	public static void main(String[] args) {
+		Parser parser = new Parser();
+		Command command = parser.acceptUserInput("dontknow");
+		HashMap<TaskField, String> map = command.getFieldMap();
+		for (Map.Entry<TaskField, String> entry : map.entrySet()) {
+			String key = entry.getKey().getTaskKeyName();
+			String value = entry.getValue();
+			System.out.println("Key " + key + "  Value" + value);
+		}
+	}
+
 	public Parser() {
 		this.currentCommand = new Command();
 	}
 
 	public Command acceptUserInput(String input) {
-		int endOfCommandName = input.indexOf(" ");
-		String commandName = input.substring(0, endOfCommandName);
+		String commandName = "";
+		String commandInput = "";
+		try {
+			int endOfCommandName = input.indexOf(" ");
+			commandName = input.substring(0, endOfCommandName);
+			commandInput = input.substring(endOfCommandName + 1, input.length());
+		} catch (StringIndexOutOfBoundsException sioobe) {
+			commandName = input;
+		}
 		currentCommand.clear();
 		currentCommand.setCommandName(commandName);
-		String commandInput = input.substring(endOfCommandName + 1, input.length());
 		parseCommand(commandName, commandInput);
 		return currentCommand;
 
@@ -101,23 +119,27 @@ public class Parser {
 
 	}
 
-	private void parseSort(String commandInput) {
-		// TODO Auto-generated method stub
-		
+	//Format: show .by [field]
+	private void parseSort(String input) {
+		String[] inputArray = input.split(SPLITBY_WHITESPACE);
+		currentCommand.addFieldToMap(TaskField.SORT, inputArray[1]);
+
 	}
 
+	//Format: undo
 	private void parseUndo() {
 		// TODO Auto-generated method stub
-		
+		currentCommand.addFieldToMap(TaskField.UNDO, "");
+
 	}
 
-	private Command parseHelp() {
-		// TODO Auto-generated method stub
-		return null;
+	//Format: help
+	private void parseHelp() {
+		currentCommand.addFieldToMap(TaskField.HELP, "");
 	}
 
-	// Format: add [taskName] [on] [date]
-	// add "Tea With Grandma" on tomorrow
+	// Format: add [taskName] .[on] [date]
+	// add "Tea With Grandma" .on tomorrow
 	// Current implementation only date
 	private void parseCreate(String input) {
 		String[] inputArray = input.split(SPLITBY_WHITESPACE);
@@ -129,13 +151,20 @@ public class Parser {
 			return;
 
 		}
-		// Case 2: add Tea With Grandma on Thursday
-		ParseKey key = ParseKey.get(inputArray[parseKeyIndex]);
+		// Case 2: add Tea With Grandma .on Thursday
+		// ParseKey key = ParseKey.get(inputArray[parseKeyIndex]);
 		String sName = "";
 		String sDate = "";
 
+		//Case 3: add Tea With Grandma .from Thursday .to Friday
+		//Haven't implemented
+		
+		
 		// Parse the name
 		for (int i = 0; i < parseKeyIndex; i++) {
+			if (inputArray[i].equals("on")) {
+				break;
+			}
 			sName += inputArray[i] + " ";
 		}
 		// THROW ERROR FOR INVALID INPUT
@@ -149,13 +178,16 @@ public class Parser {
 
 	}
 
+	//Format: update [id/name] [number] [field] to [updatedvalue]
+	//update name Tea With Grandma date to 22/7/2016
 	private void parseUpdate(String input) {
 		String[] inputArray = input.split(SPLITBY_WHITESPACE);
 		String updateBy = inputArray[0];
-		if (updateBy.equals("id")) {
+		int getNameOrID = isNameOrID(updateBy);
+		if (getNameOrID == 1) {
 			currentCommand.addFieldToMap(TaskField.ID, inputArray[1]);
-		} else if (updateBy.equals("name")) {
-			currentCommand.addFieldToMap(TaskField.NAME, inputArray[1]);
+		} else if (getNameOrID == 1) {
+			currentCommand.addFieldToMap(TaskField.UPDATENAME, inputArray[1]);
 		} else {
 			// Throw error
 		}
@@ -167,23 +199,26 @@ public class Parser {
 		currentCommand.addFieldToMap(taskField, updateValue);
 	}
 
+	//Format: delete id 10
 	public void parseDelete(String input) {
-		String[]inputArray=input.split(SPLITBY_WHITESPACE);
-		String deleteBy=inputArray[0];
-		if (deleteBy.equals("id")) {
+		String[] inputArray = input.split(SPLITBY_WHITESPACE);
+		String deleteBy = inputArray[0];
+		int getNameOrID = isNameOrID(deleteBy);
+		if (getNameOrID == 1) {
 			currentCommand.addFieldToMap(TaskField.ID, inputArray[1]);
-		} else if (deleteBy.equals("name")) {
+		} else if (getNameOrID == 1) {
 			currentCommand.addFieldToMap(TaskField.NAME, inputArray[1]);
 		} else {
 			// Throw error
 		}
 	}
 
+	//Format: show .by name
 	public void parseShow(String input) {
-		String[]inputArray=input.split(SPLITBY_WHITESPACE);
-		String showBy=inputArray[1];
-		TaskField showField=TaskField.get(showBy);
-		currentCommand.addFieldToMap(showField, inputArray[1]);
+		String[] inputArray = input.split(SPLITBY_WHITESPACE);
+		// String showBy=inputArray[1];
+		// TaskField showField=TaskField.get(showBy);
+		currentCommand.addFieldToMap(TaskField.SHOW, inputArray[1]);
 	}
 	/*
 	 * public Date getDate(DateFormat dateFormat){ switch(dateFormat){ case
@@ -195,15 +230,28 @@ public class Parser {
 	 */
 
 	public void parseCompleted(String input) {
-		String[]inputArray=input.split(SPLITBY_WHITESPACE);
-		String completedNo=inputArray[0];
-		if (completedNo.equals("id")) {
+		String[] inputArray = input.split(SPLITBY_WHITESPACE);
+		String completedBy = inputArray[0];
+		int getNameOrID = isNameOrID(completedBy);
+		if (getNameOrID == 1) {
 			currentCommand.addFieldToMap(TaskField.ID, inputArray[1]);
-		} else if (completedNo.equals("name")) {
+		} else if (getNameOrID == 1) {
 			currentCommand.addFieldToMap(TaskField.NAME, inputArray[1]);
 		} else {
 			// Throw error
 		}
+	}
+
+	public int isNameOrID(String givenInput) {
+		switch (givenInput) {
+		case "name":
+			return 0;
+		case "id":
+			return 1;
+		default:
+			// throw error;
+		}
+		return -1;
 	}
 
 	public int getParseKeyIndex(String[] inputArray) {
@@ -230,7 +278,8 @@ public class Parser {
 class Task {
 
 	public enum TaskField {
-		NAME("taskName"), ID("taskID"), PRIORITY("priority"), DATE("date"), UPDATENAME("updateName");
+		NAME("taskName"), ID("taskID"), PRIORITY("priority"), DATE("date"), SORT("sort"), UPDATENAME(
+				"updateName"), SHOW("show"), UNDO("undo"),HELP("help");
 
 		private String taskKeyName;
 		private static final Map<String, TaskField> lookup = new HashMap<String, TaskField>();
