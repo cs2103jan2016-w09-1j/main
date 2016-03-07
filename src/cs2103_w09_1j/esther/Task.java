@@ -324,7 +324,7 @@ public class Task implements Comparable<Task> {
 	 * Returns a human-readable String representation of a Task.
 	 * 
 	 * @return a String representation of the Task
-	 * @author Go Hui Shan
+	 * @author Jeremy Hon
 	 */
 	@Override
 	public String toString() {

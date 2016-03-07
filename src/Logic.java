@@ -358,6 +358,7 @@ class Logic {
 		try {
 			Task task = new Task(command);
 			_tasks.add(task);
+			System.out.println(_tasks.toString());
 			_storage.writeToFile(_tasks);
 			_undoStack.push(storePreviousState(command, task));
 			_status = Status.STATUS_SUCCESS_ADD;
