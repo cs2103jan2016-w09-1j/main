@@ -139,7 +139,7 @@ class Logic {
 	 */
 	// TODO: finalize implementation
 	public String executeCommand(String userInput) {
-		Command command = null;//_parser.parse(userInput);
+		Command command = _parser.acceptUserInput(userInput);
 		return executeCommand(command);
 	}
 	
