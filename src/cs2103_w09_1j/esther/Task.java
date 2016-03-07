@@ -27,7 +27,7 @@ public class Task implements Comparable<Task> {
 	private static int _assignId = 0;
 	private String _name;
 	private Date _date;
-	private int _priority; // higher number indicates higher priority
+	private int _priority; // for now, lower number indicates higher priority
 	private int _id;
 	private boolean _isCompleted;
 	
@@ -126,7 +126,7 @@ public class Task implements Comparable<Task> {
 	 * @author Tay Guo Qiang
 	 */
 	public static void setSortCriterion(String sortCriterion) {
-		Task._sortCriterion = sortCriterion;
+		_sortCriterion = sortCriterion;
 	}
 
 	/**
@@ -262,21 +262,16 @@ public class Task implements Comparable<Task> {
 	 */
 	@Override
 	public int compareTo(Task task) {
-		int compareValue = 0;
 		switch (_sortCriterion) {
 			case "date" :
-				compareValue = compareByDate(task);
-				break;
+				return compareByDate(task);
 				
 			case "name" :
-				compareValue = compareByName(task);
-				break;
+				return compareByName(task);
 				
 			default :
-				compareValue = compareByPriority(task);
-				break;
+				return compareByPriority(task);
 		}
-		return compareValue;
 	}
 	
 	/**
