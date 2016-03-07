@@ -32,21 +32,32 @@
  *    5a - set existent task as completed (should PASS)
  *    5b - set non-existent task as completed
  *         (nothing should happen)
- *   
- * 6. test undo function
- *   5a - undo add
- *   5b - undo delete
- *   5c - undo update
+ * 
+ * 6. test show-all function
+ * 	  (assert internal memory state)
+ *     6a - show by priority (order should be correct)
+ *     6b - show by date (order should be correct)
+ *     6c - show by name (order should be correct)
+ * 
+ * 7. test sort function
+ * 	  (assert internal memory state)
+ *     7a - sort by priority (order should be correct)
+ *     7b - sort by date (order should be correct)
+ *     7c - sort by name (order should be correct)
+ *     
+ * 8. test undo function
+ *   8a - undo add
+ *   8b - undo delete
+ *   8c - undo update
+ *   8d - undo show
+ *   8e - undo sort
  * 
  * 
  * =========== [LOGIC TEST CURRENT STATUS] ===========
- * 1. Need to write test cases for update and delete
- * operations involving task ID.
- * 
- * 2. Need to write test cases for show and sort
+ * 1. Need to write test cases for show and sort
  * operations.
  * 
- * @author Tay Guo Qiang
+ * @@author Tay Guo Qiang
  */
 
 import static org.junit.Assert.*;
@@ -64,6 +75,8 @@ public class LogicTest {
 	Logic logic = new Logic();
 	Command addCommand;				// task1
 	Command addCommand2;			// task2
+	Command addCommand3;			// task3
+	Command addCommand4;			// task4
 	Command errorAddCommand;		// task2 with invalid date
 	Command deleteCommand;			// remove: task1
 	Command deleteCommandId;		// remove: task1_id
@@ -71,6 +84,12 @@ public class LogicTest {
 	Command updateCommandId;		// update: task1_id -> task3
 	Command setCompletedCommand;	// task1 -> done
 	Command setCompletedCommandId;	// task1_id -> done
+	Command sortCommandPriority;	// sort by priority
+	Command sortCommandDate;		// sort by date
+	Command sortCommandName;		// sort by name
+	Command showCommandPriority;	// show by priority
+	Command showCommandDate;		// show by date
+	Command showCommandName;		// show by name
 	Command undoCommand;			// undo
 	
 	@Before
@@ -82,20 +101,34 @@ public class LogicTest {
 		HashMap<String, String> argsAdd1 = new HashMap<String, String>();
 		argsAdd1.put("taskName", "task1");
 		argsAdd1.put("date", "01/03/2016");
-		argsAdd1.put("priority", "1");
+		argsAdd1.put("priority", "2");
 		addCommand = new Command("add", argsAdd1);
+		
+		// add task2 command
+		HashMap<String, String> argsAdd2 = new HashMap<String, String>();
+		argsAdd2.put("taskName", "task2");
+		argsAdd2.put("date", "11/03/2016");
+		argsAdd2.put("priority", "1");
+		addCommand2 = new Command("add", argsAdd2);
+		
+		// add task3 command
+		HashMap<String, String> argsAdd3 = new HashMap<String, String>();
+		argsAdd3.put("taskName", "task3");
+		argsAdd3.put("date", "10/02/2016");
+		argsAdd3.put("priority", "1");
+		addCommand3 = new Command("add", argsAdd3);
+		
+		// add task4 command
+		HashMap<String, String> argsAdd4 = new HashMap<String, String>();
+		argsAdd4.put("taskName", "task4");
+		argsAdd4.put("date", "11/03/2016");
+		argsAdd4.put("priority", "3");
+		addCommand4 = new Command("add", argsAdd4);
 		
 		// delete task1 command
 		HashMap<String, String> argsDelete = new HashMap<String, String>();
 		argsDelete.put("taskName", "task1");
 		deleteCommand = new Command("delete", argsDelete);
-		
-		// add task2 command
-		HashMap<String, String> argsAdd2 = new HashMap<String, String>();
-		argsAdd2.put("taskName", "task2");
-		argsAdd2.put("date", "01/03/2016");
-		argsAdd2.put("priority", "1");
-		addCommand2 = new Command("add", argsAdd2);
 		
 		// add invalid task command
 		HashMap<String, String> argsError = new HashMap<String, String>();
@@ -115,6 +148,24 @@ public class LogicTest {
 		argsUpdate.put("taskName", "task1");
 		argsUpdate.put("updatedTaskName", "task3");
 		updateCommand = new Command("update", argsUpdate);
+		
+		// sort, show command by priority
+		HashMap<String, String> argsSortPriority = new HashMap<String, String>();
+		argsSortPriority.put("order", "priority");
+		sortCommandPriority = new Command("sort", argsSortPriority);
+		showCommandPriority = new Command("show", argsSortPriority);
+		
+		// sort, show command by date
+		HashMap<String, String> argsSortDate = new HashMap<String, String>();
+		argsSortDate.put("order", "date");
+		sortCommandDate = new Command("sort", argsSortDate);
+		showCommandDate = new Command("show", argsSortDate);
+		
+		// sort, show command by name
+		HashMap<String, String> argsSortName = new HashMap<String, String>();
+		argsSortName.put("order", "name");
+		sortCommandName = new Command("sort", argsSortName);
+		showCommandName = new Command("show", argsSortName);
 	}
 	
 	/*
@@ -398,13 +449,17 @@ public class LogicTest {
 	/*
 	 * ================= [ UNDO FUNCTIONALITY TESTS ] =================
 	 * These group of methods are for checking undo functionality.
-	 * Generally, these tests check for 3 things:
+	 * Generally, these tests check for some things:
 	 * 1. Undoing adding of task should only remove the added task.
 	 * 2. Undoing deletion of task should only add back the task
 	 *    (but added task will be added at end of list instead of its
 	 *    original position in the list).
 	 * 3. Undoing updating of task should only revert the state of
 	 *    the task back to before it was updated.
+	 * 4. Undoing display of tasks should only revert changes to the
+	 *    ordering of tasks. TODO
+	 * 5. Undoing sorting of tasks should only revert changes to the
+	 *    ordering of tasks. TODO
 	 */
 	
 	@Test
@@ -519,25 +574,96 @@ public class LogicTest {
 		assertEquals("Undo should have failed.", "[ERROR] Cannot undo any further.\n", alert);
 	}
 	
+	@Test
+	public void undo_Show_Correct_Ordering() {
+		logic.executeCommand(addCommand);
+		logic.executeCommand(addCommand2);
+		logic.executeCommand(addCommand3);
+		logic.executeCommand(addCommand4);
+		logic.executeCommand(showCommandPriority);
+		logic.executeCommand(undoCommand);
+		ArrayList<Task> internalStorage = logic.getInternalStorage();
+		assertEquals("task1 should be first.", "task1", internalStorage.get(0).getName());
+		assertEquals("task2 should be second.", "task2", internalStorage.get(1).getName());
+		assertEquals("task3 should be third.", "task3", internalStorage.get(2).getName());
+		assertEquals("task4 should be last.", "task4", internalStorage.get(3).getName());
+	}
+	
+	@Test
+	public void undo_Sort_Correct_Ordering() {
+		logic.executeCommand(addCommand);
+		logic.executeCommand(addCommand2);
+		logic.executeCommand(addCommand3);
+		logic.executeCommand(addCommand4);
+		logic.executeCommand(sortCommandPriority);
+		logic.executeCommand(undoCommand);
+		ArrayList<Task> internalStorage = logic.getInternalStorage();
+		assertEquals("task1 should be first.", "task1", internalStorage.get(0).getName());
+		assertEquals("task2 should be second.", "task2", internalStorage.get(1).getName());
+		assertEquals("task3 should be third.", "task3", internalStorage.get(2).getName());
+		assertEquals("task4 should be last.", "task4", internalStorage.get(3).getName());
+	}
+	
 	/*
 	 * ============== [ DISPLAY-ALL FUNCTIONALITY TESTS ] ==============
 	 * These group of methods are for checking display-all functionality.
-	 * Generally, these tests check for 2 things:
-	 * 1. The list of tasks displayed have correct number of entries.
-	 * 2. The order of tasks in the list remain intact.
+	 * For now, since there is only the show-all operation, it shall be
+	 * checked that for show-all-by-criterion operation, the task
+	 * ordering is correct.
+	 * 
+	 * In general, when full and proper implementations of variations
+	 * are completed, tests should check for 2 things:
+	 * 1. Number of displayed entries is correct
+	 * 2. Within those displayed entries, the ordering is correct
 	 */
 	
+	@Test
 	public void display_All_In_Empty_File() {
-		// display on empty file
+		logic.executeCommand(showCommandDate);
+		ArrayList<Task> internalStorage = logic.getInternalStorage();
+		assertEquals("File should remain empty.", 0, internalStorage.size());
 	}
 	
-	public void display_All_In_Non_Empty_File() {
-		// display on non-empty file
-		// check list size
+	@Test
+	public void display_All_By_Priority_In_Non_Empty_File_Correct_Order() {
+		logic.executeCommand(addCommand);
+		logic.executeCommand(addCommand2);
+		logic.executeCommand(addCommand3);
+		logic.executeCommand(addCommand4);
+		logic.executeCommand(showCommandPriority);
+		ArrayList<Task> internalStorage = logic.getInternalStorage();
+		assertEquals("task3 should be first.", "task3", internalStorage.get(0).getName());
+		assertEquals("task2 should be second.", "task2", internalStorage.get(1).getName());
+		assertEquals("task1 should be third.", "task1", internalStorage.get(2).getName());
+		assertEquals("task4 should be last.", "task4", internalStorage.get(3).getName());
 	}
 	
-	public void display_All_In_Non_Empty_File_Correct_Ordering() {
-		// iterate through the task list to check ordering
+	@Test
+	public void display_All_By_Date_In_Non_Empty_File_Correct_Order() {
+		logic.executeCommand(addCommand);
+		logic.executeCommand(addCommand2);
+		logic.executeCommand(addCommand3);
+		logic.executeCommand(addCommand4);
+		logic.executeCommand(showCommandDate);
+		ArrayList<Task> internalStorage = logic.getInternalStorage();
+		assertEquals("task3 should be first.", "task3", internalStorage.get(0).getName());
+		assertEquals("task1 should be second.", "task1", internalStorage.get(1).getName());
+		assertEquals("task2 should be third.", "task2", internalStorage.get(2).getName());
+		assertEquals("task4 should be last.", "task4", internalStorage.get(3).getName());
+	}
+	
+	@Test
+	public void display_All_By_Name_In_Non_Empty_File_Correct_Order() {
+		logic.executeCommand(addCommand);
+		logic.executeCommand(addCommand2);
+		logic.executeCommand(addCommand3);
+		logic.executeCommand(addCommand4);
+		logic.executeCommand(showCommandName);
+		ArrayList<Task> internalStorage = logic.getInternalStorage();
+		assertEquals("task1 should be first.", "task1", internalStorage.get(0).getName());
+		assertEquals("task2 should be second.", "task2", internalStorage.get(1).getName());
+		assertEquals("task3 should be third.", "task3", internalStorage.get(2).getName());
+		assertEquals("task4 should be last.", "task4", internalStorage.get(3).getName());
 	}
 	
 	/*
@@ -548,18 +674,53 @@ public class LogicTest {
 	 * 2. The order of tasks in the list meet sorting criteria.
 	 */
 	
+	@Test
 	public void sort_On_Empty_File() {
-		// sort empty file
+		logic.executeCommand(sortCommandDate);
+		ArrayList<Task> internalStorage = logic.getInternalStorage();
+		assertEquals("File should remain empty.", 0, internalStorage.size());
 	}
 	
-	public void sort_On_Non_Empty_File_Correct_List_Size() {
-		// sort non-empty file
-		// check list size
+	@Test
+	public void sort_By_Priority_On_Non_Empty_File_Correct_List_Size() {
+		logic.executeCommand(addCommand);
+		logic.executeCommand(addCommand2);
+		logic.executeCommand(addCommand3);
+		logic.executeCommand(addCommand4);
+		logic.executeCommand(sortCommandPriority);
+		ArrayList<Task> internalStorage = logic.getInternalStorage();
+		assertEquals("task3 should be first.", "task3", internalStorage.get(0).getName());
+		assertEquals("task2 should be second.", "task2", internalStorage.get(1).getName());
+		assertEquals("task1 should be third.", "task1", internalStorage.get(2).getName());
+		assertEquals("task4 should be last.", "task4", internalStorage.get(3).getName());
 	}
 	
-	public void sort_On_Non_Empty_File_Correct_Ordering() {
-		// sort non-empty file
-		// check ordering in task list
+	@Test
+	public void sort_By_Date_On_Non_Empty_File_Correct_Ordering() {
+		logic.executeCommand(addCommand);
+		logic.executeCommand(addCommand2);
+		logic.executeCommand(addCommand3);
+		logic.executeCommand(addCommand4);
+		logic.executeCommand(sortCommandDate);
+		ArrayList<Task> internalStorage = logic.getInternalStorage();
+		assertEquals("task3 should be first.", "task3", internalStorage.get(0).getName());
+		assertEquals("task1 should be second.", "task1", internalStorage.get(1).getName());
+		assertEquals("task2 should be third.", "task2", internalStorage.get(2).getName());
+		assertEquals("task4 should be last.", "task4", internalStorage.get(3).getName());
+	}
+	
+	@Test
+	public void sort_By_Name_On_Non_Empty_File_Correct_Ordering() {
+		logic.executeCommand(addCommand);
+		logic.executeCommand(addCommand2);
+		logic.executeCommand(addCommand3);
+		logic.executeCommand(addCommand4);
+		logic.executeCommand(sortCommandName);
+		ArrayList<Task> internalStorage = logic.getInternalStorage();
+		assertEquals("task1 should be first.", "task1", internalStorage.get(0).getName());
+		assertEquals("task2 should be second.", "task2", internalStorage.get(1).getName());
+		assertEquals("task3 should be third.", "task3", internalStorage.get(2).getName());
+		assertEquals("task4 should be last.", "task4", internalStorage.get(3).getName());
 	}
 	
 	/*
@@ -614,11 +775,19 @@ public class LogicTest {
 	public void reset() {
 		addCommand = null;
 		addCommand2 = null;
+		addCommand3 = null;
+		addCommand4 = null;
 		errorAddCommand = null;
 		deleteCommand = null;
 		updateCommand = null;
 		setCompletedCommand = null;
 		undoCommand = null;
+		showCommandPriority = null;
+		showCommandDate = null;
+		showCommandName = null;
+		sortCommandPriority = null;
+		sortCommandDate = null;
+		sortCommandName = null;
 		logic.flushInternalStorage();
 	}
 }
