@@ -8,8 +8,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-//import ParserPackage.Command.CommandKey;
-//import ParserPackage.Task.TaskField;
+import cs2103_w09_1j.esther.Command;
+import cs2103_w09_1j.esther.Command.CommandKey;
+import cs2103_w09_1j.esther.Task.TaskField;
 
 public class Parser {
 	public static final String SPLITBY_WHITESPACE = " ";
@@ -54,7 +55,7 @@ public class Parser {
 	public static void main(String[] args) {
 		Parser parser = new Parser();
 		Command command = parser.acceptUserInput("dontknow");
-		HashMap<TaskField, String> map = command.getFieldMap();
+		HashMap<TaskField, String> map = command.getParameters();
 		for (Map.Entry<TaskField, String> entry : map.entrySet()) {
 			String key = entry.getKey().getTaskKeyName();
 			String value = entry.getValue();
@@ -77,7 +78,7 @@ public class Parser {
 			commandName = input;
 		}
 		currentCommand.clear();
-		currentCommand.setCommandName(commandName);
+		currentCommand.setCommand(commandName);
 		parseCommand(commandName, commandInput);
 		return currentCommand;
 
