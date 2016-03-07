@@ -27,6 +27,7 @@ public class Storage {
 		// check default save location
 		if (isValidFile(defaultSaveLocation)) {
 			String firstLine = getFirstLineFromFile(defaultSaveLocation);
+			System.out.println(firstLine);
 			if (isPath(firstLine)) {
 				saveLocation = Paths.get(firstLine);
 				isRedirect = true;
@@ -147,9 +148,12 @@ public class Storage {
 
 	private String getFirstLineFromFile(Path path) {
 		BufferedReader reader;
+		String firstLine = "";
 		try {
 			reader = Files.newBufferedReader(path);
-			String firstLine = reader.readLine();
+			if(reader.ready()){
+				firstLine = reader.readLine();
+			}
 			reader.close();
 			return firstLine;
 		} catch (IOException e) {

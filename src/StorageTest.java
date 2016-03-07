@@ -4,6 +4,8 @@ import java.util.regex.Pattern;
 import org.junit.Test;
 
 public class StorageTest {
+	
+	Storage storage;
 
 	public String constructPattern() {
 		String idnoString = constructIDPattern();
@@ -62,9 +64,14 @@ public class StorageTest {
 		Matcher matcher = finalP.matcher(testString);
 		if(matcher.find()){
 			for(int i = 0; i < 6; i++){
-				System.out.println(matcher.group(i));
+				//System.out.println(matcher.group(i));
 			}
 		}
+	}
+	
+	@Test
+	public void createStorage(){
+		storage = new Storage();
 	}
 
 }
