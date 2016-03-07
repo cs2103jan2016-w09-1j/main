@@ -10,11 +10,54 @@ package cs2103_w09_1j.esther;
  */
 
 import java.util.HashMap;
+import java.util.Map;
+
+import Command.CommandKey;
 
 public class Command {
 	
 	private String _command;
 	private HashMap<String, String> _parameters;
+	
+	public enum CommandKey {
+		ADD("add"), UPDATE("update"), DELETE("delete"), UNDO("undo"), COMPLETED("complete"), SHOW("show"), SORT(
+				"sort"), HELP("help");
+
+		private String commandKeyName;
+		private static final Map<String, CommandKey> lookup = new HashMap<String, CommandKey>();
+
+		private CommandKey(String _commandKeyName) {
+			this.commandKeyName = _commandKeyName;
+		}
+
+		static {
+			// Create reverse lookup hash map
+			for (CommandKey _commandKeyName : CommandKey.values()) {
+				lookup.put(_commandKeyName.getCommandKeyName(), _commandKeyName);
+			}
+		}
+
+		public String getCommandKeyName() {
+			return commandKeyName;
+		}
+
+		/**
+		 * This operations reversely gets the CommandKey from the value.
+		 * 
+		 * @param commandValue
+		 *            The input given by the user.
+		 * @return The command based on the input.
+		 */
+		public static CommandKey get(String commandKeyValue) {
+			return lookup.get(commandKeyValue);
+		}
+
+	}
+	
+	public Command() {
+		this._command = "";
+		this._parameters = new HashMap<TaskField, String>();
+	}
 	
 	/**
 	 * Creates a Command object with the command to execute as well as
@@ -126,6 +169,15 @@ public class Command {
 	 */
 	public void setParameters(HashMap<String, String> parameters) {
 		_parameters = parameters;
+	}
+	
+	public void clear() {
+		this._command = "";
+		this._parameters.clear();
+	}
+
+	public String addFieldToMap(TaskField fieldName, String fieldValue) {
+		return this._parameters.put(fieldName, fieldValue);
 	}
 
 }
