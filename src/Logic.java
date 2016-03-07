@@ -1,3 +1,4 @@
+
 /**
  * ============= [LOGIC COMPONENT FOR ESTHER] =============
  * 
@@ -20,9 +21,10 @@
  * overload method for executeCommand()
  * 
  * 
- * @author Tay Guo Qiang
+ * @@author Tay Guo Qiang
  */
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -89,7 +91,7 @@ class Logic {
 											   + "General usage: undo\n" + "Undo one step back to previous state.\n";
 	
 	/**
-	 * Creates a Logic instance. Also initializes the undo stack.
+	 * Constructs a Logic component instance.
 	 */
 	public Logic() {
 		_parser = new Parser();
@@ -113,14 +115,34 @@ class Logic {
 	 * Updates the internal memory of the Logic to account
 	 * for any changes done to the text file.
 	 */
+	// TODO: finalize implementation, error handling
 	public void updateInternalStorage() {
 		/*
-		_tasks = _storage.readFromFile();
-		Collections.sort(_tasks);
+		try {
+			_tasks = _storage.readFromFile();
+			Collections.sort(_tasks);
+		} catch (IOException ioe) {
+			// set Exception state
+			// get error message
+			// return error message
+		}
 		*/
 	}
 
-	// TODO: show_all, sort, undo (needs fixing)
+	/**
+	 * An overloaded method that operates on an input and passes the call
+	 * to the actual handler method.
+	 * 
+	 * @see    Logic#executeCommand(Command)
+	 * @param  userInput the input that the user entered
+	 * @return a message indicating the status of the operation carried out
+	 */
+	// TODO: finalize implementation
+	public String executeCommand(String userInput) {
+		Command command = null;//_parser.parse(userInput);
+		return executeCommand(command);
+	}
+	
 	/**
 	 * This method acts as the main handler for all user
 	 * operations. This handler will attempt to execute a
@@ -151,8 +173,7 @@ class Logic {
 				break;
 				
 			case "show" :
-				displayAll(command);
-				statusMessage = "Not valid.";
+				statusMessage = showTask(command);
 				break;
 				
 			case "sort" :
@@ -164,6 +185,7 @@ class Logic {
 				break;
 				
 			case "help" :
+				// TODO: finalize implementation
 				statusMessage = MESSAGE_HELP;
 				break;
 				
@@ -176,11 +198,11 @@ class Logic {
 	}
 	
 	/**
+	 * Stores the program state before a user operation was performed.
 	 * 
-	 * 
-	 * @param task	a Task object representation of the user's input
-	 * @return		a Task object that has an opposite command to be
-	 * 				performed on it, where applicable.
+	 * @param  task	a Task object representation of the user's input
+	 * @return a Task object that has an opposite command to be
+	 * 		   performed on it, where applicable.
 	 */
 	private State storePreviousState(Command command, Task original) {
 		String commandType = command.getCommand();
@@ -209,13 +231,15 @@ class Logic {
 			case "show" :
 				previous = new State(commandType);
 				previous.setSortOrder(command.getSpecificParameter("order"));
-				previous.storeInnerMemoryState(_tasks);
+				ArrayList<Task> preDisplayTaskList = (ArrayList<Task>) _tasks.clone();
+				previous.storeInnerMemoryState(preDisplayTaskList);
 				break;
 
 			case "sort" :
 				previous = new State(commandType);
 				previous.setSortOrder(command.getSpecificParameter("order"));
-				previous.storeInnerMemoryState(_tasks);
+				ArrayList<Task> preSortTaskList = (ArrayList<Task>) _tasks.clone();
+				previous.storeInnerMemoryState(preSortTaskList);
 				break;
 
 			case "undo" :
@@ -226,19 +250,19 @@ class Logic {
 				
 			default :
 				previous = new State("Invalid");
-				System.out.println("Not supposed to happen.");
 				break;
 		}
 		return previous;
 	}
 	
-	// TODO: also accommodate for sort and show_all
 	/**
 	 * Retrieves the status message depending on the status
 	 * of an operation being carried out by the program logic.
 	 * 
 	 * @return the corresponding status message based on operation status
 	 */
+	// TODO: adjust this method to reflect Mingxuan's implementations
+	// presently, sort and show states are missing in here.
 	private String getStatusMessage(String taskName, String taskId) {
 		String message;
 		switch (_status) {
@@ -328,6 +352,7 @@ class Logic {
 	 * @param task	a Task object representation of the user's input
 	 * @return		a message indicating the status of the add-task operation
 	 */
+	// TODO: error handling
 	private String addTask(Command command) {
 		String taskName = command.getSpecificParameter("taskName");
 		try {
@@ -338,7 +363,14 @@ class Logic {
 			_status = Status.STATUS_SUCCESS_ADD;
 		} catch (ParseException pe) {
 			_status = Status.STATUS_ERROR_ADD;
-		}
+			// set Exception state
+			// retrieve error message
+			// return error message
+		} /*catch (IOException ioe) {
+			// set Exception state
+			// retrieve error message
+			// return error message
+		}*/
 		return getStatusMessage(taskName, null);
 	}
 	
@@ -348,6 +380,7 @@ class Logic {
 	 * @param task	a Task object representation of the user's input
 	 * @return		a message indicating the status of the delete-task operation
 	 */
+	// TODO: error handling
 	private String removeTask(Command command) {
 		Task removed = null;
 		String taskName = command.getSpecificParameter("taskName");
@@ -361,6 +394,7 @@ class Logic {
 				break;
 			}
 		}
+		// try {
 		if (removed != null) {
 			_tasks.remove(removed);
 			_storage.writeToFile(_tasks);
@@ -368,7 +402,15 @@ class Logic {
 			_status = Status.STATUS_SUCCESS_DELETE;
 		} else {
 			_status = Status.STATUS_ERROR_DELETE;
+			// set Exception state
+			// retrieve error message
+			// return error message
 		}
+		/*} catch (IOException ioe) {
+			// set Exception state
+			// retrieve error message
+			// return error message
+		}*/
 		return getStatusMessage(taskName, command.getSpecificParameter("taskId"));
 	}
 	
@@ -378,6 +420,7 @@ class Logic {
 	 * @param task a Task object representation of the user's input
 	 * @return 	   a message indicating the status of the update-task operation
 	 */
+	// TODO: error handling
 	private String updateTask(Command command) {
 		Task toUpdate = null;
 		int updateIndex = -1;
@@ -406,7 +449,14 @@ class Logic {
 			}
 		} catch (ParseException pe) {
 			_status = Status.STATUS_ERROR_UPDATE;
-		}
+			// set Exception state
+			// retrieve error message
+			// return error message
+		} /*catch (IOException ioe) {
+			// set Exception state
+			// retrieve error message
+			// return error message
+		}*/
 		return getStatusMessage(taskName, command.getSpecificParameter("taskId"));
 	}
 
@@ -416,6 +466,7 @@ class Logic {
 	 * @param task	a Task object representation of the user's input
 	 * @return		a message indicating the status of the set-task-completed operation
 	 */
+	// TODO: error handling
 	private String completeTask(Command command) {
 		Task toUpdate = null;
 		String taskName = command.getSpecificParameter("taskName");
@@ -431,20 +482,27 @@ class Logic {
 				break;
 			}
 		}
+		// try {
 		if (toUpdate != null) {
 			_undoStack.push(storePreviousState(command, toUpdate.clone()));
 			toUpdate.setCompleted(true);
 			_tasks.set(updateIndex, toUpdate);
-			// TODO: insert try-catch block here
 			_storage.writeToFile(_tasks);
 			_status = Status.STATUS_SUCCESS_SET_COMPLETED;
 		} else {
 			_status = Status.STATUS_ERROR_SET_COMPLETED;
+			// set Exception state
+			// retrieve error message
+			// return error message
 		}
+		/*} catch (IOException ioe) {
+			// set Exception state
+			// retrieve error message
+			// return error message
+		}*/
 		return getStatusMessage(taskName, command.getSpecificParameter("taskId"));
 	} 
 	
-	// TODO: implement this
 	/**
 	 * Displays all tasks recorded in the text file.
 	 * 
@@ -453,20 +511,31 @@ class Logic {
 	 * 
 	 * @return a list of all tasks to show to the user.
 	 */
-	private String displayAll(Command command) {
+	// TODO: error handling
+	private String showTask(Command command) {
+		// try {
 		_undoStack.push(storePreviousState(command, null));
 		String sortOrder = command.getSpecificParameter("order");
 		if (sortOrder != null) {
+			/* 
+			 * Should I alter Task's sortCriterion to default
+			 * back to priority after user successfully sorts
+			 * tasks by his/her own desired order? 
+			 */
 			Task.setSortCriterion(sortOrder);
 			Collections.sort(_tasks);
 			_storage.writeToFile(_tasks);
 		}
+		/*} catch (IOException ioe) {
+			// set Exception state
+			// retrieve error message
+			// return error message
+		}*/
 		String listToDisplay = "";
 		// listToDisplay = _parser.parse(_tasks);
 		return listToDisplay;
 	}
-		
-	// TODO: implement this
+
 	/**
 	 * Sorts the list of tasks recorded in the text file.
 	 * By default, tasks are sorted by the order defined
@@ -478,12 +547,26 @@ class Logic {
 	 * @see 	Task#compareTo(Task)
 	 * @return	a message indicating the status of the sort operation
 	 */
+	// TODO: error handling
 	private String sortFile(Command command) {
 		_undoStack.push(storePreviousState(command, null));
 		String sortOrder = command.getSpecificParameter("order");
-		Task.setSortCriterion(sortOrder);
-		Collections.sort(_tasks);
-		_storage.writeToFile(_tasks);
+		// try {
+		if (sortOrder != null) {
+			/* 
+			 * Should I alter Task's sortCriterion to default
+			 * back to priority after user successfully sorts
+			 * tasks by his/her own desired order? 
+			 */
+			Task.setSortCriterion(sortOrder);
+			Collections.sort(_tasks);
+			_storage.writeToFile(_tasks);
+		}
+		/*} catch (IOException ioe) {
+			// set Exception state
+			// retrieve error message
+			// return error message
+		}*/
 		return "OK."; // TODO: change to a status message
 	}
 	
@@ -492,7 +575,6 @@ class Logic {
 	 * 
 	 * @return a message indicating status of the undo operation
 	 */
-	// TODO: to fix
 	private String undo() {
 		try {
 			State previousState = _undoStack.pop();
@@ -537,6 +619,12 @@ class Logic {
 		return getStatusMessage(null, null);
 	}
 	
+	/**
+	 * Reverts an add-task operation.
+	 * 
+	 * @param task the reference of the initially added task to remove
+	 */
+	// TODO: error handling
 	private void undoAdd(Task task) {
 		int taskId = task.getId();
 		int removeIndex = -1;
@@ -547,14 +635,38 @@ class Logic {
 			}
 		}
 		_tasks.remove(removeIndex);
+		// try {
 		_storage.writeToFile(_tasks);
+		/*} catch (IOException ioe) {
+			// set Exception state
+			// retrieve error message
+			// return error message
+		}*/
 	}
 	
+	/**
+	 * Reverts a delete-task operation.
+	 * 
+	 * @param task a reference of the initially deleted task to add back
+	 */
+	// TODO: error handling
 	private void undoDelete(Task task) {
 		_tasks.add(task);
+		// try {
 		_storage.writeToFile(_tasks);
+		/*} catch (IOException ioe) {
+			// set Exception state
+			// retrieve error message
+			// return error message
+		}*/
 	}
 	
+	/**
+	 * Reverts an update-task operation.
+	 * 
+	 * @param task a reference of the previous state of a task before it was updated
+	 */
+	// TODO: error handling
 	private void undoUpdate(Task task) {
 		int taskId = task.getId();
 		int updateIndex = -1;
@@ -565,9 +677,21 @@ class Logic {
 			}
 		}
 		_tasks.set(updateIndex, task);
+		// try {
 		_storage.writeToFile(_tasks);
+		/*} catch (IOException ioe) {
+			// set Exception state
+			// retrieve error message
+			// return error message
+		}*/
 	}
 	
+	/**
+	 * Reverts a complete-task operation.
+	 * 
+	 * @param task a reference of a task before it was set as completed
+	 */
+	// TODO: error handling
 	private void undoCompleted(Task task) {
 		int taskId = task.getId();
 		int updateIndex = -1;
@@ -578,26 +702,62 @@ class Logic {
 			}
 		}
 		_tasks.set(updateIndex, task);
+		// try {
 		_storage.writeToFile(_tasks);
+		/*} catch (IOException ioe) {
+			// set Exception state
+			// retrieve error message
+			// return error message
+		}*/
 	}
 	
+	/**
+	 * Reverts a show-task operation.
+	 * 
+	 * @param tasks a reference to the previous ordering of tasks
+	 */
+	// TODO: error handling
 	private void undoDisplay(ArrayList<Task> tasks) {
 		_tasks = tasks;
+		// try {
 		_storage.writeToFile(_tasks);
+		/*} catch (IOException ioe) {
+			// set Exception state
+			// retrieve error message
+			// return error message
+		}*/
 	}
 	
+	/**
+	 * Reverts a sort-task operation.
+	 * 
+	 * @param tasks a reference to the previous ordering of tasks
+	 */
+	// TODO: error handling
 	private void undoSort(ArrayList<Task> tasks) {
 		_tasks = tasks;
+		// try {
 		_storage.writeToFile(_tasks);
+		/*} catch (IOException ioe) {
+			// set Exception state
+			// retrieve error message
+			// return error message
+		}*/
 	}
 	
 	/*
-	 * --- TO BE IMPLEMENTED IN LATER VERSIONS ---
+	 * --- FOR LATER VERSIONS OR TO BE DISCARDED ---
 	 * 
 	 * These methods below are methods that may be
 	 * implemented in the future, for later versions.
 	 * As such, these do not need to be finalized at
 	 * this stage.
+	 * 
+	 * The other methods not falling in the above
+	 * criteria might be temporarily needed at this
+	 * stage. Removal of these methods shall be done
+	 * only when product is finalized and is to be
+	 * released for production.
 	 * 
 	 */
 
@@ -606,7 +766,8 @@ class Logic {
 	 * Only used for internal testing.
 	 */
 	public void flushInternalStorage() {
-		/* Might want to consider insert try-catch block here
+		/* 
+		 * Might want to consider insert try-catch block here
 		 * Then again, if this method isn't needed anymore in the future,
 		 * this method can just be removed totally. 
 		 */
@@ -621,9 +782,10 @@ class Logic {
 	 * task name or not. This implementation can be extended to support
 	 * varying user criteria.
 	 * 
-	 * @param task	a Task object representation of a keyword to lookup
-	 * @return		a list of Task objects that match the search criteria
+	 * @param  task	a Task object representation of a keyword to lookup
+	 * @return a list of Task objects that match the search criteria
 	 */
+	// TODO: implement (for later stages)
 	private ArrayList<Task> searchFile(Task task) {
 		ArrayList<Task> results = new ArrayList<Task>();
 		//_undoStack.push(null);

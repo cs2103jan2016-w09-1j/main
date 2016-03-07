@@ -19,13 +19,49 @@ package cs2103_w09_1j.esther;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import Task.TaskField;
 import sun.util.resources.cldr.id.LocaleNames_id;
 
 public class Task implements Comparable<Task> {
+	public enum TaskField {
+		NAME("taskName"), ID("taskID"), PRIORITY("priority"), DATE("date"), SORT("sort"), UPDATENAME(
+				"updateName"), SHOW("show"), UNDO("undo"),HELP("help");
+
+		private String taskKeyName;
+		private static final Map<String, TaskField> lookup = new HashMap<String, TaskField>();
+
+		private TaskField(String _taskKeyName) {
+			this.taskKeyName = _taskKeyName;
+		}
+
+		public String getTaskKeyName() {
+			return taskKeyName;
+		}
+
+		/**
+		 * This operations reversely gets the CommandKey from the value.
+		 * 
+		 * @param commandValue
+		 *            The input given by the user.
+		 * @return The command based on the input.
+		 */
+		public static TaskField get(String taskKeyValue) {
+			return lookup.get(taskKeyValue);
+		}
+
+		static {
+			// Create reverse lookup hash map
+			for (TaskField _taskKeyName : TaskField.values()) {
+				lookup.put(_taskKeyName.getTaskKeyName(), _taskKeyName);
+			}
+		}
+	}
 
 	private static SimpleDateFormat _dateFormatter = new SimpleDateFormat("dd/MM/yyyy"); // TODO: to
 																							// change
@@ -35,7 +71,7 @@ public class Task implements Comparable<Task> {
 	private static int _assignId = 0;
 	private String _name;
 	private Date _date;
-	private int _priority; // higher number indicates higher priority
+	private int _priority; // for now, lower number indicates higher priority
 	private int _id;
 	private boolean _isCompleted;
 
@@ -172,7 +208,7 @@ public class Task implements Comparable<Task> {
 	 * @author Tay Guo Qiang
 	 */
 	public static void setSortCriterion(String sortCriterion) {
-		Task._sortCriterion = sortCriterion;
+		_sortCriterion = sortCriterion;
 	}
 
 	/**
@@ -319,21 +355,16 @@ public class Task implements Comparable<Task> {
 	 */
 	@Override
 	public int compareTo(Task task) {
-		int compareValue = 0;
 		switch (_sortCriterion) {
-			case "date":
-				compareValue = compareByDate(task);
-				break;
-
-			case "name":
-				compareValue = compareByName(task);
-				break;
-
-			default:
-				compareValue = compareByPriority(task);
-				break;
+			case "date" :
+				return compareByDate(task);
+				
+			case "name" :
+				return compareByName(task);
+				
+			default :
+				return compareByPriority(task);
 		}
-		return compareValue;
 	}
 
 	/**
