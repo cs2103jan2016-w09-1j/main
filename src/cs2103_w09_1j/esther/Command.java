@@ -12,7 +12,7 @@ package cs2103_w09_1j.esther;
 import java.util.HashMap;
 import java.util.Map;
 
-import cs2103_w09_1j.esther.Task.TaskField;
+import Command.CommandKey;
 
 public class Command {
 	
@@ -56,7 +56,7 @@ public class Command {
 	
 	public Command() {
 		this._command = "";
-		this._parameters = new HashMap<String, String>();
+		this._parameters = new HashMap<TaskField, String>();
 	}
 	
 	/**
@@ -176,7 +176,7 @@ public class Command {
 		this._parameters.clear();
 	}
 
-	public String addFieldToMap(String fieldName, String fieldValue) {
+	public String addFieldToMap(TaskField fieldName, String fieldValue) {
 		return this._parameters.put(fieldName, fieldValue);
 	}
 

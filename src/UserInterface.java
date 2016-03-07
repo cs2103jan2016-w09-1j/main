@@ -10,6 +10,7 @@ import javafx.stage.Stage;
 
 public class UserInterface extends Application {
 	
+	private Logic logic = new Logic();
 	private static String res;
 	private static TextArea input, display;
 
@@ -47,7 +48,6 @@ public class UserInterface extends Application {
 					display.appendText(text);
 					
 					// call parser
-					Logic logic = new Logic();
 					logic.executeCommand(text);
 					
 					input.clear();
