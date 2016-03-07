@@ -12,6 +12,7 @@ public class UserInterface extends Application {
 	
 	private static String res;
 	private static TextArea input, display;
+	private Logic logic = new Logic();
 
 	public static void main(String[] args) {
 		launch(args);
@@ -47,7 +48,6 @@ public class UserInterface extends Application {
 					display.appendText(text);
 					
 					// call parser
-					Logic logic = new Logic();
 					logic.executeCommand(text);
 					
 					input.clear();

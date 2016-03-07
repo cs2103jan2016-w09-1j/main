@@ -98,6 +98,7 @@ class Logic {
 		_storage = new Storage();
 		_tasks = new ArrayList<Task>();
 		_undoStack = new Stack<State>();
+		updateInternalStorage();
 	}
 
 	/**
@@ -117,16 +118,16 @@ class Logic {
 	 */
 	// TODO: finalize implementation, error handling
 	public void updateInternalStorage() {
-		/*
+		
 		try {
 			_tasks = _storage.readFromFile();
 			Collections.sort(_tasks);
-		} catch (IOException ioe) {
+		} catch (Exception e) {
 			// set Exception state
 			// get error message
 			// return error message
 		}
-		*/
+		
 	}
 
 	/**
@@ -358,7 +359,6 @@ class Logic {
 		try {
 			Task task = new Task(command);
 			_tasks.add(task);
-			System.out.println(_tasks.toString());
 			_storage.writeToFile(_tasks);
 			_undoStack.push(storePreviousState(command, task));
 			_status = Status.STATUS_SUCCESS_ADD;

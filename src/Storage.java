@@ -11,7 +11,7 @@ import cs2103_w09_1j.esther.Task;
 
 public class Storage {
 	private Path saveLocation;
-	private ArrayList<Task> tasksBuffer;
+	private ArrayList<Task> tasksBuffer = new ArrayList<>();
 	private boolean isRedirect = false;
 
 	private final String defaultFileName = "esther.txt";
