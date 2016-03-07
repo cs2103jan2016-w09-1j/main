@@ -24,6 +24,7 @@ public class Storage {
 	 * Sets the current save location correspondingly
 	 */
 	public Storage() {
+		saveLocation = defaultSaveLocation;
 		// check default save location
 		if (isValidFile(defaultSaveLocation)) {
 			String firstLine = getFirstLineFromFile(defaultSaveLocation);
@@ -31,8 +32,6 @@ public class Storage {
 				saveLocation = Paths.get(firstLine);
 				isRedirect = true;
 			}
-		} else {
-			saveLocation = defaultSaveLocation;
 		}
 	}
 
@@ -83,6 +82,7 @@ public class Storage {
 		checkValidSaveLocation();
 		BufferedWriter writer;
 		try {
+			if(saveLocation == null){System.out.println("null save location");}
 			writer = Files.newBufferedWriter(saveLocation);
 			writer.write("");
 			for (int i = 0; i < tasksBuffer.size(); i++) {
@@ -147,9 +147,12 @@ public class Storage {
 
 	private String getFirstLineFromFile(Path path) {
 		BufferedReader reader;
+		String firstLine = "";
 		try {
 			reader = Files.newBufferedReader(path);
-			String firstLine = reader.readLine();
+			if(reader.ready()){
+				firstLine = reader.readLine();
+			}
 			reader.close();
 			return firstLine;
 		} catch (IOException e) {
