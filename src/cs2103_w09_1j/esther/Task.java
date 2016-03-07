@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import Task.TaskField;
+//import Task.TaskField;
 import sun.util.resources.cldr.id.LocaleNames_id;
 
 public class Task implements Comparable<Task> {
@@ -324,7 +324,7 @@ public class Task implements Comparable<Task> {
 	 * Returns a human-readable String representation of a Task.
 	 * 
 	 * @return a String representation of the Task
-	 * @author Go Hui Shan
+	 * @author Jeremy Hon
 	 */
 	@Override
 	public String toString() {

@@ -139,7 +139,7 @@ class Logic {
 	 */
 	// TODO: finalize implementation
 	public String executeCommand(String userInput) {
-		Command command = null;//_parser.parse(userInput);
+		Command command = _parser.acceptUserInput(userInput);
 		return executeCommand(command);
 	}
 	
@@ -358,6 +358,7 @@ class Logic {
 		try {
 			Task task = new Task(command);
 			_tasks.add(task);
+			System.out.println(_tasks.toString());
 			_storage.writeToFile(_tasks);
 			_undoStack.push(storePreviousState(command, task));
 			_status = Status.STATUS_SUCCESS_ADD;
