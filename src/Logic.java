@@ -1,3 +1,4 @@
+
 /**
  * ============= [LOGIC COMPONENT FOR ESTHER] =============
  * 
