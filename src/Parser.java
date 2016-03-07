@@ -55,9 +55,9 @@ public class Parser {
 	public static void main(String[] args) {
 		Parser parser = new Parser();
 		Command command = parser.acceptUserInput("dontknow");
-		HashMap<TaskField, String> map = command.getParameters();
-		for (Map.Entry<TaskField, String> entry : map.entrySet()) {
-			String key = entry.getKey().getTaskKeyName();
+		HashMap<String, String> map = command.getParameters();
+		for (Map.Entry<String, String> entry : map.entrySet()) {
+			String key = entry.getKey();
 			String value = entry.getValue();
 			System.out.println("Key " + key + "  Value" + value);
 		}
@@ -121,20 +121,20 @@ public class Parser {
 	//Format: show .by [field]
 	private void parseSort(String input) {
 		String[] inputArray = input.split(SPLITBY_WHITESPACE);
-		currentCommand.addFieldToMap(TaskField.SORT, inputArray[1]);
+		currentCommand.addFieldToMap(TaskField.SORT.getTaskKeyName(), inputArray[1]);
 
 	}
 
 	//Format: undo
 	private void parseUndo() {
 		// TODO Auto-generated method stub
-		currentCommand.addFieldToMap(TaskField.UNDO, "");
+		currentCommand.addFieldToMap(TaskField.UNDO.getTaskKeyName(), "");
 
 	}
 
 	//Format: help
 	private void parseHelp() {
-		currentCommand.addFieldToMap(TaskField.HELP, "");
+		currentCommand.addFieldToMap(TaskField.HELP.getTaskKeyName(), "");
 	}
 
 	// Format: add [taskName] .[on] [date]
@@ -146,7 +146,7 @@ public class Parser {
 
 		// Case 1: add Tea With Grandma (No parse key)
 		if (parseKeyIndex == -1) {
-			currentCommand.addFieldToMap(TaskField.NAME, input);
+			currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), input);
 			return;
 
 		}
@@ -172,8 +172,8 @@ public class Parser {
 			sDate += inputArray[i] + " ";
 		}
 		// Need to format the date
-		currentCommand.addFieldToMap(TaskField.NAME, sName);
-		currentCommand.addFieldToMap(TaskField.DATE, sDate);
+		currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), sName);
+		currentCommand.addFieldToMap(TaskField.DATE.getTaskKeyName(), sDate);
 
 	}
 
@@ -184,18 +184,18 @@ public class Parser {
 		String updateBy = inputArray[0];
 		int getNameOrID = isNameOrID(updateBy);
 		if (getNameOrID == 1) {
-			currentCommand.addFieldToMap(TaskField.ID, inputArray[1]);
+			currentCommand.addFieldToMap(TaskField.ID.getTaskKeyName(), inputArray[1]);
 		} else if (getNameOrID == 1) {
-			currentCommand.addFieldToMap(TaskField.UPDATENAME, inputArray[1]);
+			currentCommand.addFieldToMap(TaskField.UPDATENAME.getTaskKeyName(), inputArray[1]);
 		} else {
 			// Throw error
 		}
-		TaskField taskField = TaskField.get(inputArray[2]);
+		//TaskField taskField = TaskField.get(inputArray[2]);
 		String updateValue = "";
 		for (int i = 3; i < inputArray.length; i++) {
 			updateValue += inputArray[i];
 		}
-		currentCommand.addFieldToMap(taskField, updateValue);
+		currentCommand.addFieldToMap(inputArray[2], updateValue);
 	}
 
 	//Format: delete id 10
@@ -204,9 +204,9 @@ public class Parser {
 		String deleteBy = inputArray[0];
 		int getNameOrID = isNameOrID(deleteBy);
 		if (getNameOrID == 1) {
-			currentCommand.addFieldToMap(TaskField.ID, inputArray[1]);
+			currentCommand.addFieldToMap(TaskField.ID.getTaskKeyName(), inputArray[1]);
 		} else if (getNameOrID == 1) {
-			currentCommand.addFieldToMap(TaskField.NAME, inputArray[1]);
+			currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), inputArray[1]);
 		} else {
 			// Throw error
 		}
@@ -217,7 +217,7 @@ public class Parser {
 		String[] inputArray = input.split(SPLITBY_WHITESPACE);
 		// String showBy=inputArray[1];
 		// TaskField showField=TaskField.get(showBy);
-		currentCommand.addFieldToMap(TaskField.SHOW, inputArray[1]);
+		currentCommand.addFieldToMap(TaskField.SHOW.getTaskKeyName(), inputArray[1]);
 	}
 	/*
 	 * public Date getDate(DateFormat dateFormat){ switch(dateFormat){ case
@@ -233,9 +233,9 @@ public class Parser {
 		String completedBy = inputArray[0];
 		int getNameOrID = isNameOrID(completedBy);
 		if (getNameOrID == 1) {
-			currentCommand.addFieldToMap(TaskField.ID, inputArray[1]);
+			currentCommand.addFieldToMap(TaskField.ID.getTaskKeyName(), inputArray[1]);
 		} else if (getNameOrID == 1) {
-			currentCommand.addFieldToMap(TaskField.NAME, inputArray[1]);
+			currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), inputArray[1]);
 		} else {
 			// Throw error
 		}

@@ -17,7 +17,7 @@ import cs2103_w09_1j.esther.Task.TaskField;
 public class Command {
 	
 	private String _command;
-	private HashMap<TaskField, String> _parameters;
+	private HashMap<String, String> _parameters;
 	
 	public enum CommandKey {
 		ADD("add"), UPDATE("update"), DELETE("delete"), UNDO("undo"), COMPLETED("complete"), SHOW("show"), SORT(
@@ -56,7 +56,7 @@ public class Command {
 	
 	public Command() {
 		this._command = "";
-		this._parameters = new HashMap<TaskField, String>();
+		this._parameters = new HashMap<String, String>();
 	}
 	
 	/**
@@ -67,7 +67,7 @@ public class Command {
 	 * @param  parameters	the arguments supplied by the user
 	 * @author Tay Guo Qiang
 	 */
-	public Command(String command, HashMap<TaskField, String> parameters) {
+	public Command(String command, HashMap<String, String> parameters) {
 		setCommand(command);
 		setParameters(parameters);
 	}
@@ -100,7 +100,7 @@ public class Command {
 	 * @return the representation of user-supplied parameters
 	 * @author Tay Guo Qiang
 	 */
-	public HashMap<TaskField, String> getParameters() {
+	public HashMap<String, String> getParameters() {
 		return _parameters;
 	}
 	
@@ -167,7 +167,7 @@ public class Command {
 	 * @param  parameters	the representation of user-supplied parameters
 	 * @author Tay Guo Qiang
 	 */
-	public void setParameters(HashMap<TaskField, String> parameters) {
+	public void setParameters(HashMap<String, String> parameters) {
 		_parameters = parameters;
 	}
 	
@@ -176,7 +176,7 @@ public class Command {
 		this._parameters.clear();
 	}
 
-	public String addFieldToMap(TaskField fieldName, String fieldValue) {
+	public String addFieldToMap(String fieldName, String fieldValue) {
 		return this._parameters.put(fieldName, fieldValue);
 	}
 
