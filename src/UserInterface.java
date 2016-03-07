@@ -47,7 +47,7 @@ public class UserInterface extends Application {
 					display.appendText(text);
 					
 					// call parser
-					Parser.parseCommand(text);
+					Logic.executeCommand(text);
 					
 					input.clear();
 				}
