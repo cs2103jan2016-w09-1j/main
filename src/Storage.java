@@ -50,10 +50,10 @@ public class Storage {
 				setSaveLocation(filePath);
 				return tasksBuffer;
 			}
-			return null;
+			return tasksBuffer;
 		} catch (Exception e) {
 			e.printStackTrace();
-			return null;
+			return tasksBuffer;
 		}
 	}
 

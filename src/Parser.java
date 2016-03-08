@@ -192,7 +192,7 @@ public class Parser {
 		}
 		//TaskField taskField = TaskField.get(inputArray[2]);
 		String updateValue = "";
-		for (int i = 3; i < inputArray.length; i++) {
+		for (int i = 4; i < inputArray.length; i++) {
 			updateValue += inputArray[i];
 		}
 		currentCommand.addFieldToMap(inputArray[2], updateValue);
@@ -205,7 +205,7 @@ public class Parser {
 		int getNameOrID = isNameOrID(deleteBy);
 		if (getNameOrID == 1) {
 			currentCommand.addFieldToMap(TaskField.ID.getTaskKeyName(), inputArray[1]);
-		} else if (getNameOrID == 1) {
+		} else if (getNameOrID == 0) {
 			currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), inputArray[1]);
 		} else {
 			// Throw error
