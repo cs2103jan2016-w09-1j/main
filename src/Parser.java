@@ -185,7 +185,7 @@ public class Parser {
 		int getNameOrID = isNameOrID(updateBy);
 		if (getNameOrID == 1) {
 			currentCommand.addFieldToMap(TaskField.ID.getTaskKeyName(), inputArray[1]);
-		} else if (getNameOrID == 1) {
+		} else if (getNameOrID == 0) {
 			currentCommand.addFieldToMap(TaskField.UPDATENAME.getTaskKeyName(), inputArray[1]);
 		} else {
 			// Throw error
