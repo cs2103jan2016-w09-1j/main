@@ -192,7 +192,7 @@ public class Parser {
 		}
 		//TaskField taskField = TaskField.get(inputArray[2]);
 		String updateValue = "";
-		for (int i = 3; i < inputArray.length; i++) {
+		for (int i = 4; i < inputArray.length; i++) {
 			updateValue += inputArray[i];
 		}
 		currentCommand.addFieldToMap(inputArray[2], updateValue);
