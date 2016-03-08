@@ -118,7 +118,7 @@ public class Command {
 				value = _parameters.get(parameter);
 				break;
 			
-			case "updatedTaskName" :
+			case "updateName" :
 				value = _parameters.get(parameter);
 				break;
 				
@@ -130,7 +130,7 @@ public class Command {
 				value = _parameters.get(parameter);
 				break;
 				
-			case "taskId" :
+			case "taskID" :
 				value = _parameters.get(parameter);
 				break;
 			

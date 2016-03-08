@@ -32,7 +32,7 @@ import sun.util.resources.cldr.id.LocaleNames_id;
 public class Task implements Comparable<Task> {
 	public enum TaskField {
 		NAME("taskName"), ID("taskID"), PRIORITY("priority"), DATE("date"), SORT("sort"), UPDATENAME(
-				"updateName"), SHOW("show"), UNDO("undo"),HELP("help");
+				"updateName"), SHOW("order"), UNDO("undo"),HELP("help");
 
 		private String taskKeyName;
 		private static final Map<String, TaskField> lookup = new HashMap<String, TaskField>();
@@ -144,7 +144,7 @@ public class Task implements Comparable<Task> {
 		int priority = Integer.parseInt(resultsArray[3]);
 		boolean complete = Boolean.parseBoolean(resultsArray[4]);
 		
-		this.setName(taskName);
+		this.setName(taskName.trim());
 		this.setDate(date);
 		this.setPriority(priority);
 		this.setCompleted(complete);
@@ -318,8 +318,8 @@ public class Task implements Comparable<Task> {
 		if (command.hasParameter("taskName")) {
 			this.setName(command.getSpecificParameter("taskName"));
 		}
-		if (command.hasParameter("updatedTaskName")) {
-			this.setName(command.getSpecificParameter("updatedTaskName"));
+		if (command.hasParameter("updateName")) {
+			this.setName(command.getSpecificParameter("updateName"));
 		}
 		if (command.hasParameter("date")) {
 			this.setDate(_dateFormatter.parse(command.getSpecificParameter("date")));
@@ -327,8 +327,8 @@ public class Task implements Comparable<Task> {
 		if (command.hasParameter("priority")) {
 			this.setPriority(Integer.parseInt(command.getSpecificParameter("priority")));
 		}
-		if (command.hasParameter("taskId")) {
-			this.setId(Integer.parseInt(command.getSpecificParameter("taskId")));
+		if (command.hasParameter("taskID")) {
+			this.setId(Integer.parseInt(command.getSpecificParameter("taskID")));
 		}
 		if (command.hasParameter("completed")) {
 			this.setCompleted(Boolean.parseBoolean(command.getSpecificParameter("completed")));
