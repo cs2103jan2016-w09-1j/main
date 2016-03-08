@@ -98,6 +98,7 @@ class Logic {
 		_storage = new Storage();
 		_tasks = new ArrayList<Task>();
 		_undoStack = new Stack<State>();
+		updateInternalStorage();
 	}
 
 	/**
@@ -117,16 +118,16 @@ class Logic {
 	 */
 	// TODO: finalize implementation, error handling
 	public void updateInternalStorage() {
-		/*
+		
 		try {
 			_tasks = _storage.readFromFile();
 			Collections.sort(_tasks);
-		} catch (IOException ioe) {
+		} catch (Exception e) {
 			// set Exception state
 			// get error message
 			// return error message
 		}
-		*/
+		
 	}
 
 	/**
@@ -139,7 +140,7 @@ class Logic {
 	 */
 	// TODO: finalize implementation
 	public String executeCommand(String userInput) {
-		Command command = null;//_parser.parse(userInput);
+		Command command = _parser.acceptUserInput(userInput);
 		return executeCommand(command);
 	}
 	
@@ -425,8 +426,8 @@ class Logic {
 		Task toUpdate = null;
 		int updateIndex = -1;
 		String taskName = command.getSpecificParameter("taskName");
-		String checkTaskId = command.hasParameter("taskId")
-						? command.getSpecificParameter("taskId")
+		String checkTaskId = command.hasParameter("taskID")
+						? command.getSpecificParameter("taskID")
 						: "-1";
 		for (int i = 0; i < _tasks.size(); i++) {
 			if (_tasks.get(i).getName().equals(taskName) ||
