@@ -45,10 +45,11 @@ public class UserInterface extends Application {
 			public void handle(KeyEvent event) {
 				if (event.getCode() == KeyCode.ENTER) {
 					String text = input.getText();
-					display.appendText(text);
+					display.appendText(text + "\n");
 					
 					// call parser
-					logic.executeCommand(text);
+					String result = logic.executeCommand(text.trim());
+					display.appendText(result);
 					
 					input.clear();
 				}
