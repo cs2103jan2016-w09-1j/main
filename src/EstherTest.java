@@ -1,16 +1,17 @@
+import static org.junit.Assert.*;
+
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
+import org.junit.After;
 import org.junit.Test;
 
-import cs2103_w09_1j.esther.Task;
-
 public class EstherTest {
-	private Logic logic = new Logic();
+	String pathString = "esther.txt";
+	Path saveLoc = Paths.get(pathString);
 	
 	public void deleteFile(){
 		try {
@@ -22,17 +23,41 @@ public class EstherTest {
 		}
 	}
 	
+	private Logic logic = new Logic();
+	
 	@Test
 	public void addTest(){
-		deleteFile();
 		String result = logic.executeCommand("add addtask .on 03/07/2016");
-		System.out.println(result);
+		assertTrue(result.contains("success"));
 	}
 	
 	@Test
 	public void deleteTest(){
+		assertTrue(logic.executeCommand("add deltask .on 03/07/2016").contains("success"));
+		assertTrue(logic.executeCommand("delete name deltask").contains("success"));
+	}
+	
+	@Test
+	public void updateTest(){
+		assertTrue(logic.executeCommand("add updTask .on 03/07/2016").contains("success"));
+		assertTrue(logic.executeCommand("update name updTask taskName to updatedTask").contains("success"));
+	}
+	
+	@After
+	public void cleanUp(){
+		System.out.println("Contents in esther.txt:");
+		System.out.println("-----------------------");
+		BufferedReader reader;
+		try {
+			reader = Files.newBufferedReader(saveLoc);
+			while (reader.ready()) {
+				System.out.println((reader.readLine()));
+			}
+			reader.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block for tryLoadFile
+			e.printStackTrace();
+		}
 		deleteFile();
-		System.out.println(logic.executeCommand("add deltask .on 03/07/2016"));
-		System.out.println(logic.executeCommand("delete name deltask"));
 	}
 }
