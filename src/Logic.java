@@ -426,8 +426,8 @@ class Logic {
 		Task toUpdate = null;
 		int updateIndex = -1;
 		String taskName = command.getSpecificParameter("taskName");
-		String checkTaskId = command.hasParameter("taskId")
-						? command.getSpecificParameter("taskId")
+		String checkTaskId = command.hasParameter("taskID")
+						? command.getSpecificParameter("taskID")
 						: "-1";
 		for (int i = 0; i < _tasks.size(); i++) {
 			if (_tasks.get(i).getName().equals(taskName) ||
