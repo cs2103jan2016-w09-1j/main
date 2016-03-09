@@ -11,13 +11,13 @@ import cs2103_w09_1j.esther.Config;
 import cs2103_w09_1j.esther.Task;
 
 public class Storage {
-	private Path saveLocation;
+	private Path savePath;
 	private ArrayList<Task> tasksBuffer = new ArrayList<Task>();
 	private Config currentConfig = new Config();
 
 	private static final String BY_NEXTLINE = "\\n";
-	private final String configName = "esther.config";
-	private final Path configPath = Paths.get(configName);
+	private static final String configName = "esther.config";
+	private static final Path configPath = Paths.get(configName);
 
 	/**
 	 * Constructor for Storage class
@@ -25,8 +25,9 @@ public class Storage {
 	 * Checks default config location to load config options
 	 * Sets the current save location correspondingly
 	 * Loads file contents into task buffer
-	 * @throws ParseException 
-	 * @throws IOException 
+	 * 
+	 * @throws ParseException
+	 * @throws IOException
 	 */
 	public Storage() throws ParseException, IOException {
 		// check config location
@@ -36,30 +37,31 @@ public class Storage {
 
 	/**
 	 * If a file exists at the specified location, loads the file into a task array list and returns
-	 * it. 
+	 * it.
 	 * 
 	 * @param filePath
 	 *            Path to load the file from
 	 * @return ArrayList of tasks as loaded from the file if successful
-	 * @throws ParseException 
-	 * @throws IOException 
+	 * @throws ParseException
+	 * @throws IOException
 	 */
 	public ArrayList<Task> readSaveFile(Path filePath) throws ParseException, IOException {
 		if (isValidFile(filePath)) {
-			tryLoadFile(filePath);
-		} return tasksBuffer;
+			loadSaveFile(filePath);
+		}
+		return tasksBuffer;
 	}
 
 	/**
 	 * Alternate load method that uses a stored save Location
 	 * 
 	 * @return ArrayList of tasks as loaded from the file if successful
-	 * @throws ParseException 
+	 * @throws ParseException
 	 * @throws IOException
 	 *             if an IO error occurs during loading
 	 */
 	public ArrayList<Task> readSaveFile() throws ParseException, IOException {
-		return readSaveFile(saveLocation);
+		return readSaveFile(savePath);
 	}
 
 	/**
@@ -72,35 +74,33 @@ public class Storage {
 	 */
 	public void writeSaveFile(ArrayList<Task> tasks) throws IOException {
 		tasksBuffer = tasks;
-		BufferedWriter writer;
-		writer = Files.newBufferedWriter(saveLocation);
-		for (int i = 0; i < tasksBuffer.size(); i++) {
-			writer.write(tasksBuffer.get(i).toString());
-		}
-		writer.close();
+		writeFile(tasksToString(tasksBuffer), savePath);
 	}
+
 	/**
 	 * 
 	 * @param filePath
 	 * @return
 	 * @throws IOException
+	 * @throws ParseException 
 	 */
-	public Config readConfigFile(Path filePath) throws IOException {
-		if(isValidFile(configPath)){
-			loadConfig(configPath);
+	public Config readConfigFile(Path filePath) throws IOException, ParseException {
+		if (isValidFile(configPath)) {
+			loadConfigFile(configPath);
 		}
 		return currentConfig;
 	}
-	
+
 	/**
 	 * 
 	 * @return
 	 * @throws IOException
+	 * @throws ParseException 
 	 */
-	public Config readConfigFile() throws IOException {
+	public Config readConfigFile() throws IOException, ParseException {
 		return readConfigFile(configPath);
 	}
-	
+
 	/**
 	 * 
 	 * @param config
@@ -108,44 +108,43 @@ public class Storage {
 	 */
 	public void writeConfigFile(Config config) throws IOException {
 		String configString = config.toString();
-		BufferedWriter writer = Files.newBufferedWriter(configPath);
-		for (int i = 0; i < tasksBuffer.size(); i++) {
-			writer.write(configString);
-		}
-		writer.close();
+		writeFile(configString, configPath);
 	}
-	
+
 	/**
 	 * Method to update config if logic or an external component changes it.
+	 * 
 	 * @param newConfig
 	 */
 	public void updateConfig(Config newConfig) {
 		currentConfig = newConfig;
 		processConfig();
 	}
-	
+
 	/**
 	 * 
 	 * @param filePath
-	 * @throws IOException 
+	 * @throws IOException
 	 */
-	public void flushFileAtLocation(Path filePath) throws IOException{
+	public void flushFileAtLocation(Path filePath) throws IOException {
 		Files.delete(filePath);
 	}
 
 	/**
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public void flushFile() throws IOException {
-		flushFileAtLocation(saveLocation);
+		flushFileAtLocation(savePath);
 	}
 	
+	//===========PRIVATE METHODS BELOW==================
+
 	/**
 	 * @param path
 	 * @return
-	 * @throws IOException 
+	 * @throws IOException
 	 */
-	private String loadFileIntoString(Path path) throws IOException {
+	private String readFile(Path path) throws IOException {
 		String outputString = "";
 		BufferedReader reader = Files.newBufferedReader(path);
 		while (reader.ready()) {
@@ -154,36 +153,52 @@ public class Storage {
 		reader.close();
 		return outputString;
 	}
-	
+
+	/**
+	 * Write a string into a file at the specified path (includes file name)
+	 * 
+	 * @param string
+	 *            String that contains eventual file contents
+	 * @param path
+	 *            Path to file location for writing
+	 * @throws IOException
+	 */
+	private void writeFile(String string, Path path) throws IOException {
+		BufferedWriter writer = Files.newBufferedWriter(configPath);
+		writer.write(string);
+		writer.close();
+	}
+
 	/**
 	 * 
 	 * @param filePath
 	 * @return
 	 * @throws ParseException
-	 * @throws IOException 
+	 * @throws IOException
 	 */
-	private ArrayList<Task> tryLoadFile(Path filePath) throws ParseException, IOException {
+	private ArrayList<Task> loadSaveFile(Path filePath) throws ParseException, IOException {
 		tasksBuffer.clear();
-		loadTasksString(loadFileIntoString(filePath));
+		loadTasksString(readFile(filePath));
 		return tasksBuffer;
+	}
+
+	/**
+	 * 
+	 * @param configPath
+	 * @throws IOException
+	 * @throws ParseException 
+	 */
+	private void loadConfigFile(Path loadConfigPath) throws IOException, ParseException {
+		currentConfig = new Config(readFile(loadConfigPath));
 	}
 
 	/**
 	 * 
 	 */
 	private void processConfig() {
-		saveLocation = currentConfig.getSaveLocation();
+		savePath = currentConfig.getSavePath();
 	}
 
-	/**
-	 * 
-	 * @param configPath
-	 * @throws IOException 
-	 */
-	private void loadConfig(Path loadConfigPath) throws IOException {
-		currentConfig = new Config(loadFileIntoString(loadConfigPath));
-	}
-	
 	/**
 	 * 
 	 * @param allLines
@@ -205,6 +220,17 @@ public class Storage {
 		if (!nextLine.isEmpty()) {
 			tasksBuffer.add(new Task(nextLine));
 		}
+	}
+	
+	/**
+	 * 
+	 */
+	private String tasksToString(ArrayList<Task> tasks) {
+		String tasksString = "";
+		for (Task task : tasks) {
+			tasksString += task.toString();
+		}
+		return tasksString;
 	}
 
 	/**
