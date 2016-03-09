@@ -2,58 +2,79 @@ package cs2103_w09_1j.esther;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Config {
 
 	private int referenceID;
-	private Path saveLocation;
+	private Path savePath;
 	private HashMap<String, String> fieldNameAliases;
 
-	private final int defaultReferenceID = 0;
-	private final Path defaultSaveLocation = Paths.get("esther.txt");
-	private final String[][] defaultFieldNameAliases = {	{ "taskName", "name" },
-															{ "tName", "name" },
-															{ "name", "name" },
-															{ "nm", "name" },
-															{ "n", "name" },
-															{ "date", "date" },
-															{ "dt", "date" },
-															{ "d", "date" },
-															{ "id", "id" },
-															{ "priority", "priority" },
-															{ "prio", "priority" },
-															{ "pri", "priority" },
-															{ "pr", "priority" },
-															{ "p", "priority" },
-															{ "completed", "completed" },
-															{ "complete", "completed" },
-															{ "comp", "completed" },
-															{ "cp", "completed" },
-															{ "done", "completed" },
-															{ "dn", "completed" } };
+	private static final int defaultReferenceID = 0;
+	private static final Path defaultSavePath = Paths.get("esther.txt");
+	private static final String[][] defaultFieldNameAliases = {	{ "taskName", "name" },
+																{ "tName", "name" },
+																{ "name", "name" },
+																{ "nm", "name" },
+																{ "n", "name" },
+																{ "date", "date" },
+																{ "dt", "date" },
+																{ "d", "date" },
+																{ "id", "id" },
+																{ "priority", "priority" },
+																{ "prio", "priority" },
+																{ "pri", "priority" },
+																{ "pr", "priority" },
+																{ "p", "priority" },
+																{ "completed", "completed" },
+																{ "complete", "completed" },
+																{ "comp", "completed" },
+																{ "cp", "completed" },
+																{ "done", "completed" },
+																{ "dn", "completed" } };
 
-	private final String[] attributeNames = { "ReferenceID", "SaveLocation", "FieldNameAliases" };
-	private final String attributeFormat = "%1$s = %2$s\n";
+	private static final String[] attributeNames = {
+														"ReferenceID", "SaveLocation",
+														"FieldNameAliases" };
+	private static final String attributeFormat = "%1$s = %2$s;\n";
+	private static final String attributeRegex = " = ([^[;|\\n]]+);\\n";
+	private static final String fieldNameRegex = "([\\w]+) = ([\\w]+);\n";
 
 	/**
 	 * Constructor for default config
 	 */
 	public Config() {
-		referenceID = getDefaultReferenceID();
-		saveLocation = getDefaultSaveLocation();
-		fieldNameAliases = constructDefaultFieldNameAliases();
+		setReferenceID(getDefaultReferenceID());
+		setSavePath(getDefaultSavePath());
+		setFieldNameAliases(constructDefaultFieldNameAliases());
 	}
 
 	/**
 	 * Constructor for config given string input
 	 * 
-	 * @param configInput
+	 * @param configString
 	 *            String containing information for config construction
+	 * @throws Exception 
 	 */
-	public Config(String configInput) {
-
+	public Config(String configString) throws ParseException {
+		this();
+		String[] resultsArray = new String[2];
+		for (int i = 0; i < 2; i++) {
+			resultsArray[i] = findMatch(attributeRegex, configString);
+			if (resultsArray[i] == null) {
+				throw new ParseException("Config file load failed", i);
+			} else {
+				configString = configString.replaceFirst(attributeNames[i] + attributeRegex, "");
+			}
+		}
+		Matcher fieldNameMatcher = Pattern.compile(fieldNameRegex).matcher(configString);
+		while(fieldNameMatcher.find()){
+			fieldNameAliases.put(fieldNameMatcher.group(1), fieldNameMatcher.group(2));
+		}
 	}
 
 	/**
@@ -66,7 +87,7 @@ public class Config {
 									String.valueOf(getReferenceID()));
 		configStr += String.format(	attributeFormat,
 									attributeNames[1],
-									getSaveLocation().toString());
+									getSavePath().toString());
 		configStr += "\n";
 		configStr += attributeNames[2] + ":\n";
 		configStr += printHashMap(getFieldNameAliases());
@@ -83,10 +104,14 @@ public class Config {
 		Iterator<HashMap.Entry<String, String>> it = hashMap.entrySet().iterator();
 		while (it.hasNext()) {
 			HashMap.Entry<String, String> pair = (HashMap.Entry<String, String>) it.next();
-			hashMapString += pair.getKey() + " = " + pair.getValue();
+			hashMapString += pair.getKey() + " = " + pair.getValue() + ";\n";
 			it.remove(); // avoids a ConcurrentModificationException
 		}
 		return hashMapString;
+	}
+
+	private String findMatch(String regex, String input) {
+		return Task.findMatch(regex + attributeRegex, input);
 	}
 
 	/**
@@ -135,16 +160,16 @@ public class Config {
 	/**
 	 * @return the saveLocation
 	 */
-	public Path getSaveLocation() {
-		return saveLocation;
+	public Path getSavePath() {
+		return savePath;
 	}
 
 	/**
 	 * @param saveLocation
 	 *            the saveLocation to set
 	 */
-	public void setSaveLocation(Path saveLocation) {
-		this.saveLocation = saveLocation;
+	public void setSavePath(Path saveLocation) {
+		this.savePath = saveLocation;
 	}
 
 	/**
@@ -157,8 +182,8 @@ public class Config {
 	/**
 	 * @return the defaultSaveLocation
 	 */
-	private Path getDefaultSaveLocation() {
-		return defaultSaveLocation;
+	private Path getDefaultSavePath() {
+		return defaultSavePath;
 	}
 
 	/**
