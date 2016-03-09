@@ -12,6 +12,7 @@ public class UserInterface extends Application {
 	
 	private static String res;
 	private static TextArea input, display;
+	private Logic logic = new Logic();
 
 	public static void main(String[] args) {
 		launch(args);
@@ -44,11 +45,11 @@ public class UserInterface extends Application {
 			public void handle(KeyEvent event) {
 				if (event.getCode() == KeyCode.ENTER) {
 					String text = input.getText();
-					display.appendText(text);
+					display.appendText(text + "\n");
 					
 					// call parser
-					Logic logic = new Logic();
-					logic.executeCommand(text);
+					String result = logic.executeCommand(text.trim());
+					display.appendText(result);
 					
 					input.clear();
 				}

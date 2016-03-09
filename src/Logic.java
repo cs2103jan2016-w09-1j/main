@@ -98,6 +98,7 @@ class Logic {
 		_storage = new Storage();
 		_tasks = new ArrayList<Task>();
 		_undoStack = new Stack<State>();
+		updateInternalStorage();
 	}
 
 	/**
@@ -117,16 +118,20 @@ class Logic {
 	 */
 	// TODO: finalize implementation, error handling
 	public void updateInternalStorage() {
-		/*
+		
 		try {
 			_tasks = _storage.readFromFile();
-			Collections.sort(_tasks);
-		} catch (IOException ioe) {
+			if (_tasks == null) {
+				System.out.println("Inner memory is null.");
+			} else {
+				Collections.sort(_tasks);
+			}
+		} catch (Exception e) {
 			// set Exception state
 			// get error message
 			// return error message
 		}
-		*/
+		
 	}
 
 	/**
@@ -139,7 +144,7 @@ class Logic {
 	 */
 	// TODO: finalize implementation
 	public String executeCommand(String userInput) {
-		Command command = null;//_parser.parse(userInput);
+		Command command = _parser.acceptUserInput(userInput);
 		return executeCommand(command);
 	}
 	
@@ -263,7 +268,7 @@ class Logic {
 	 */
 	// TODO: adjust this method to reflect Mingxuan's implementations
 	// presently, sort and show states are missing in here.
-	private String getStatusMessage(String taskName, String taskId) {
+	private String getStatusMessage(String taskName, String taskID) {
 		String message;
 		switch (_status) {
 			case STATUS_SUCCESS_ADD :
@@ -278,7 +283,7 @@ class Logic {
 				if (taskName != null) {
 					message = String.format(MESSAGE_SUCCESS_DELETE, taskName);
 				} else {
-					message = String.format(MESSAGE_SUCCESS_DELETE, taskId);
+					message = String.format(MESSAGE_SUCCESS_DELETE, taskID);
 				}
 				break;
 				
@@ -286,7 +291,7 @@ class Logic {
 				if (taskName != null) {
 					message = String.format(MESSAGE_ERROR_DELETE, taskName);
 				} else {
-					message = String.format(MESSAGE_ERROR_DELETE, taskId);
+					message = String.format(MESSAGE_ERROR_DELETE, taskID);
 				}
 				break;
 				
@@ -294,7 +299,7 @@ class Logic {
 				if (taskName != null) {
 					message = String.format(MESSAGE_SUCCESS_UPDATE, taskName);
 				} else {
-					message = String.format(MESSAGE_SUCCESS_UPDATE, taskId);
+					message = String.format(MESSAGE_SUCCESS_UPDATE, taskID);
 				}
 				break;
 				
@@ -302,7 +307,7 @@ class Logic {
 				if (taskName != null) {
 					message = String.format(MESSAGE_ERROR_UPDATE, taskName);
 				} else {
-					message = String.format(MESSAGE_ERROR_UPDATE, taskId);
+					message = String.format(MESSAGE_ERROR_UPDATE, taskID);
 				}
 				break;
 				
@@ -314,7 +319,7 @@ class Logic {
 				if (taskName != null) {
 					message = String.format(MESSAGE_SUCCESS_SET_COMPLETED, taskName);
 				} else {
-					message = String.format(MESSAGE_SUCCESS_SET_COMPLETED, taskId);
+					message = String.format(MESSAGE_SUCCESS_SET_COMPLETED, taskID);
 				}
 				break;
 				
@@ -322,7 +327,7 @@ class Logic {
 				if (taskName != null) {
 					message = String.format(MESSAGE_ERROR_SET_COMPLETED, taskName);
 				} else {
-					message = String.format(MESSAGE_ERROR_SET_COMPLETED, taskId);
+					message = String.format(MESSAGE_ERROR_SET_COMPLETED, taskID);
 				}
 				break;
 				
@@ -384,12 +389,12 @@ class Logic {
 	private String removeTask(Command command) {
 		Task removed = null;
 		String taskName = command.getSpecificParameter("taskName");
-		String taskId = command.hasParameter("taskId")
-						? command.getSpecificParameter("taskId")
+		String taskID = command.hasParameter("taskID")
+						? command.getSpecificParameter("taskID")
 						: "-1";
 		for (Task existingTask: _tasks) {
 			if (existingTask.getName().equals(taskName) ||
-				existingTask.getId() == Integer.parseInt(taskId)) {
+				existingTask.getId() == Integer.parseInt(taskID)) {
 				removed = existingTask;
 				break;
 			}
@@ -411,7 +416,7 @@ class Logic {
 			// retrieve error message
 			// return error message
 		}*/
-		return getStatusMessage(taskName, command.getSpecificParameter("taskId"));
+		return getStatusMessage(taskName, command.getSpecificParameter("taskID"));
 	}
 	
 	/**
@@ -425,8 +430,8 @@ class Logic {
 		Task toUpdate = null;
 		int updateIndex = -1;
 		String taskName = command.getSpecificParameter("taskName");
-		String checkTaskId = command.hasParameter("taskId")
-						? command.getSpecificParameter("taskId")
+		String checkTaskId = command.hasParameter("taskID")
+						? command.getSpecificParameter("taskID")
 						: "-1";
 		for (int i = 0; i < _tasks.size(); i++) {
 			if (_tasks.get(i).getName().equals(taskName) ||
@@ -457,7 +462,7 @@ class Logic {
 			// retrieve error message
 			// return error message
 		}*/
-		return getStatusMessage(taskName, command.getSpecificParameter("taskId"));
+		return getStatusMessage(taskName, command.getSpecificParameter("taskID"));
 	}
 
 	/**
@@ -470,13 +475,13 @@ class Logic {
 	private String completeTask(Command command) {
 		Task toUpdate = null;
 		String taskName = command.getSpecificParameter("taskName");
-		String taskId = command.hasParameter("taskId")
-						? command.getSpecificParameter("taskId")
+		String taskID = command.hasParameter("taskID")
+						? command.getSpecificParameter("taskID")
 						: "-1";
 		int updateIndex = -1;
 		for (int i = 0; i < _tasks.size(); i++) {
 			if (_tasks.get(i).getName().equals(taskName) ||
-				_tasks.get(i).getId() == Integer.parseInt(taskId)) {
+				_tasks.get(i).getId() == Integer.parseInt(taskID)) {
 				toUpdate = _tasks.get(i);
 				updateIndex = i;
 				break;
@@ -500,7 +505,7 @@ class Logic {
 			// retrieve error message
 			// return error message
 		}*/
-		return getStatusMessage(taskName, command.getSpecificParameter("taskId"));
+		return getStatusMessage(taskName, command.getSpecificParameter("taskID"));
 	} 
 	
 	/**
@@ -532,7 +537,9 @@ class Logic {
 			// return error message
 		}*/
 		String listToDisplay = "";
-		// listToDisplay = _parser.parse(_tasks);
+		for (int i = 0; i < _tasks.size(); i++) {
+			listToDisplay += _tasks.get(i).toString() + "\n";
+		}
 		return listToDisplay;
 	}
 
@@ -626,10 +633,10 @@ class Logic {
 	 */
 	// TODO: error handling
 	private void undoAdd(Task task) {
-		int taskId = task.getId();
+		int taskID = task.getId();
 		int removeIndex = -1;
 		for (int i = 0; i < _tasks.size(); i++) {
-			if (_tasks.get(i).getId() == taskId) {
+			if (_tasks.get(i).getId() == taskID) {
 				removeIndex = i;
 				break;
 			}
@@ -668,10 +675,10 @@ class Logic {
 	 */
 	// TODO: error handling
 	private void undoUpdate(Task task) {
-		int taskId = task.getId();
+		int taskID = task.getId();
 		int updateIndex = -1;
 		for (int i = 0; i < _tasks.size(); i++) {
-			if (_tasks.get(i).getId() == taskId) {
+			if (_tasks.get(i).getId() == taskID) {
 				updateIndex = i;
 				break;
 			}
@@ -693,10 +700,10 @@ class Logic {
 	 */
 	// TODO: error handling
 	private void undoCompleted(Task task) {
-		int taskId = task.getId();
+		int taskID = task.getId();
 		int updateIndex = -1;
 		for (int i = 0; i < _tasks.size(); i++) {
-			if (_tasks.get(i).getId() == taskId) {
+			if (_tasks.get(i).getId() == taskID) {
 				updateIndex = i;
 				break;
 			}

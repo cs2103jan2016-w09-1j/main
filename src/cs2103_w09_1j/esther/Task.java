@@ -18,6 +18,7 @@ package cs2103_w09_1j.esther;
 // import java.util.Calendar;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -25,13 +26,13 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import Task.TaskField;
+//import Task.TaskField;
 import sun.util.resources.cldr.id.LocaleNames_id;
 
 public class Task implements Comparable<Task> {
 	public enum TaskField {
 		NAME("taskName"), ID("taskID"), PRIORITY("priority"), DATE("date"), SORT("sort"), UPDATENAME(
-				"updateName"), SHOW("show"), UNDO("undo"),HELP("help");
+				"updateName"), SHOW("order"), UNDO("undo"),HELP("help");
 
 		private String taskKeyName;
 		private static final Map<String, TaskField> lookup = new HashMap<String, TaskField>();
@@ -75,6 +76,14 @@ public class Task implements Comparable<Task> {
 	private int _id;
 	private boolean _isCompleted;
 
+	private static String idnoString = "ID\\: (\\d+)\\| ";
+	private static String dateString = "\\[([^\\]]+)\\] ";
+	private static String nameString = "([^\\|]+)\\| ";
+	private static String prioString = "Priority: (\\d+)\\| ";
+	private static String compString = "Completed: (true|false)";
+	private static String[] regexArray = {idnoString, dateString, nameString, prioString, compString};
+	
+
 	/**
 	 * Constructs an empty Task object.
 	 * 
@@ -117,31 +126,38 @@ public class Task implements Comparable<Task> {
 	 */
 	public Task(String string) throws ParseException {
 		this();
-		Pattern taskPattern = Pattern.compile(constructPattern());
-		Matcher taskMatcher = taskPattern.matcher(string);
-		if(taskMatcher.find()){
-			int localID = Integer.parseInt(taskMatcher.group(1));
-			Date date = _dateFormatter.parse(taskMatcher.group(2));
-			String taskName = taskMatcher.group(3);
-			int priority = Integer.parseInt(taskMatcher.group(4));
-			boolean complete = Boolean.parseBoolean(taskMatcher.group(5));
-
-			this.setName(taskName);
-			this.setDate(date);
-			this.setPriority(priority);
-			this.setCompleted(complete);
-			_id = localID;
+		String[] resultsArray = new String[5];
+		String matcherInput = string;
+		for (int i = 0; i < regexArray.length; i++) {
+			resultsArray[i] = findMatch(regexArray[i], matcherInput);
+			if(resultsArray[i] == null){
+				System.out.println("Match failed on "+i+"th element");
+				return;
+			} else {
+				matcherInput = matcherInput.replaceFirst(regexArray[i], "");
+			}
 		}
+		
+		int localID = Integer.parseInt(resultsArray[0]);
+		Date date = _dateFormatter.parse(resultsArray[1]);
+		String taskName = resultsArray[2];
+		int priority = Integer.parseInt(resultsArray[3]);
+		boolean complete = Boolean.parseBoolean(resultsArray[4]);
+		
+		this.setName(taskName.trim());
+		this.setDate(date);
+		this.setPriority(priority);
+		this.setCompleted(complete);
+		_id = localID;
 	}
 	
-	String constructPattern() {
-		String idnoString = "ID\\: (\\d+)\\| ";
-		String dateString = "\\[([^\\]]+)\\] ";
-		String nameString = "([^\\|]+)\\| ";
-		String prioString = "Priority: (\\d+)\\| ";
-		String compString = "Completed: (true|false)";
-		String finalPattern = idnoString + dateString + nameString + prioString + compString + "\\n";
-		return finalPattern;
+	public String findMatch(String regex, String input){
+		Matcher matcher = Pattern.compile(regex).matcher(input);
+		if(matcher.find()){
+			return matcher.group(1);
+		} else {
+			return null;
+		}
 	}
 
 	/**
@@ -302,8 +318,8 @@ public class Task implements Comparable<Task> {
 		if (command.hasParameter("taskName")) {
 			this.setName(command.getSpecificParameter("taskName"));
 		}
-		if (command.hasParameter("updatedTaskName")) {
-			this.setName(command.getSpecificParameter("updatedTaskName"));
+		if (command.hasParameter("updateName")) {
+			this.setName(command.getSpecificParameter("updateName"));
 		}
 		if (command.hasParameter("date")) {
 			this.setDate(_dateFormatter.parse(command.getSpecificParameter("date")));
@@ -311,8 +327,8 @@ public class Task implements Comparable<Task> {
 		if (command.hasParameter("priority")) {
 			this.setPriority(Integer.parseInt(command.getSpecificParameter("priority")));
 		}
-		if (command.hasParameter("taskId")) {
-			this.setId(Integer.parseInt(command.getSpecificParameter("taskId")));
+		if (command.hasParameter("taskID")) {
+			this.setId(Integer.parseInt(command.getSpecificParameter("taskID")));
 		}
 		if (command.hasParameter("completed")) {
 			this.setCompleted(Boolean.parseBoolean(command.getSpecificParameter("completed")));
@@ -324,11 +340,10 @@ public class Task implements Comparable<Task> {
 	 * Returns a human-readable String representation of a Task.
 	 * 
 	 * @return a String representation of the Task
-	 * @author Go Hui Shan
+	 * @author Jeremy Hon
 	 */
 	@Override
 	public String toString() {
-		// TODO: method stub, Hui Shan to implement
 		String taskString = "";
 		taskString += "ID: " + _id + "| ";
 		taskString += "[" + _dateFormatter.format(_date) + "] ";
