@@ -151,13 +151,37 @@ public class Task implements Comparable<Task> {
 		_id = localID;
 	}
 	
-	public String findMatch(String regex, String input){
+	/**
+	 * Returns the matching string given a regex and a string
+	 * @param regex
+	 * @param input
+	 * @return
+	 */
+	public static String findMatch(String regex, String input){
 		Matcher matcher = Pattern.compile(regex).matcher(input);
 		if(matcher.find()){
 			return matcher.group(1);
 		} else {
 			return null;
 		}
+	}
+	
+	/**
+	 * Returns a human-readable String representation of a Task.
+	 * 
+	 * @return a String representation of the Task
+	 * @author Jeremy Hon
+	 */
+	@Override
+	public String toString() {
+		String taskString = "";
+		taskString += "ID: " + _id + "| ";
+		taskString += "[" + _dateFormatter.format(_date) + "] ";
+		taskString += _name + "| ";
+		taskString += "Priority: " + _priority + "| ";
+		taskString += "Completed: " + _isCompleted;
+		taskString += "\n";
+		return taskString;
 	}
 
 	/**
@@ -333,25 +357,6 @@ public class Task implements Comparable<Task> {
 		if (command.hasParameter("completed")) {
 			this.setCompleted(Boolean.parseBoolean(command.getSpecificParameter("completed")));
 		}
-	}
-
-	// How shall a task be displayed to the user?
-	/**
-	 * Returns a human-readable String representation of a Task.
-	 * 
-	 * @return a String representation of the Task
-	 * @author Jeremy Hon
-	 */
-	@Override
-	public String toString() {
-		String taskString = "";
-		taskString += "ID: " + _id + "| ";
-		taskString += "[" + _dateFormatter.format(_date) + "] ";
-		taskString += _name + "| ";
-		taskString += "Priority: " + _priority + "| ";
-		taskString += "Completed: " + _isCompleted;
-		taskString += "\n";
-		return taskString;
 	}
 
 	/**
