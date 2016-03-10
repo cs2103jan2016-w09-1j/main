@@ -1,72 +1,67 @@
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
+
+import cs2103_w09_1j.esther.Config;
 import cs2103_w09_1j.esther.Task;
 
 public class Storage {
-	private Path saveLocation;
+	private Path savePath;
 	private ArrayList<Task> tasksBuffer = new ArrayList<Task>();
-	private boolean isRedirect = false;
+	private Config currentConfig = new Config();
 
-	private final String defaultFileName = "esther.txt";
-	private final Path defaultSaveLocation = Paths.get(defaultFileName);
+	private static final String BY_NEXTLINE = "\\n";
+	private static final String configName = "esther.config";
+	private static final Path configPath = Paths.get(configName);
 
 	/**
 	 * Constructor for Storage class
 	 * 
-	 * Checks default save location to see if it is a file or redirect
+	 * Checks default config location to load config options
 	 * Sets the current save location correspondingly
+	 * Loads file contents into task buffer
+	 * 
+	 * @throws ParseException
+	 * @throws IOException
 	 */
-	public Storage() {
-		saveLocation = defaultSaveLocation;
-		// check default save location
-		if (isValidFile(defaultSaveLocation)) {
-			String firstLine = getFirstLineFromFile(defaultSaveLocation);
-			if (isPath(firstLine)) {
-				saveLocation = Paths.get(firstLine);
-				isRedirect = true;
-			}
-		}
+	public Storage() throws ParseException, IOException {
+		// check config location
+		processConfig();
+		readSaveFile();
 	}
 
 	/**
 	 * If a file exists at the specified location, loads the file into a task array list and returns
-	 * it. Saves the path used for future usage.
+	 * it.
 	 * 
 	 * @param filePath
 	 *            Path to load the file from
 	 * @return ArrayList of tasks as loaded from the file if successful
+	 * @throws ParseException
+	 * @throws IOException
 	 */
-	public ArrayList<Task> readFromFile(Path filePath) {
-		try {
-			if (isValidFile(filePath)) {
-				tryLoadFile(filePath);
-				setSaveLocation(filePath);
-				return tasksBuffer;
-			}
-			return tasksBuffer;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return tasksBuffer;
+	public ArrayList<Task> readSaveFile(Path filePath) throws ParseException, IOException {
+		if (isValidFile(filePath)) {
+			loadSaveFile(filePath);
 		}
+		return tasksBuffer;
 	}
 
 	/**
 	 * Alternate load method that uses a stored save Location
 	 * 
 	 * @return ArrayList of tasks as loaded from the file if successful
+	 * @throws ParseException
 	 * @throws IOException
 	 *             if an IO error occurs during loading
 	 */
-	public ArrayList<Task> readFromFile() {
-		checkValidSaveLocation();
-		return readFromFile(saveLocation);
+	public ArrayList<Task> readSaveFile() throws ParseException, IOException {
+		return readSaveFile(savePath);
 	}
 
 	/**
@@ -77,118 +72,173 @@ public class Storage {
 	 * @throws IOException
 	 *             if an IO error occurs during writing
 	 */
-	public void writeToFile(ArrayList<Task> tasks) {
+	public void writeSaveFile(ArrayList<Task> tasks) throws IOException {
 		tasksBuffer = tasks;
-		checkValidSaveLocation();
-		BufferedWriter writer;
-		try {
-			if(saveLocation == null){System.out.println("null save location");}
-			writer = Files.newBufferedWriter(saveLocation);
-			writer.write("");
-			for (int i = 0; i < tasksBuffer.size(); i++) {
-				writer.write(tasksBuffer.get(i).toString());
-				writer.newLine();
-			}
-			writer.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block for WriteToFile
-			e.printStackTrace();
+		writeFile(tasksToString(tasksBuffer), savePath);
+	}
+
+	/**
+	 * 
+	 * @param filePath
+	 * @return
+	 * @throws IOException
+	 * @throws ParseException 
+	 */
+	public Config readConfigFile(Path filePath) throws IOException, ParseException {
+		if (isValidFile(configPath)) {
+			loadConfigFile(configPath);
+		}
+		return currentConfig;
+	}
+
+	/**
+	 * 
+	 * @return
+	 * @throws IOException
+	 * @throws ParseException 
+	 */
+	public Config readConfigFile() throws IOException, ParseException {
+		return readConfigFile(configPath);
+	}
+
+	/**
+	 * 
+	 * @param config
+	 * @throws IOException
+	 */
+	public void writeConfigFile(Config config) throws IOException {
+		String configString = config.toString();
+		writeFile(configString, configPath);
+	}
+
+	/**
+	 * Method to update config if logic or an external component changes it.
+	 * 
+	 * @param newConfig
+	 */
+	public void updateConfig(Config newConfig) {
+		currentConfig = newConfig;
+		processConfig();
+	}
+
+	/**
+	 * 
+	 * @param filePath
+	 * @throws IOException
+	 */
+	public void flushFileAtLocation(Path filePath) throws IOException {
+		Files.delete(filePath);
+	}
+
+	/**
+	 * @throws IOException
+	 */
+	public void flushFile() throws IOException {
+		flushFileAtLocation(savePath);
+	}
+	
+	//===========PRIVATE METHODS BELOW==================
+
+	/**
+	 * @param path
+	 * @return
+	 * @throws IOException
+	 */
+	private String readFile(Path path) throws IOException {
+		String outputString = "";
+		BufferedReader reader = Files.newBufferedReader(path);
+		while (reader.ready()) {
+			outputString += reader.readLine();
+		}
+		reader.close();
+		return outputString;
+	}
+
+	/**
+	 * Write a string into a file at the specified path (includes file name)
+	 * 
+	 * @param string
+	 *            String that contains eventual file contents
+	 * @param path
+	 *            Path to file location for writing
+	 * @throws IOException
+	 */
+	private void writeFile(String string, Path path) throws IOException {
+		BufferedWriter writer = Files.newBufferedWriter(configPath);
+		writer.write(string);
+		writer.close();
+	}
+
+	/**
+	 * 
+	 * @param filePath
+	 * @return
+	 * @throws ParseException
+	 * @throws IOException
+	 */
+	private ArrayList<Task> loadSaveFile(Path filePath) throws ParseException, IOException {
+		tasksBuffer.clear();
+		loadTasksString(readFile(filePath));
+		return tasksBuffer;
+	}
+
+	/**
+	 * 
+	 * @param configPath
+	 * @throws IOException
+	 * @throws ParseException 
+	 */
+	private void loadConfigFile(Path loadConfigPath) throws IOException, ParseException {
+		currentConfig = new Config(readFile(loadConfigPath));
+	}
+
+	/**
+	 * 
+	 */
+	private void processConfig() {
+		savePath = currentConfig.getSavePath();
+	}
+
+	/**
+	 * 
+	 * @param allLines
+	 * @throws ParseException
+	 */
+	private void loadTasksString(String allLines) throws ParseException {
+		String[] allLinesArray = allLines.split(BY_NEXTLINE);
+		for (int i = 0; i < allLinesArray.length; i++) {
+			loadTaskString(allLinesArray[i]);
 		}
 	}
 
 	/**
-	 * Sets a new save location using a given path. If the new save location is different from the
-	 * default, setup a redirect at the default.
 	 * 
-	 * @param filePath
-	 *            New path to save to
-	 * @throws IOException
-	 *             If an IO error occurs during setting up the redirect.
+	 * @param nextLine
+	 * @throws ParseException
 	 */
-	public void setSaveLocation(Path filePath) throws IOException {
-		saveLocation = filePath;
-		if (!saveLocation.equals(defaultSaveLocation)) {
-			setupRedirect(saveLocation);
-			isRedirect = true;
-		}
-	}
-
-	private void setupRedirect(Path redirectLocation) {
-		BufferedWriter writer;
-		try {
-			writer = Files.newBufferedWriter(saveLocation);
-			writer.write(redirectLocation.toAbsolutePath().toString());
-			writer.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block for setupRedirect
-			e.printStackTrace();
-		}
-	}
-
-	private void checkValidSaveLocation() throws Error {
-	}
-
-	private ArrayList<Task> tryLoadFile(Path filePath) throws ParseException {
-		tasksBuffer.clear();
-		BufferedReader reader;
-		try {
-			reader = Files.newBufferedReader(filePath);
-			while (reader.ready()) {
-				loadTextString(reader.readLine());
-			}
-			reader.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block for tryLoadFile
-			e.printStackTrace();
-		}
-
-		return tasksBuffer;
-	}
-
-	private String getFirstLineFromFile(Path path) {
-		BufferedReader reader;
-		String firstLine = "";
-		try {
-			reader = Files.newBufferedReader(path);
-			if(reader.ready()){
-				firstLine = reader.readLine();
-			}
-			reader.close();
-			return firstLine;
-		} catch (IOException e) {
-			// TODO Auto-generated catch block for getFirstLine
-			e.printStackTrace();
-			return null;
-		}
-	}
-	
-	public void flushFileAtLocation(Path filePath){
-		try {
-			Files.delete(filePath);
-		} catch (Exception e) {
-			// TODO: handle exception
-		}
-	}
-
-	public void flushFile() {
-		if (isRedirect) {
-			flushFileAtLocation(saveLocation);
-		}
-		flushFileAtLocation(defaultSaveLocation);
-	}
-
-	private boolean isPath(String string) {
-		return string.contains("://");
-	}
-
-	private void loadTextString(String nextLine) throws ParseException {
+	private void loadTaskString(String nextLine) throws ParseException {
 		if (!nextLine.isEmpty()) {
 			tasksBuffer.add(new Task(nextLine));
 		}
 	}
+	
+	/**
+	 * 
+	 */
+	private String tasksToString(ArrayList<Task> tasks) {
+		String tasksString = "";
+		for (Task task : tasks) {
+			tasksString += task.toString();
+		}
+		return tasksString;
+	}
 
+	/**
+	 * 
+	 * @param newFilePath
+	 * @return
+	 */
 	private boolean isValidFile(Path newFilePath) {
-		File file = newFilePath.toFile();
-		return file.exists();
+		return newFilePath.toFile().exists();
 	}
 }

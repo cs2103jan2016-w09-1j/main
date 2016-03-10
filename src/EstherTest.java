@@ -32,17 +32,29 @@ public class EstherTest {
 	}
 	
 	@Test
-	public void deleteTest(){
+	public void deleteNameTest(){
 		assertTrue(logic.executeCommand("add deltask .on 03/07/2016").contains("success"));
 		assertTrue(logic.executeCommand("delete name deltask").contains("success"));
 	}
 	
 	@Test
-	public void updateTest(){
+	public void deleteIDTest(){
+		assertTrue(logic.executeCommand("add deltask .on 03/07/2016").contains("success"));
+		assertTrue(logic.executeCommand("delete ID deltask").contains("success"));
+	}
+	
+	@Test
+	public void updateNameTest(){
 		assertTrue(logic.executeCommand("add updTask .on 03/07/2016").contains("success"));
 		assertTrue(logic.executeCommand("update name updTask taskName to updatedTask").contains("success"));
 		assertTrue(logic.executeCommand("update name updatedTask date to 04/07/2016").contains("success"));
 		assertTrue(logic.executeCommand("update name updatedTask priority to 1").contains("success"));
+	}
+	
+	@Test
+	public void updateIDTest(){
+		assertTrue(logic.executeCommand("add updTask .on 03/07/2016").contains("success"));
+		assertTrue(logic.executeCommand("update name updTask ID to 0").contains("success"));
 	}
 	
 	@After
