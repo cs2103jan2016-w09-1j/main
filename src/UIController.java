@@ -1,6 +1,3 @@
-
-import java.io.IOException;
-
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -10,21 +7,15 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Path;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
+
 
 public class UIController {
 	
 	private Logic logic = new Logic();
-
+	
     @FXML
     private Pane mainPane;
 
@@ -32,8 +23,10 @@ public class UIController {
     private VBox displayWindow;
 
     @FXML
-    private Text display = new Text(logic.executeCommand("show"));
-
+    // load internal memory
+    private Text display;
+   
+    
     @FXML
     private Label commandLog;
 
@@ -44,7 +37,8 @@ public class UIController {
     void ENTER(KeyEvent event) {
     	if (event.getCode() == KeyCode.ENTER) {
     		String userInput = input.getText();
-    		commandLog = new Label(logic.executeCommand(userInput));
+    		commandLog.setText(logic.executeCommand(userInput));
+    		display.setText("String internal memory");
     	}
     }
 
@@ -65,7 +59,7 @@ public class UIController {
             stage.show();
     		
     	} else {
-    		label = new Label(logic.executeCommand(in));
+    		label.setText(logic.executeCommand(in));
     	}
     }
 }
