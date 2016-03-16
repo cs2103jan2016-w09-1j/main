@@ -106,9 +106,15 @@ class Logic {
 		_parser = new Parser();
 		logger.log(Level.INFO, "Initializing Parser component.");
 		assert _parser != null;
-		_storage = new Storage();
-		logger.log(Level.INFO, "Initializing Storage component.");
-		assert _storage != null;
+		try {
+			_storage = new Storage();
+			logger.log(Level.INFO, "Initializing Storage component.");
+			assert _storage != null;
+		} catch (ParseException pe) {
+			// TODO: handle exception from constructing tasks
+		} catch (IOException ioe) {
+			// TODO: handle exception from accessing file system
+		}
 		_tasks = new ArrayList<Task>();
 		_undoStack = new Stack<State>();
 		updateInternalStorage();
@@ -155,7 +161,7 @@ class Logic {
 	public void updateInternalStorage() {
 		logger.log(Level.INFO, "Retrieving tasks list from Storage.");
 		try {
-			_tasks = _storage.readFromFile();
+			_tasks = _storage.readSaveFile();
 			if (_tasks == null) {
 				logger.log(Level.SEVERE, "Error from Storage.");
 			}
@@ -408,7 +414,7 @@ class Logic {
 		try {
 			Task task = new Task(command);
 			_tasks.add(task);
-			_storage.writeToFile(_tasks);
+			_storage.writeSaveFile(_tasks);
 			_undoStack.push(storePreviousState(command, task));
 			_status = Status.STATUS_SUCCESS_ADD;
 		} catch (ParseException pe) {
@@ -417,11 +423,11 @@ class Logic {
 			// set Exception state
 			// retrieve error message
 			// return error message
-		} /*catch (IOException ioe) {
+		} catch (IOException ioe) {
 			// set Exception state
 			// retrieve error message
 			// return error message
-		}*/
+		}
 		return getStatusMessage(taskName, null);
 	}
 	
@@ -446,24 +452,25 @@ class Logic {
 				break;
 			}
 		}
-		// try {
-		if (removed != null) {
-			_tasks.remove(removed);
-			_storage.writeToFile(_tasks);
-			_undoStack.push(storePreviousState(command, removed));
-			_status = Status.STATUS_SUCCESS_DELETE;
-		} else {
-			logger.log(Level.INFO, "Deleting task: Task not found. Could be user-end error or error in name/ID matching.");
-			_status = Status.STATUS_ERROR_DELETE;
+		
+		try {
+			if (removed != null) {
+				_tasks.remove(removed);
+				_storage.writeSaveFile(_tasks);
+				_undoStack.push(storePreviousState(command, removed));
+				_status = Status.STATUS_SUCCESS_DELETE;
+			} else {
+				logger.log(Level.INFO, "Deleting task: Task not found. Could be user-end error or error in name/ID matching.");
+				_status = Status.STATUS_ERROR_DELETE;
+				// set Exception state
+				// retrieve error message
+				// return error message
+			}
+		} catch (IOException ioe) {
 			// set Exception state
 			// retrieve error message
 			// return error message
 		}
-		/*} catch (IOException ioe) {
-			// set Exception state
-			// retrieve error message
-			// return error message
-		}*/
 		return getStatusMessage(taskName, command.getSpecificParameter("taskID"));
 	}
 	
@@ -496,7 +503,7 @@ class Logic {
 				_undoStack.push(storePreviousState(command, toUpdate.clone()));
 				toUpdate.updateTask(command);
 				_tasks.set(updateIndex, toUpdate);
-				_storage.writeToFile(_tasks);
+				_storage.writeSaveFile(_tasks);
 				_status = Status.STATUS_SUCCESS_UPDATE;
 			} else {
 				logger.log(Level.INFO, "Updating task: Task not found. Could be user-end error or error in name/ID matching.");
@@ -508,11 +515,11 @@ class Logic {
 			// set Exception state
 			// retrieve error message
 			// return error message
-		} /*catch (IOException ioe) {
+		} catch (IOException ioe) {
 			// set Exception state
 			// retrieve error message
 			// return error message
-		}*/
+		}
 		return getStatusMessage(taskName, command.getSpecificParameter("taskID"));
 	}
 
@@ -539,25 +546,26 @@ class Logic {
 				break;
 			}
 		}
-		// try {
-		if (toUpdate != null) {
-			_undoStack.push(storePreviousState(command, toUpdate.clone()));
-			toUpdate.setCompleted(true);
-			_tasks.set(updateIndex, toUpdate);
-			_storage.writeToFile(_tasks);
-			_status = Status.STATUS_SUCCESS_SET_COMPLETED;
-		} else {
-			logger.log(Level.INFO, "Completing task: Task not found. Could be user-end error or error in name/ID matching.");
-			_status = Status.STATUS_ERROR_SET_COMPLETED;
+
+		try {
+			if (toUpdate != null) {
+				_undoStack.push(storePreviousState(command, toUpdate.clone()));
+				toUpdate.setCompleted(true);
+				_tasks.set(updateIndex, toUpdate);
+				_storage.writeSaveFile(_tasks);
+				_status = Status.STATUS_SUCCESS_SET_COMPLETED;
+			} else {
+				logger.log(Level.INFO, "Completing task: Task not found. Could be user-end error or error in name/ID matching.");
+				_status = Status.STATUS_ERROR_SET_COMPLETED;
+				// set Exception state
+				// retrieve error message
+				// return error message
+			}
+		} catch (IOException ioe) {
 			// set Exception state
 			// retrieve error message
 			// return error message
 		}
-		/*} catch (IOException ioe) {
-			// set Exception state
-			// retrieve error message
-			// return error message
-		}*/
 		return getStatusMessage(taskName, command.getSpecificParameter("taskID"));
 	} 
 	
@@ -571,26 +579,26 @@ class Logic {
 	 */
 	// TODO: error handling
 	private String showTask(Command command) {
-		// try {
-		_undoStack.push(storePreviousState(command, null));
-		String sortOrder = command.getSpecificParameter("order");
-		logger.logp(Level.INFO, "Logic", "showTask(Command command)",
+		try {
+			_undoStack.push(storePreviousState(command, null));
+			String sortOrder = command.getSpecificParameter("order");
+			logger.logp(Level.INFO, "Logic", "showTask(Command command)",
 					"Displaying all tasks by user-specified order.", sortOrder);
-		if (sortOrder != null) {
-			/* 
-			 * Should I alter Task's sortCriterion to default
-			 * back to priority after user successfully sorts
-			 * tasks by his/her own desired order? 
-			 */
-			Task.setSortCriterion(sortOrder);
-			Collections.sort(_tasks);
-			_storage.writeToFile(_tasks);
-		}
-		/*} catch (IOException ioe) {
+			if (sortOrder != null) {
+				/* 
+				 * Should I alter Task's sortCriterion to default
+				 * back to priority after user successfully sorts
+				 * tasks by his/her own desired order? 
+				 */
+				Task.setSortCriterion(sortOrder);
+				Collections.sort(_tasks);
+				_storage.writeSaveFile(_tasks);
+			}
+		} catch (IOException ioe) {
 			// set Exception state
 			// retrieve error message
 			// return error message
-		}*/
+		}
 		String listToDisplay = "";
 		for (int i = 0; i < _tasks.size(); i++) {
 			listToDisplay += _tasks.get(i).toString() + "\n";
@@ -613,24 +621,24 @@ class Logic {
 	private String sortFile(Command command) {
 		_undoStack.push(storePreviousState(command, null));
 		String sortOrder = command.getSpecificParameter("order");
-		logger.logp(Level.INFO, "Logic", "sortFile(Command command)",
+		try {
+			logger.logp(Level.INFO, "Logic", "sortFile(Command command)",
 					"Sorting all tasks by user-specified order.", sortOrder);
-		// try {
-		if (sortOrder != null) {
-			/* 
-			 * Should I alter Task's sortCriterion to default
-			 * back to priority after user successfully sorts
-			 * tasks by his/her own desired order? 
-			 */
-			Task.setSortCriterion(sortOrder);
-			Collections.sort(_tasks);
-			_storage.writeToFile(_tasks);
-		}
-		/*} catch (IOException ioe) {
+			if (sortOrder != null) {
+				/* 
+				 * Should I alter Task's sortCriterion to default
+				 * back to priority after user successfully sorts
+				 * tasks by his/her own desired order? 
+				 */
+				Task.setSortCriterion(sortOrder);
+				Collections.sort(_tasks);
+				_storage.writeSaveFile(_tasks);
+			}
+		} catch (IOException ioe) {
 			// set Exception state
 			// retrieve error message
 			// return error message
-		}*/
+		}
 		return "OK."; // TODO: change to a status message
 	}
 	
@@ -701,13 +709,13 @@ class Logic {
 			}
 		}
 		_tasks.remove(removeIndex);
-		// try {
-		_storage.writeToFile(_tasks);
-		/*} catch (IOException ioe) {
+		try {
+			_storage.writeSaveFile(_tasks);
+		} catch (IOException ioe) {
 			// set Exception state
 			// retrieve error message
 			// return error message
-		}*/
+		}
 	}
 	
 	/**
@@ -718,13 +726,13 @@ class Logic {
 	// TODO: error handling
 	private void undoDelete(Task task) {
 		_tasks.add(task);
-		// try {
-		_storage.writeToFile(_tasks);
-		/*} catch (IOException ioe) {
+		try {
+			_storage.writeSaveFile(_tasks);
+		} catch (IOException ioe) {
 			// set Exception state
 			// retrieve error message
 			// return error message
-		}*/
+		}
 	}
 	
 	/**
@@ -743,13 +751,13 @@ class Logic {
 			}
 		}
 		_tasks.set(updateIndex, task);
-		// try {
-		_storage.writeToFile(_tasks);
-		/*} catch (IOException ioe) {
+		try {
+		_storage.writeSaveFile(_tasks);
+		} catch (IOException ioe) {
 			// set Exception state
 			// retrieve error message
 			// return error message
-		}*/
+		}
 	}
 	
 	/**
@@ -768,13 +776,13 @@ class Logic {
 			}
 		}
 		_tasks.set(updateIndex, task);
-		// try {
-		_storage.writeToFile(_tasks);
-		/*} catch (IOException ioe) {
+		try {
+			_storage.writeSaveFile(_tasks);
+		} catch (IOException ioe) {
 			// set Exception state
 			// retrieve error message
 			// return error message
-		}*/
+		}
 	}
 	
 	/**
@@ -785,13 +793,13 @@ class Logic {
 	// TODO: error handling
 	private void undoDisplay(ArrayList<Task> tasks) {
 		_tasks = tasks;
-		// try {
-		_storage.writeToFile(_tasks);
-		/*} catch (IOException ioe) {
+		try {
+			_storage.writeSaveFile(_tasks);
+		} catch (IOException ioe) {
 			// set Exception state
 			// retrieve error message
 			// return error message
-		}*/
+		}
 	}
 	
 	/**
@@ -802,13 +810,13 @@ class Logic {
 	// TODO: error handling
 	private void undoSort(ArrayList<Task> tasks) {
 		_tasks = tasks;
-		// try {
-		_storage.writeToFile(_tasks);
-		/*} catch (IOException ioe) {
+		try {
+			_storage.writeSaveFile(_tasks);
+		} catch (IOException ioe) {
 			// set Exception state
 			// retrieve error message
 			// return error message
-		}*/
+		}
 	}
 	
 	/*
@@ -837,7 +845,11 @@ class Logic {
 		 * Then again, if this method isn't needed anymore in the future,
 		 * this method can just be removed totally. 
 		 */
-		_storage.flushFile();
+		try {
+			_storage.flushFile();
+		} catch (IOException ioe) {
+			// TODO: handle exception
+		}
 		_tasks = new ArrayList<Task>();
 	}
 	
