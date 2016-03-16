@@ -17,9 +17,14 @@
  * 
  * 
  * =================== [CURRENT STATUS] ===================
- * Logical code needs to be refined. Also need to write
- * overload method for executeCommand()
- * 
+ * TODO:
+ * 1. For SEARCH function, call UI method to pass data to UI
+ *    (compulsory implementation, confirm with Mingxuan)
+ * 2. Read data from config file after initializing Storage,
+ *    retrieve HashMap of fields from there (Storage will have
+ *    2 initialization methods for different things: Config +
+ *    ArrayList<Task>)
+ * 3. Pass this HashMap to Parser after initializing Parser
  * 
  * @@author Tay Guo Qiang
  */
@@ -31,6 +36,7 @@ import java.util.Collections;
 import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Stack;
+import java.util.logging.*;
 import cs2103_w09_1j.esther.Command;
 import cs2103_w09_1j.esther.Task;
 import cs2103_w09_1j.esther.State;
@@ -42,6 +48,7 @@ class Logic {
 	private Storage _storage;
 	private ArrayList<Task> _tasks;
 	private Stack<State> _undoStack;
+	private static Logger logger = Logger.getLogger("Logic");
 	
 	private enum Status {
 		STATUS_SUCCESS_ADD, STATUS_ERROR_ADD, STATUS_SUCCESS_DELETE, STATUS_ERROR_DELETE,
@@ -94,8 +101,14 @@ class Logic {
 	 * Constructs a Logic component instance.
 	 */
 	public Logic() {
+		//assert(false);
+		initializeLogger();
 		_parser = new Parser();
+		logger.log(Level.INFO, "Initializing Parser component.");
+		assert _parser != null;
 		_storage = new Storage();
+		logger.log(Level.INFO, "Initializing Storage component.");
+		assert _storage != null;
 		_tasks = new ArrayList<Task>();
 		_undoStack = new Stack<State>();
 		updateInternalStorage();
@@ -113,19 +126,41 @@ class Logic {
 	}
 	
 	/**
+	 * Initializes a system logger. Used for testing purposes only.
+	 */
+	private void initializeLogger() {
+		try {
+			logger.setLevel(Level.WARNING);
+			FileHandler fh = new FileHandler("C:/Users/Tay/Documents/GitHub/main/Logic.log");  
+			logger.addHandler(fh);
+			SimpleFormatter formatter = new SimpleFormatter();  
+			fh.setFormatter(formatter);
+			logger.log(Level.INFO, "Initializing logger.");
+		} catch (SecurityException se) {
+			logger.log(Level.WARNING, "Not granted permission.");
+			System.out.println("Absence of permission granted to create log.");
+			System.exit(1);
+		} catch (IOException ioe) {
+			logger.log(Level.WARNING, "Cannot create file.");
+			System.out.println("Unable to create file.");
+			System.exit(1);
+		}
+	}
+	
+	/**
 	 * Updates the internal memory of the Logic to account
 	 * for any changes done to the text file.
 	 */
 	// TODO: finalize implementation, error handling
 	public void updateInternalStorage() {
-		
+		logger.log(Level.INFO, "Retrieving tasks list from Storage.");
 		try {
 			_tasks = _storage.readFromFile();
 			if (_tasks == null) {
-				System.out.println("Inner memory is null.");
-			} else {
-				Collections.sort(_tasks);
+				logger.log(Level.SEVERE, "Error from Storage.");
 			}
+			assert _tasks != null;
+			Collections.sort(_tasks);
 		} catch (Exception e) {
 			// set Exception state
 			// get error message
@@ -144,7 +179,13 @@ class Logic {
 	 */
 	// TODO: finalize implementation
 	public String executeCommand(String userInput) {
+		logger.logp(Level.INFO, "Logic", "executeCommand(String userInput)",
+					"Parsing input into Command object and executing.", userInput);
 		Command command = _parser.acceptUserInput(userInput);
+		if (command == null) {
+			logger.log(Level.WARNING, "Error from Parser: encountered null Command object.");
+		}
+		assert command != null;
 		return executeCommand(command);
 	}
 	
@@ -159,6 +200,8 @@ class Logic {
 	 */
 	public String executeCommand(Command command) {
 		String commandType = command.getCommand();
+		logger.logp(Level.INFO, "Logic", "executeCommand(Command command)",
+					"Executing on Command object.", commandType);
 		String statusMessage;
 		switch (commandType) {
 			case "add" : 
@@ -210,6 +253,7 @@ class Logic {
 	 * 		   performed on it, where applicable.
 	 */
 	private State storePreviousState(Command command, Task original) {
+		logger.log(Level.INFO, "Storing previous program memory state.");
 		String commandType = command.getCommand();
 		State previous = null;
 		switch (commandType) {
@@ -359,6 +403,7 @@ class Logic {
 	 */
 	// TODO: error handling
 	private String addTask(Command command) {
+		logger.log(Level.INFO, "Adding a task.");
 		String taskName = command.getSpecificParameter("taskName");
 		try {
 			Task task = new Task(command);
@@ -367,6 +412,7 @@ class Logic {
 			_undoStack.push(storePreviousState(command, task));
 			_status = Status.STATUS_SUCCESS_ADD;
 		} catch (ParseException pe) {
+			logger.log(Level.INFO, "Error in Parser for adding tasks.");
 			_status = Status.STATUS_ERROR_ADD;
 			// set Exception state
 			// retrieve error message
@@ -387,6 +433,7 @@ class Logic {
 	 */
 	// TODO: error handling
 	private String removeTask(Command command) {
+		logger.log(Level.INFO, "Removing a task.");
 		Task removed = null;
 		String taskName = command.getSpecificParameter("taskName");
 		String taskID = command.hasParameter("taskID")
@@ -406,6 +453,7 @@ class Logic {
 			_undoStack.push(storePreviousState(command, removed));
 			_status = Status.STATUS_SUCCESS_DELETE;
 		} else {
+			logger.log(Level.INFO, "Deleting task: Task not found. Could be user-end error or error in name/ID matching.");
 			_status = Status.STATUS_ERROR_DELETE;
 			// set Exception state
 			// retrieve error message
@@ -427,6 +475,7 @@ class Logic {
 	 */
 	// TODO: error handling
 	private String updateTask(Command command) {
+		logger.log(Level.INFO, "Updating a task.");
 		Task toUpdate = null;
 		int updateIndex = -1;
 		String taskName = command.getSpecificParameter("taskName");
@@ -450,9 +499,11 @@ class Logic {
 				_storage.writeToFile(_tasks);
 				_status = Status.STATUS_SUCCESS_UPDATE;
 			} else {
+				logger.log(Level.INFO, "Updating task: Task not found. Could be user-end error or error in name/ID matching.");
 				_status = Status.STATUS_ERROR_UPDATE_NOT_FOUND;
 			}
 		} catch (ParseException pe) {
+			logger.log(Level.INFO, "Updating task: Input-format error in updating certain fields of a task.");
 			_status = Status.STATUS_ERROR_UPDATE;
 			// set Exception state
 			// retrieve error message
@@ -473,6 +524,7 @@ class Logic {
 	 */
 	// TODO: error handling
 	private String completeTask(Command command) {
+		logger.log(Level.INFO, "Marking a task as done.");
 		Task toUpdate = null;
 		String taskName = command.getSpecificParameter("taskName");
 		String taskID = command.hasParameter("taskID")
@@ -495,6 +547,7 @@ class Logic {
 			_storage.writeToFile(_tasks);
 			_status = Status.STATUS_SUCCESS_SET_COMPLETED;
 		} else {
+			logger.log(Level.INFO, "Completing task: Task not found. Could be user-end error or error in name/ID matching.");
 			_status = Status.STATUS_ERROR_SET_COMPLETED;
 			// set Exception state
 			// retrieve error message
@@ -521,6 +574,8 @@ class Logic {
 		// try {
 		_undoStack.push(storePreviousState(command, null));
 		String sortOrder = command.getSpecificParameter("order");
+		logger.logp(Level.INFO, "Logic", "showTask(Command command)",
+					"Displaying all tasks by user-specified order.", sortOrder);
 		if (sortOrder != null) {
 			/* 
 			 * Should I alter Task's sortCriterion to default
@@ -558,6 +613,8 @@ class Logic {
 	private String sortFile(Command command) {
 		_undoStack.push(storePreviousState(command, null));
 		String sortOrder = command.getSpecificParameter("order");
+		logger.logp(Level.INFO, "Logic", "sortFile(Command command)",
+					"Sorting all tasks by user-specified order.", sortOrder);
 		// try {
 		if (sortOrder != null) {
 			/* 
@@ -586,6 +643,7 @@ class Logic {
 		try {
 			State previousState = _undoStack.pop();
 			String commandType = previousState.getCommand();
+			logger.logp(Level.INFO, "Logic", "undo()", "Undoing a previous operation.", commandType);
 			switch (commandType) {
 				case "add" :
 					undoAdd(previousState.getState().get(0));
@@ -621,6 +679,7 @@ class Logic {
 			}
 			_status = Status.STATUS_SUCCESS_UNDO;
 		} catch (EmptyStackException e) {
+			logger.log(Level.INFO, "User has reached the most initial state of the program.");
 			_status = Status.STATUS_ERROR_UNDO;
 		}
 		return getStatusMessage(null, null);
