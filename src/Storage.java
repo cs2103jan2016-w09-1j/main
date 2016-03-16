@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 
 import cs2103_w09_1j.esther.Config;
 import cs2103_w09_1j.esther.Task;
@@ -18,6 +19,7 @@ public class Storage {
 	private static final String BY_NEXTLINE = "\\n";
 	private static final String configName = "esther.config";
 	private static final Path configPath = Paths.get(configName);
+	private static final Logger storageLogger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
 	/**
 	 * Constructor for Storage class
@@ -30,7 +32,7 @@ public class Storage {
 	 * @throws IOException
 	 */
 	public Storage() throws ParseException, IOException {
-		// check config location
+		storageLogger.info("Initializing Storage");
 		processConfig();
 		readSaveFile();
 	}
@@ -46,8 +48,12 @@ public class Storage {
 	 * @throws IOException
 	 */
 	public ArrayList<Task> readSaveFile(Path filePath) throws ParseException, IOException {
+		storageLogger.info("Checking if save file is valid");
 		if (isValidFile(filePath)) {
+			storageLogger.info("File Valid. Proceeding to load");
 			loadSaveFile(filePath);
+		} else {
+			storageLogger.warning("File Invalid. Returning empty list of tasks");
 		}
 		return tasksBuffer;
 	}
@@ -61,6 +67,7 @@ public class Storage {
 	 *             if an IO error occurs during loading
 	 */
 	public ArrayList<Task> readSaveFile() throws ParseException, IOException {
+		storageLogger.info("Loading saved file");
 		return readSaveFile(savePath);
 	}
 
@@ -73,6 +80,7 @@ public class Storage {
 	 *             if an IO error occurs during writing
 	 */
 	public void writeSaveFile(ArrayList<Task> tasks) throws IOException {
+		storageLogger.info("Saving tasks to save file");
 		tasksBuffer = tasks;
 		writeFile(tasksToString(tasksBuffer), savePath);
 	}
@@ -85,8 +93,12 @@ public class Storage {
 	 * @throws ParseException 
 	 */
 	public Config readConfigFile(Path filePath) throws IOException, ParseException {
+		storageLogger.info("Checking if config file is valid");
 		if (isValidFile(configPath)) {
+			storageLogger.info("File Valid. Proceeding to load");
 			loadConfigFile(configPath);
+		} else {
+			storageLogger.warning("File Invalid. Returning default config");
 		}
 		return currentConfig;
 	}
@@ -140,12 +152,14 @@ public class Storage {
 	//===========PRIVATE METHODS BELOW==================
 
 	/**
+	 * Reads the contents from a file at the given path into a String.
 	 * @param path
 	 * @return
 	 * @throws IOException
 	 */
 	private String readFile(Path path) throws IOException {
 		String outputString = "";
+		storageLogger.info("Accessing save file");
 		BufferedReader reader = Files.newBufferedReader(path);
 		while (reader.ready()) {
 			outputString += reader.readLine();
@@ -164,6 +178,7 @@ public class Storage {
 	 * @throws IOException
 	 */
 	private void writeFile(String string, Path path) throws IOException {
+		storageLogger.info("Accessing save file for writing");
 		BufferedWriter writer = Files.newBufferedWriter(configPath);
 		writer.write(string);
 		writer.close();
@@ -196,6 +211,8 @@ public class Storage {
 	 * 
 	 */
 	private void processConfig() {
+		assert(currentConfig != null);
+		storageLogger.info("Retreiving save path from current Config");
 		savePath = currentConfig.getSavePath();
 	}
 
@@ -205,6 +222,7 @@ public class Storage {
 	 * @throws ParseException
 	 */
 	private void loadTasksString(String allLines) throws ParseException {
+		storageLogger.info("File loaded. Passing contents to load into tasks buffer.");
 		String[] allLinesArray = allLines.split(BY_NEXTLINE);
 		for (int i = 0; i < allLinesArray.length; i++) {
 			loadTaskString(allLinesArray[i]);
@@ -235,10 +253,10 @@ public class Storage {
 
 	/**
 	 * 
-	 * @param newFilePath
+	 * @param filePath
 	 * @return
 	 */
-	private boolean isValidFile(Path newFilePath) {
-		return newFilePath.toFile().exists();
+	private boolean isValidFile(Path filePath) {
+		return filePath.toFile().exists();
 	}
 }
