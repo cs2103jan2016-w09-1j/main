@@ -68,6 +68,7 @@ public class Storage {
 	 */
 	public ArrayList<Task> readSaveFile() throws ParseException, IOException {
 		storageLogger.info("Loading saved file");
+		assert(savePath != null);
 		return readSaveFile(savePath);
 	}
 

@@ -32,7 +32,8 @@ public class UIController {
     private VBox displayWindow;
 
     @FXML
-    private Text display = new Text(logic.executeCommand("show"));
+    //private Text display = new Text(logic.executeCommand("show"));
+    private Text display = new Text("");
 
     @FXML
     private Label commandLog;
