@@ -180,8 +180,7 @@ For example, if you want to delete a task in your list called "`Meet Joe at mall
 
 If you are not sure what the name or ID of your task is, use the `show` command and refer to the list of tasks shown in **ESTHER** (see screenshot below).
 
-!["What you should see after running the `show` command"](https://drive.google.com/file/d/0B3_4TQRv9s3SZDItLS15TFA2Y2M/view?usp=sharing)
-
+!["After running the 'show' command"](https://drive.google.com/file/d/0B3_4TQRv9s3SZDItLS15TFA2Y2M/view?usp=sharing)
 
 **6. "Unable to update task: The field you have specified does not exist."**
 
