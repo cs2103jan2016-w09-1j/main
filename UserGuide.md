@@ -135,7 +135,7 @@ Last but not least, the **help** command provides you with a brief version of wh
 ### _How to use this troubleshooting guide_
 Sometimes, you may run into an error when using **ESTHER**. When that happens, she will show you an error message, as seen below.
 
-[logo]: https://drive.google.com/file/d/0B3_4TQRv9s3SbVBhZjVhODlINGM/view?usp=sharing "Where to find the error message"
+!["Where to find the error message"](https://drive.google.com/file/d/0B3_4TQRv9s3SbVBhZjVhODlINGM/view?usp=sharing)
 
 This troubleshooting guide shows you all possible error messages you may encounter when using **ESTHER**. Please find the section in this guide that corresponds to the error message you see on **ESTHER** and follow the instructions in that section to get **ESTHER** to work normally again.
 
@@ -180,7 +180,7 @@ For example, if you want to delete a task in your list called "`Meet Joe at mall
 
 If you are not sure what the name or ID of your task is, use the `show` command and refer to the list of tasks shown in **ESTHER** (see screenshot below).
 
-[logo]: https://drive.google.com/file/d/0B3_4TQRv9s3SZDItLS15TFA2Y2M/view?usp=sharing "What you should see after running the `show` command"
+!["What you should see after running the `show` command"](https://drive.google.com/file/d/0B3_4TQRv9s3SZDItLS15TFA2Y2M/view?usp=sharing)
 
 
 **6. "Unable to update task: The field you have specified does not exist."**
