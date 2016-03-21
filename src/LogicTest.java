@@ -148,7 +148,7 @@ public class LogicTest {
 		// update task1 to task3 command
 		HashMap<String, String> argsUpdate = new HashMap<String, String>();
 		argsUpdate.put("taskName", "task1");
-		argsUpdate.put("updatedTaskName", "task3");
+		argsUpdate.put("updateName", "task3");
 		updateCommand = new Command("update", argsUpdate);
 		
 		// sort, show command by priority
@@ -752,23 +752,26 @@ public class LogicTest {
 	public void construct_Delete_Command_Id() {
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		HashMap<String, String> args = new HashMap<String, String>();
-		args.put("taskId", String.valueOf(internalStorage.get(0).getId()));
+		args.put("taskID", String.valueOf(internalStorage.get(0).getId()));
+		//System.out.println("ID of task to delete: " + internalStorage.get(0).getId());
 		deleteCommandId = new Command("delete", args);
 	}
 	
 	public void construct_Update_Command_Id() {
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		HashMap<String, String> args = new HashMap<String, String>();
-		args.put("taskId", String.valueOf(internalStorage.get(0).getId()));
-		args.put("updatedTaskName", "task3");
+		args.put("taskID", String.valueOf(internalStorage.get(0).getId()));
+		args.put("updateName", "task3");
+		//System.out.println("ID of task to update: " + internalStorage.get(0).getId());
 		updateCommandId = new Command("update", args);
 	}
 	
 	public void construct_Set_Completed_Command_Id() {
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		HashMap<String, String> args = new HashMap<String, String>();
-		args.put("taskId", String.valueOf(internalStorage.get(0).getId()));
+		args.put("taskID", String.valueOf(internalStorage.get(0).getId()));
 		args.put("completed", "true");
+		//System.out.println("ID of task to complete: " + internalStorage.get(0).getId());
 		setCompletedCommandId = new Command("completed", args);
 	}
 	

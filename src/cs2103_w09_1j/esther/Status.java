@@ -1,7 +1,7 @@
 package cs2103_w09_1j.esther;
 
 
-class Status {
+public class Status {
 
 	/*enum msg {
 		SUCCESS_ADD, ERROR_ADD, SUCCESS_DELETE, ERROR_DELETE,
@@ -10,11 +10,11 @@ class Status {
 		ERROR_UNDO, UNKNOWN_STATE, SUCCESS_HELP
 	}*/
 
-	enum msg {
-		SUCCESS ,ERROR 
+	public enum msg {
+		SUCCESS, ERROR, UNKNOWN 
 	}
 
-	static msg _msg;
+	public static msg _msg = msg.SUCCESS;
 
 	static final String MESSAGE_SUCCESS_ADD = "%1$s is successfully added to file.\n";
 	static final String MESSAGE_ERROR_ADD = "[ERROR] Failed to add %1$s to file.\n";
@@ -54,18 +54,19 @@ class Status {
 			+ "Using the 'undo' command:\n"
 			+ "General usage: undo\n" + "Undo one step back to previous state.\n";
 
-	static String getMessage(String taskName, String taskID, String commandType) {
+	public static String getMessage(String taskName, String taskID, String commandType) {
 		String message;
 
 		switch(_msg) {
 		case SUCCESS :
-			successCall(taskName, taskID, commandType);
+			message = successCall(taskName, taskID, commandType);
+			break;
 		case ERROR :
-			errorCall(taskName, taskID, commandType);
+			message = errorCall(taskName, taskID, commandType);
+			break;
 		default :
 			message = MESSAGE_UNKNOWN_STATE;
 			break;
-
 		}
 		return message;
 	}
@@ -137,7 +138,6 @@ class Status {
 				message = String.format(MESSAGE_ERROR_UPDATE, taskID);
 			} else {
 				message = MESSAGE_ERROR_UPDATE_NOT_FOUND;
-				break;
 			}
 			break;
 			
