@@ -157,6 +157,10 @@ public class Storage {
 		flushFileAtLocation(savePath);
 	}
 	
+	public Config getConfig() {
+		return currentConfig;
+	}
+	
 	//===========PRIVATE METHODS BELOW==================
 
 	/**
