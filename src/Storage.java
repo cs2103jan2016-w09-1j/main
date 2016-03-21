@@ -33,6 +33,7 @@ public class Storage {
 	 */
 	public Storage() throws ParseException, IOException {
 		storageLogger.info("Initializing Storage");
+		readConfigFile();
 		processConfig();
 		readSaveFile();
 	}
@@ -81,6 +82,7 @@ public class Storage {
 	 *             if an IO error occurs during writing
 	 */
 	public void writeSaveFile(ArrayList<Task> tasks) throws IOException {
+		assert(tasks != null);
 		storageLogger.info("Saving tasks to save file");
 		tasksBuffer = tasks;
 		writeFile(tasksToString(tasksBuffer), savePath);
@@ -97,11 +99,13 @@ public class Storage {
 		storageLogger.info("Checking if config file is valid");
 		if (isValidFile(configPath)) {
 			storageLogger.info("File Valid. Proceeding to load");
-			loadConfigFile(configPath);
+			return loadConfigFile(configPath);
 		} else {
-			storageLogger.warning("File Invalid. Returning default config");
+			storageLogger.warning("File Invalid. Using default config");
+			Config defaultConfig = new Config();
+			writeConfigFile(defaultConfig);
+			return defaultConfig;
 		}
-		return currentConfig;
 	}
 
 	/**
@@ -120,6 +124,7 @@ public class Storage {
 	 * @throws IOException
 	 */
 	public void writeConfigFile(Config config) throws IOException {
+		storageLogger.info("Writing config file");
 		String configString = config.toString();
 		writeFile(configString, configPath);
 	}
@@ -128,10 +133,12 @@ public class Storage {
 	 * Method to update config if logic or an external component changes it.
 	 * 
 	 * @param newConfig
+	 * @throws IOException 
 	 */
-	public void updateConfig(Config newConfig) {
+	public void updateConfig(Config newConfig) throws IOException {
 		currentConfig = newConfig;
 		processConfig();
+		writeConfigFile(newConfig);
 	}
 
 	/**
@@ -160,7 +167,7 @@ public class Storage {
 	 */
 	private String readFile(Path path) throws IOException {
 		String outputString = "";
-		storageLogger.info("Accessing save file");
+		storageLogger.info("Accessing save file at "+path.toString());
 		BufferedReader reader = Files.newBufferedReader(path);
 		while (reader.ready()) {
 			outputString += reader.readLine();
@@ -179,8 +186,8 @@ public class Storage {
 	 * @throws IOException
 	 */
 	private void writeFile(String string, Path path) throws IOException {
-		storageLogger.info("Accessing save file for writing");
-		BufferedWriter writer = Files.newBufferedWriter(configPath);
+		storageLogger.info("Accessing file at "+path.toString()+" for writing");
+		BufferedWriter writer = Files.newBufferedWriter(path);
 		writer.write(string);
 		writer.close();
 	}
@@ -204,8 +211,14 @@ public class Storage {
 	 * @throws IOException
 	 * @throws ParseException 
 	 */
-	private void loadConfigFile(Path loadConfigPath) throws IOException, ParseException {
-		currentConfig = new Config(readFile(loadConfigPath));
+	private Config loadConfigFile(Path loadConfigPath) throws IOException {
+		try {
+			Config config = new Config(readFile(loadConfigPath));
+			return config;
+		} catch (ParseException pe) {
+			storageLogger.info("Error encounted parsing config file. Using default");
+			return new Config();
+		}
 	}
 
 	/**
