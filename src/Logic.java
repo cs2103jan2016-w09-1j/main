@@ -90,6 +90,25 @@ class Logic {
 		//logger.logp(Level.CONFIG, "Logic", "updateInternalStorage",
 					//"Reading tasks into inner memory upon initialization.");
 		updateInternalStorage();
+		System.out.println(_config.getReferenceID());
+		Task.setGlobalId(_config.getReferenceID());
+		
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+	        @Override
+	        public void run() {
+	        	System.out.println("Saving current system configurations.");
+	            try {
+	            	//logger.logp(Level.INFO, "Logic", "addTask(Command command)",
+	            				  //"Updating Config file in Logic and Storage.");
+	            	_config.setReferenceID(Task.getGlobalId());
+	            	_storage.updateConfig(_config);
+	            } catch (IOException ioe) {
+	            	//logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
+	            				  //"Cannot update Config file in Logic and Storage.", ioe);
+	                System.out.println("Error updating Config file in both Logic and Storage.");
+	            }
+	        }   
+	    });
 	}	
 
 	/**
@@ -213,6 +232,23 @@ class Logic {
 	}
 	
 	/**
+	 * Retrieves the internal memory that is used by Logic.
+	 * This internal memory is represented in a whole String.
+	 * 
+	 * @return the internal memory representation of the
+	 * 		   contents stored in the text file, in String
+	 * 		   form.
+	 * @@author A0129660A
+	 */
+	public String getInternalStorageInString() {
+		String listToDisplay = "";
+		for (int i = 0; i < _tasks.size(); i++) {
+			listToDisplay += _tasks.get(i).toString() + "\n";
+		}
+		return listToDisplay;
+	}
+	
+	/**
 	 * Initializes a system logger. Used for testing purposes only.
 	 * 
 	 * @@author A0129660A
@@ -310,7 +346,7 @@ class Logic {
 	 * @return		a message indicating the status of the add-task operation
 	 * @@author A0129660A
 	 */
-	private String addTask(Command command) {
+	private String addTask(Command command) {		
 		String taskName = command.getSpecificParameter(TaskField.NAME.getTaskKeyName());
 		//logger.logp(Level.INFO, "Logic", "addTask(Command command)",
 					//"Adding a task.", taskName);
@@ -323,12 +359,10 @@ class Logic {
 		} catch (ParseException pe) {
 			//logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
 						//"Add task: Inappropriate date format passed into Task.", pe);
-			System.out.println("Parse Exception");
 			Status._msg = Status.msg.ERROR;
 		} catch (IOException ioe) {
 			//logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
 					//"Add task: Error in writing to file.", ioe);
-			System.out.println("IO Exception");
 			Status._msg = Status.msg.ERROR;
 		}
 		return Status.getMessage(taskName, null, command.getCommand());

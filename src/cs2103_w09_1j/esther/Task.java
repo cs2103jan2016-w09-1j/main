@@ -292,6 +292,26 @@ public class Task implements Comparable<Task> {
 	public void setId(int id) {
 		_id = id;
 	}
+	
+	/**
+	 * Gets the global ID variable for system usage.
+	 * 
+	 * @return the global ID variable in this class
+	 * @author Tay Guo Qiang
+	 */
+	public static int getGlobalId() {
+		return _assignId;
+	}
+	
+	/**
+	 * Sets the global ID variable for system usage.
+	 * 
+	 * @return the global ID variable in this class
+	 * @author Tay Guo Qiang
+	 */
+	public static void setGlobalId(int newId) {
+		_assignId = newId;
+	}
 
 	/**
 	 * Gets completion status of the Task.

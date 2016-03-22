@@ -93,12 +93,12 @@ public class UIController implements Initializable {
 			}
 
 			// TODO stub: receive logic internal memory
-			display.setText(logic.executeCommand("show .by date"));
+			display.setText(logic.getInternalStorageInString());
 
 		} else {
 			label.setText(in);
 			// TODO stub: receive logic internal memory
-			display.setText(logic.executeCommand("show .by date"));
+			display.setText(logic.getInternalStorageInString());
 		}
 	}
 
