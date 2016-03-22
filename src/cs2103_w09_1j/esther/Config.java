@@ -110,7 +110,6 @@ public class Config {
 		while (it.hasNext()) {
 			HashMap.Entry<String, String> pair = (HashMap.Entry<String, String>) it.next();
 			hashMapString += pair.getKey() + " = " + pair.getValue() + ";\n";
-			it.remove(); // avoids a ConcurrentModificationException
 		}
 		return hashMapString;
 	}
