@@ -16,15 +16,16 @@ public class Config {
 
 	private static final int defaultReferenceID = 0;
 	private static final Path defaultSavePath = Paths.get("esther.txt");
-	private static final String[][] defaultFieldNameAliases = {	{ "taskName", "name" },
-																{ "tName", "name" },
-																{ "name", "name" },
-																{ "nm", "name" },
-																{ "n", "name" },
+	private static final String[][] defaultFieldNameAliases = {	{ "taskName", "taskName" },
+																{ "tName", "taskName" },
+																{ "name", "taskName" },
+																{ "nm", "taskName" },
+																{ "n", "taskName" },
 																{ "date", "date" },
 																{ "dt", "date" },
 																{ "d", "date" },
-																{ "id", "id" },
+																{ "id", "taskID" },
+																{ "taskid", "taskID" },
 																{ "priority", "priority" },
 																{ "prio", "priority" },
 																{ "pri", "priority" },
