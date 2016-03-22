@@ -38,6 +38,8 @@ import java.util.HashMap;
 import java.util.Stack;
 import java.util.logging.*;
 import cs2103_w09_1j.esther.Command;
+import cs2103_w09_1j.esther.Command.CommandKey;
+import cs2103_w09_1j.esther.Task.TaskField;
 import cs2103_w09_1j.esther.Config;
 import cs2103_w09_1j.esther.Task;
 import cs2103_w09_1j.esther.State;
@@ -72,27 +74,16 @@ class Logic {
 	 * 
 	 * @@author A0129660A
 	 */
-	// TODO: How should Logic handle initialization error?
-	// Current implementation is to terminate the program for now.
-	public Logic() {
+	public Logic() throws ParseException, IOException {
 		//initializeLogger();
-		try {
-			_storage = new Storage();
-			//logger.logp(Level.CONFIG, "Storage", "Storage()", "Initializing Storage.");
-			assert _storage != null;
-		} catch (ParseException pe) {
-			// TODO: handle exception from constructing tasks
-			//logger.logp(Level.SEVERE, "Storage", "Storage()",
-						//"Error in constructing tasks when initializing Storage.", pe);
-			System.exit(1);
-		} catch (IOException ioe) {
-			// TODO: handle exception from accessing file system
-			//logger.logp(Level.SEVERE, "Storage", "Storage()",
-					//"Error in reading file when initializing Storage.", ioe);
-			System.exit(1);
-		}
+		_storage = new Storage();
+		//logger.logp(Level.CONFIG, "Storage", "Storage()", "Initializing Storage.");
+		assert _storage != null;
+		_config = _storage.getConfig();
+		//logger.logp(Level.CONFIG, "Storage", "getConfig()", "Initializing Config.");
+		assert _config != null;
 		//logger.logp(Level.CONFIG, "Parser", "Parser()", "Initializing Parser.");
-		_parser = new Parser();
+		_parser = new Parser(/*_config*/); // TODO for Parser: accept HashMap
 		assert _parser != null;
 		_tasks = new ArrayList<Task>();
 		_undoStack = new Stack<State>();
@@ -141,46 +132,47 @@ class Logic {
 	 */
 	// TODO: implement search functionality
 	protected String executeCommand(Command command) {
-		String commandType = command.getCommand();
+		String commandName = command.getCommand();
+		CommandKey commandType = CommandKey.get(commandName);
 		//logger.logp(Level.INFO, "Logic", "executeCommand(Command command)",
 					//"Executing on Command object.", commandType);
 		String statusMessage;
 		switch (commandType) {
-			case "add" : 
+			case ADD : 
 				statusMessage = addTask(command);
 				break;
 				
-			case "delete" :
+			case DELETE :
 				statusMessage = removeTask(command);
 				break;
 				
-			case "update" :
+			case UPDATE :
 				statusMessage = updateTask(command);
 				break;
 				
-			case "completed" :
+			case COMPLETED :
 				statusMessage = completeTask(command);
 				break;
 				
-			case "show" :
+			case SHOW :
 				statusMessage = showTask(command);
 				break;
 				
-			case "sort" :
+			case SORT :
 				statusMessage = sortFile(command);
 				break;
 				
-			case "search" :
+			/*case SEARCH : // TODO for Parser: add enum field + value 
 				statusMessage = searchFile(command);
-				break;
+				break;*/
 				
-			case "undo" :
+			case UNDO :
 				statusMessage = undo();
 				break;
 				
-			case "help" :
+			case HELP :
 				Status._msg = Status.msg.SUCCESS;
-				statusMessage = Status.getMessage(null, null, commandType);
+				statusMessage = Status.getMessage(null, null, commandName);
 				break;
 				
 			default :
@@ -188,7 +180,7 @@ class Logic {
 				//logger.logp(Level.INFO, "Logic", "executeCommand(Command command)",
 							//"Unrecognized command.");
 				Status._msg = null;
-				statusMessage = Status.getMessage(null, null, null);
+				statusMessage = Status.getMessage(null, null, commandName);
 				break;
 		}
 		return statusMessage;
@@ -319,7 +311,7 @@ class Logic {
 	 * @@author A0129660A
 	 */
 	private String addTask(Command command) {
-		String taskName = command.getSpecificParameter("taskName");
+		String taskName = command.getSpecificParameter(TaskField.NAME.getTaskKeyName());
 		//logger.logp(Level.INFO, "Logic", "addTask(Command command)",
 					//"Adding a task.", taskName);
 		try {
@@ -331,10 +323,12 @@ class Logic {
 		} catch (ParseException pe) {
 			//logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
 						//"Add task: Inappropriate date format passed into Task.", pe);
+			System.out.println("Parse Exception");
 			Status._msg = Status.msg.ERROR;
 		} catch (IOException ioe) {
 			//logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
 					//"Add task: Error in writing to file.", ioe);
+			System.out.println("IO Exception");
 			Status._msg = Status.msg.ERROR;
 		}
 		return Status.getMessage(taskName, null, command.getCommand());
@@ -349,12 +343,12 @@ class Logic {
 	 */
 	private String removeTask(Command command) {
 		Task removed = null;
-		String taskName = command.getSpecificParameter("taskName");
-		String taskID = command.hasParameter("taskID")
-						? command.getSpecificParameter("taskID")
+		String taskName = command.getSpecificParameter(TaskField.NAME.getTaskKeyName());
+		String taskID = command.hasParameter(TaskField.ID.getTaskKeyName())
+						? command.getSpecificParameter(TaskField.ID.getTaskKeyName())
 						: "-1";
 		//System.out.println(taskID);
-		String[] params = {taskName, command.getSpecificParameter("taskID")};
+		String[] params = {taskName, command.getSpecificParameter(TaskField.ID.getTaskKeyName())};
 		//logger.logp(Level.INFO, "Logic", "removeTask(Command command)",	"Removing a task.", params);
 		for (Task existingTask: _tasks) {
 			if (existingTask.getName().equals(taskName) ||
@@ -394,12 +388,12 @@ class Logic {
 		//logger.log(Level.INFO, "Updating a task.");
 		Task toUpdate = null;
 		int updateIndex = -1;
-		String taskName = command.getSpecificParameter("taskName");
-		String checkTaskId = command.hasParameter("taskID")
-						? command.getSpecificParameter("taskID")
+		String taskName = command.getSpecificParameter(TaskField.NAME.getTaskKeyName());
+		String checkTaskId = command.hasParameter(TaskField.ID.getTaskKeyName())
+						? command.getSpecificParameter(TaskField.ID.getTaskKeyName())
 						: "-1";
 		//System.out.println(checkTaskId);
-		String[] params = {taskName, command.getSpecificParameter("taskID")};
+		String[] params = {taskName, command.getSpecificParameter(TaskField.ID.getTaskKeyName())};
 		//logger.logp(Level.INFO, "Logic", "updateTask(Command command)", "Updating a task.", params);
 		for (int i = 0; i < _tasks.size(); i++) {
 			if (_tasks.get(i).getName().equals(taskName) ||
@@ -445,12 +439,12 @@ class Logic {
 	 */
 	private String completeTask(Command command) {
 		Task toUpdate = null;
-		String taskName = command.getSpecificParameter("taskName");
-		String taskID = command.hasParameter("taskID")
-						? command.getSpecificParameter("taskID")
+		String taskName = command.getSpecificParameter(TaskField.NAME.getTaskKeyName());
+		String taskID = command.hasParameter(TaskField.ID.getTaskKeyName())
+						? command.getSpecificParameter(TaskField.ID.getTaskKeyName())
 						: "-1";
 		//System.out.println(taskID);
-		String[] params = {taskName, command.getSpecificParameter("taskID")};
+		String[] params = {taskName, command.getSpecificParameter(TaskField.ID.getTaskKeyName())};
 		//logger.logp(Level.INFO, "Logic", "completeTask(Command command)", "Completing a task.", params);
 		int updateIndex = -1;
 		for (int i = 0; i < _tasks.size(); i++) {
@@ -494,7 +488,7 @@ class Logic {
 	private String showTask(Command command) {
 		try {
 			_undoStack.push(storePreviousState(command, null));
-			String sortOrder = command.getSpecificParameter("order");
+			String sortOrder = command.getSpecificParameter(TaskField.SHOW.getTaskKeyName());
 			//logger.logp(Level.INFO, "Logic", "showTask(Command command)",
 						//"Displaying all tasks by user-specified order.", sortOrder);
 			if (sortOrder != null) {
@@ -536,7 +530,7 @@ class Logic {
 	 */
 	private String sortFile(Command command) {
 		_undoStack.push(storePreviousState(command, null));
-		String sortOrder = command.getSpecificParameter("order");
+		String sortOrder = command.getSpecificParameter(TaskField.SHOW.getTaskKeyName());
 		try {
 			//logger.logp(Level.INFO, "Logic", "sortFile(Command command)",
 						//"Sorting all tasks by user-specified order.", sortOrder);
@@ -572,7 +566,7 @@ class Logic {
 	 */
 	// TODO: implement (for later stages)
 	private String/*ArrayList<Task>*/ searchFile(Command command) {
-		String stringResults = "search\n";
+		String stringResults = "search";
 		// String searchKey = command.getSpecificParameter("something_for_search");
 		//logger.logp(Level.INFO, "Logic", "searchFile(Command command)",
 				  	  //"Searching tasks in file.", searchKey);
@@ -586,11 +580,7 @@ class Logic {
 		}
 		//return results;
 		System.out.println(stringResults);
-		if (stringResults.equals("search\n")) {
-			return "No results found.\n";
-		} else {
-			return stringResults;
-		}
+		return stringResults;
 	}
 	
 	/**
@@ -604,53 +594,54 @@ class Logic {
 	private State storePreviousState(Command command, Task original) {
 		//logger.logp(Level.INFO, "Logic", "storePreviousState(Command command, Task original)",
 					//"Storing previous program memory state.");
-		String commandType = command.getCommand();
+		String commandName = command.getCommand();
+		CommandKey commandType = CommandKey.get(commandName);
 		State previous = null;
 		switch (commandType) {
-			case "add" :
-				previous = new State(commandType);
+			case ADD :
+				previous = new State(commandName);
 				previous.storeOriginalTaskState(original);
 				break;
 
-			case "delete" :
-				previous = new State(commandType);
+			case DELETE :
+				previous = new State(commandName);
 				previous.storeOriginalTaskState(original);
 				break;
 
-			case "update" :
-				previous = new State(commandType);
+			case UPDATE :
+				previous = new State(commandName);
 				previous.storeOriginalTaskState(original);
 				break;
 				
-			case "completed" :
-				previous = new State(commandType);
+			case COMPLETED :
+				previous = new State(commandName);
 				previous.storeOriginalTaskState(original);
 				break;
 
-			case "show" :
-				previous = new State(commandType);
-				assert command.getSpecificParameter("order") != null;
-				previous.setSortOrder(command.getSpecificParameter("order"));
+			case SHOW :
+				previous = new State(commandName);
+				assert command.getSpecificParameter(TaskField.SHOW.getTaskKeyName()) != null;
+				previous.setSortOrder(command.getSpecificParameter(TaskField.SHOW.getTaskKeyName()));
 				ArrayList<Task> preDisplayTaskList = (ArrayList<Task>) _tasks.clone();
 				previous.storeInnerMemoryState(preDisplayTaskList);
 				break;
 
-			case "sort" :
-				previous = new State(commandType);
-				assert command.getSpecificParameter("order") != null;
-				previous.setSortOrder(command.getSpecificParameter("order"));
+			case SORT :
+				previous = new State(commandName);
+				assert command.getSpecificParameter(TaskField.SHOW.getTaskKeyName()) != null;
+				previous.setSortOrder(command.getSpecificParameter(TaskField.SHOW.getTaskKeyName()));
 				ArrayList<Task> preSortTaskList = (ArrayList<Task>) _tasks.clone();
 				previous.storeInnerMemoryState(preSortTaskList);
 				break;
 				
-			case "search" :
+			/*case SEARCH : // TODO for Parser: add enum field + value
 				// not needed to store a State for searching tasks
+				break;*/
+
+			case UNDO :
 				break;
 
-			case "undo" :
-				break;
-
-			case "help" :
+			case HELP :
 				break;
 				
 			default :
@@ -669,54 +660,60 @@ class Logic {
 	 * @@author A0129660A
 	 */
 	private String undo() {
+		String commandName = "undo";
 		try {
 			State previousState = _undoStack.pop();
-			String commandType = previousState.getCommand();
+			commandName = previousState.getCommand();
+			CommandKey commandType = CommandKey.get(previousState.getCommand());
 			//logger.logp(Level.INFO, "Logic", "undo()", "Undoing a previous operation.", commandType);
 			switch (commandType) {
-				case "add" :
+				case ADD :
 					undoAdd(previousState.getState().get(0));
 					break;
 					
-				case "delete" :
+				case DELETE :
 					undoDelete(previousState.getState().get(0));
 					break;
 					
-				case "update" :
+				case UPDATE :
 					undoUpdate(previousState.getState().get(0));
 					break;
 					
-				case "completed" :
+				case COMPLETED :
 					undoCompleted(previousState.getState().get(0));
 					break;
 					
-				case "show" :
+				case SHOW :
 					undoDisplay(previousState.getState());
 					break;
 					
-				case "sort" :
+				case SORT :
 					undoSort(previousState.getState());
 					break;
 					
-				case "search" :
+				/*case SEARCH :
+				 	// TODO for Parser: add enum field + value
 					// undo a search does not make logical sense
-					break;
+					break;*/
 					
-				case "help" :
+				case HELP :
 					break;
 			
 				default :
 					//logger.logp(Level.INFO, "Logic", "undo()", "Dummy State encountered.");
+					Status._msg = Status.msg.ERROR;
 					break;
 			}
 			//System.out.println("Undo successful.");
-			Status._msg = Status.msg.SUCCESS;
+			if (commandName != null) {
+				Status._msg = Status.msg.SUCCESS;
+			}
 		} catch (EmptyStackException e) {
 			//logger.logp(Level.INFO, "Logic", "undo()", "User cannot undo any further.");
 			//System.out.println("Undo not successful.");
 			Status._msg = Status.msg.ERROR;
 		}
-		return Status.getMessage(null, null, "undo");
+		return Status.getMessage(null, null, commandName);
 	}
 	
 	// ============================ USER OPERATION METHODS FOR LOGIC ============================= //

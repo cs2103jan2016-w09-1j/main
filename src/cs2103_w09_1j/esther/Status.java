@@ -11,10 +11,10 @@ public class Status {
 	}*/
 
 	public enum msg {
-		SUCCESS, ERROR, UNKNOWN 
+		SUCCESS, ERROR
 	}
 
-	public static msg _msg = msg.SUCCESS;
+	public static msg _msg;
 
 	static final String MESSAGE_SUCCESS_ADD = "%1$s is successfully added to file.\n";
 	static final String MESSAGE_ERROR_ADD = "[ERROR] Failed to add %1$s to file.\n";

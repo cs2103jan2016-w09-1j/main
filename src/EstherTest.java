@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.ParseException;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 public class EstherTest {
@@ -23,7 +25,12 @@ public class EstherTest {
 		}
 	}
 	
-	private Logic logic = new Logic();
+	private Logic logic;
+	
+	@Before
+	public void init() throws ParseException, IOException {
+		logic = new Logic();
+	}
 	
 	@Test
 	public void addTest(){
@@ -35,12 +42,6 @@ public class EstherTest {
 	public void deleteNameTest(){
 		assertTrue(logic.executeCommand("add deltask .on 03/07/2016").contains("success"));
 		assertTrue(logic.executeCommand("delete name deltask").contains("success"));
-	}
-	
-	@Test
-	public void deleteIDTest(){
-		assertTrue(logic.executeCommand("add deltask .on 03/07/2016").contains("success"));
-		assertTrue(logic.executeCommand("delete ID deltask").contains("success"));
 	}
 	
 	@Test

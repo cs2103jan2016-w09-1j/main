@@ -67,6 +67,9 @@ import static org.junit.Assert.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -74,7 +77,7 @@ import cs2103_w09_1j.esther.Command;
 import cs2103_w09_1j.esther.Task;
 
 public class LogicTest {
-	Logic logic = new Logic();
+	Logic logic;
 	Command addCommand;				// task1
 	Command addCommand2;			// task2
 	Command addCommand3;			// task3
@@ -95,7 +98,9 @@ public class LogicTest {
 	Command undoCommand;			// undo
 	
 	@Before
-	public void init() {
+	public void init() throws ParseException, IOException {
+		logic = new Logic();
+		
 		// undo command
 		undoCommand = new Command("undo", null);
 		
@@ -143,7 +148,7 @@ public class LogicTest {
 		HashMap<String, String> argsComplete = new HashMap<String, String>();
 		argsComplete.put("taskName", "task1");
 		argsComplete.put("completed", "true");
-		setCompletedCommand = new Command("completed", argsComplete);
+		setCompletedCommand = new Command("complete", argsComplete);
 		
 		// update task1 to task3 command
 		HashMap<String, String> argsUpdate = new HashMap<String, String>();
@@ -772,7 +777,7 @@ public class LogicTest {
 		args.put("taskID", String.valueOf(internalStorage.get(0).getId()));
 		args.put("completed", "true");
 		//System.out.println("ID of task to complete: " + internalStorage.get(0).getId());
-		setCompletedCommandId = new Command("completed", args);
+		setCompletedCommandId = new Command("complete", args);
 	}
 	
 	
