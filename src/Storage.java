@@ -33,7 +33,8 @@ public class Storage {
 	 */
 	public Storage() throws ParseException, IOException {
 		storageLogger.info("Initializing Storage");
-		readConfigFile();
+		currentConfig = readConfigFile();
+		//System.out.println(currentConfig.toString());
 		processConfig();
 		readSaveFile();
 	}
@@ -99,7 +100,9 @@ public class Storage {
 		storageLogger.info("Checking if config file is valid");
 		if (isValidFile(configPath)) {
 			storageLogger.info("File Valid. Proceeding to load");
-			return loadConfigFile(configPath);
+			Config newConfig = loadConfigFile(configPath);
+			//System.out.println(newConfig.toString());
+			return newConfig;
 		} else {
 			storageLogger.warning("File Invalid. Using default config");
 			Config defaultConfig = new Config();
@@ -218,6 +221,7 @@ public class Storage {
 	private Config loadConfigFile(Path loadConfigPath) throws IOException {
 		try {
 			Config config = new Config(readFile(loadConfigPath));
+			storageLogger.info("Config file succesfully parsed and loaded");
 			return config;
 		} catch (ParseException pe) {
 			storageLogger.info("Error encounted parsing config file. Using default");
