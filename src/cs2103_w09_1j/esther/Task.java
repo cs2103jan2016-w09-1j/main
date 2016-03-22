@@ -104,11 +104,11 @@ public class Task implements Comparable<Task> {
 	 */
 	public Task(Command command) throws ParseException {
 		this();
-		String taskName = command.getSpecificParameter("taskName");
-		Date date = command.hasParameter("date")
-				? _dateFormatter.parse(command.getSpecificParameter("date")) : null;
-		int priority = command.hasParameter("priority")
-				? Integer.parseInt(command.getSpecificParameter("priority")) : 0;
+		String taskName = command.getSpecificParameter(TaskField.NAME.getTaskKeyName());
+		Date date = command.hasParameter(TaskField.DATE.getTaskKeyName())
+				? _dateFormatter.parse(command.getSpecificParameter(TaskField.DATE.getTaskKeyName())) : null;
+		int priority = command.hasParameter(TaskField.PRIORITY.getTaskKeyName())
+				? Integer.parseInt(command.getSpecificParameter(TaskField.PRIORITY.getTaskKeyName())) : 0;
 		this.setName(taskName);
 		this.setDate(date);
 		this.setPriority(priority);
@@ -292,6 +292,26 @@ public class Task implements Comparable<Task> {
 	public void setId(int id) {
 		_id = id;
 	}
+	
+	/**
+	 * Gets the global ID variable for system usage.
+	 * 
+	 * @return the global ID variable in this class
+	 * @author Tay Guo Qiang
+	 */
+	public static int getGlobalId() {
+		return _assignId;
+	}
+	
+	/**
+	 * Sets the global ID variable for system usage.
+	 * 
+	 * @return the global ID variable in this class
+	 * @author Tay Guo Qiang
+	 */
+	public static void setGlobalId(int newId) {
+		_assignId = newId;
+	}
 
 	/**
 	 * Gets completion status of the Task.
@@ -339,23 +359,23 @@ public class Task implements Comparable<Task> {
 	 * @author Tay Guo Qiang
 	 */
 	public void updateTask(Command command) throws ParseException {
-		if (command.hasParameter("taskName")) {
-			this.setName(command.getSpecificParameter("taskName"));
+		if (command.hasParameter(TaskField.NAME.getTaskKeyName())) {
+			this.setName(command.getSpecificParameter(TaskField.NAME.getTaskKeyName()));
 		}
-		if (command.hasParameter("updateName")) {
-			this.setName(command.getSpecificParameter("updateName"));
+		if (command.hasParameter(TaskField.UPDATENAME.getTaskKeyName())) {
+			this.setName(command.getSpecificParameter(TaskField.UPDATENAME.getTaskKeyName()));
 		}
-		if (command.hasParameter("date")) {
-			this.setDate(_dateFormatter.parse(command.getSpecificParameter("date")));
+		if (command.hasParameter(TaskField.DATE.getTaskKeyName())) {
+			this.setDate(_dateFormatter.parse(command.getSpecificParameter(TaskField.DATE.getTaskKeyName())));
 		}
-		if (command.hasParameter("priority")) {
-			this.setPriority(Integer.parseInt(command.getSpecificParameter("priority")));
+		if (command.hasParameter(TaskField.PRIORITY.getTaskKeyName())) {
+			this.setPriority(Integer.parseInt(command.getSpecificParameter(TaskField.PRIORITY.getTaskKeyName())));
 		}
-		if (command.hasParameter("taskID")) {
-			this.setId(Integer.parseInt(command.getSpecificParameter("taskID")));
+		if (command.hasParameter(TaskField.ID.getTaskKeyName())) {
+			this.setId(Integer.parseInt(command.getSpecificParameter(TaskField.ID.getTaskKeyName())));
 		}
-		if (command.hasParameter("completed")) {
-			this.setCompleted(Boolean.parseBoolean(command.getSpecificParameter("completed")));
+		if (command.hasParameter(TaskField.COMPLETED.getTaskKeyName())) {
+			this.setCompleted(Boolean.parseBoolean(command.getSpecificParameter(TaskField.COMPLETED.getTaskKeyName())));
 		}
 	}
 

@@ -3,47 +3,62 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<Pane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UIController">
+<GridPane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UIController">
    <children>
-      <VBox id="VBox" fx:id="displayWindow" layoutX="7.0" layoutY="14.0" prefHeight="312.0" prefWidth="586.0" spacing="8.0" styleClass="main" stylesheets="/cs2103_w09_1j/esther/UI.css">
+      <VBox id="VBox" fx:id="displayWindow" layoutX="7.0" layoutY="14.0" prefHeight="312.0" prefWidth="586.0" spacing="8.0" styleClass="main" GridPane.columnIndex="0" GridPane.rowIndex="0">
          <padding>
-            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+            <Insets bottom="10" left="10" right="10" top="10" />
          </padding>
          <children>
-            <Text fill="#dd4e91" strokeType="OUTSIDE" strokeWidth="0.0" text="Welcome to ESTHER" wrappingWidth="553.806640625">
+            <Text id="Title" fill="#2956d0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="title" text="Welcome to ESTHER" wrappingWidth="553.806640625" />
+            <Text fx:id="intro" layoutX="22.0" layoutY="31.0" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="555.806640625">
                <font>
-                  <Font name="Impact" size="14.0" />
-               </font>
-            </Text>
-            <Text layoutX="22.0" layoutY="31.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Your available tasks are listed below: " wrappingWidth="555.806640625">
-               <font>
-                  <Font name="Arial" size="10.0" />
+                  <Font name="Arial" size="15.0" />
                </font>
             </Text>
             <Text fx:id="display" layoutX="20.0" layoutY="55.0" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="555.806640625">
                <font>
-                  <Font name="Arial" size="10.0" />
+                  <Font name="Arial" size="15.0" />
                </font>
             </Text>
          </children>
+         <GridPane.margin>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+         </GridPane.margin>
       </VBox>
-      <Label fx:id="commandLog" layoutX="14.0" layoutY="326.0" prefHeight="17.0" prefWidth="574.0">
+      <Label fx:id="commandLog" layoutX="14.0" layoutY="326.0" prefHeight="17.0" prefWidth="574.0" GridPane.columnIndex="0" GridPane.rowIndex="1">
          <padding>
-            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+            <Insets bottom="10.0" left="10.0" right="10.0" top="1.0" />
          </padding>
+         <GridPane.margin>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+         </GridPane.margin>
       </Label>
-      <TextField fx:id="input" layoutX="8.0" layoutY="363.0" onKeyReleased="#ENTER" prefHeight="33.0" prefWidth="586.0">
+      <TextField fx:id="input" layoutX="8.0" layoutY="363.0" onKeyPressed="#ENTER" prefHeight="33.0" prefWidth="586.0" GridPane.columnIndex="0" GridPane.rowIndex="2">
          <padding>
-            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
          </padding>
          <font>
             <Font name="Verdana" size="10.0" />
          </font>
+         <GridPane.margin>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+         </GridPane.margin>
       </TextField>
    </children>
-</Pane>
+   <columnConstraints>
+      <ColumnConstraints />
+   </columnConstraints>
+   <rowConstraints>
+      <RowConstraints />
+      <RowConstraints />
+      <RowConstraints />
+   </rowConstraints>
+</GridPane>

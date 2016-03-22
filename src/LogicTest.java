@@ -67,6 +67,9 @@ import static org.junit.Assert.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -74,7 +77,7 @@ import cs2103_w09_1j.esther.Command;
 import cs2103_w09_1j.esther.Task;
 
 public class LogicTest {
-	Logic logic = new Logic();
+	Logic logic;
 	Command addCommand;				// task1
 	Command addCommand2;			// task2
 	Command addCommand3;			// task3
@@ -95,7 +98,9 @@ public class LogicTest {
 	Command undoCommand;			// undo
 	
 	@Before
-	public void init() {
+	public void init() throws ParseException, IOException {
+		logic = new Logic();
+		
 		// undo command
 		undoCommand = new Command("undo", null);
 		
@@ -143,12 +148,12 @@ public class LogicTest {
 		HashMap<String, String> argsComplete = new HashMap<String, String>();
 		argsComplete.put("taskName", "task1");
 		argsComplete.put("completed", "true");
-		setCompletedCommand = new Command("completed", argsComplete);
+		setCompletedCommand = new Command("complete", argsComplete);
 		
 		// update task1 to task3 command
 		HashMap<String, String> argsUpdate = new HashMap<String, String>();
 		argsUpdate.put("taskName", "task1");
-		argsUpdate.put("updatedTaskName", "task3");
+		argsUpdate.put("updateName", "task3");
 		updateCommand = new Command("update", argsUpdate);
 		
 		// sort, show command by priority
@@ -752,24 +757,27 @@ public class LogicTest {
 	public void construct_Delete_Command_Id() {
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		HashMap<String, String> args = new HashMap<String, String>();
-		args.put("taskId", String.valueOf(internalStorage.get(0).getId()));
+		args.put("taskID", String.valueOf(internalStorage.get(0).getId()));
+		//System.out.println("ID of task to delete: " + internalStorage.get(0).getId());
 		deleteCommandId = new Command("delete", args);
 	}
 	
 	public void construct_Update_Command_Id() {
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		HashMap<String, String> args = new HashMap<String, String>();
-		args.put("taskId", String.valueOf(internalStorage.get(0).getId()));
-		args.put("updatedTaskName", "task3");
+		args.put("taskID", String.valueOf(internalStorage.get(0).getId()));
+		args.put("updateName", "task3");
+		//System.out.println("ID of task to update: " + internalStorage.get(0).getId());
 		updateCommandId = new Command("update", args);
 	}
 	
 	public void construct_Set_Completed_Command_Id() {
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		HashMap<String, String> args = new HashMap<String, String>();
-		args.put("taskId", String.valueOf(internalStorage.get(0).getId()));
+		args.put("taskID", String.valueOf(internalStorage.get(0).getId()));
 		args.put("completed", "true");
-		setCompletedCommandId = new Command("completed", args);
+		//System.out.println("ID of task to complete: " + internalStorage.get(0).getId());
+		setCompletedCommandId = new Command("complete", args);
 	}
 	
 	
