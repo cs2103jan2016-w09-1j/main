@@ -42,7 +42,7 @@ public class Config {
 														"ReferenceID", "SaveLocation",
 														"FieldNameAliases" };
 	private static final String attributeFormat = "%1$s = %2$s;\n";
-	private static final String attributeRegex = " = ([^[;|\\n]]+);\\n";
+	private static final String attributeRegex = " = ([^;]+);";
 	private static final String fieldNameRegex = "([\\w]+) = ([\\w]+);\n";
 
 	/**
@@ -65,13 +65,17 @@ public class Config {
 		this();
 		String[] resultsArray = new String[2];
 		for (int i = 0; i < 2; i++) {
-			resultsArray[i] = findMatch(attributeRegex, configString);
+			resultsArray[i] = findMatch(attributeNames[i], configString);
 			if (resultsArray[i] == null) {
 				throw new ParseException("Config file load failed", i);
 			} else {
 				configString = configString.replaceFirst(attributeNames[i] + attributeRegex, "");
 			}
 		}
+		
+		setReferenceID(Integer.parseInt(resultsArray[0]));
+		setSavePath(Paths.get(resultsArray[1]));
+		
 		Matcher fieldNameMatcher = Pattern.compile(fieldNameRegex).matcher(configString);
 		while(fieldNameMatcher.find()){
 			fieldNameAliases.put(fieldNameMatcher.group(1), fieldNameMatcher.group(2));
