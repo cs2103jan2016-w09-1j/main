@@ -16,15 +16,16 @@ public class Config {
 
 	private static final int defaultReferenceID = 0;
 	private static final Path defaultSavePath = Paths.get("esther.txt");
-	private static final String[][] defaultFieldNameAliases = {	{ "taskName", "name" },
-																{ "tName", "name" },
-																{ "name", "name" },
-																{ "nm", "name" },
-																{ "n", "name" },
+	private static final String[][] defaultFieldNameAliases = {	{ "taskName", "taskName" },
+																{ "tName", "taskName" },
+																{ "name", "taskName" },
+																{ "nm", "taskName" },
+																{ "n", "taskName" },
 																{ "date", "date" },
 																{ "dt", "date" },
 																{ "d", "date" },
-																{ "id", "id" },
+																{ "id", "taskID" },
+																{ "taskid", "taskID" },
 																{ "priority", "priority" },
 																{ "prio", "priority" },
 																{ "pri", "priority" },
@@ -41,7 +42,7 @@ public class Config {
 														"ReferenceID", "SaveLocation",
 														"FieldNameAliases" };
 	private static final String attributeFormat = "%1$s = %2$s;\n";
-	private static final String attributeRegex = " = ([^[;|\\n]]+);\\n";
+	private static final String attributeRegex = " = ([^;]+);";
 	private static final String fieldNameRegex = "([\\w]+) = ([\\w]+);\n";
 
 	/**
@@ -64,13 +65,17 @@ public class Config {
 		this();
 		String[] resultsArray = new String[2];
 		for (int i = 0; i < 2; i++) {
-			resultsArray[i] = findMatch(attributeRegex, configString);
+			resultsArray[i] = findMatch(attributeNames[i], configString);
 			if (resultsArray[i] == null) {
 				throw new ParseException("Config file load failed", i);
 			} else {
 				configString = configString.replaceFirst(attributeNames[i] + attributeRegex, "");
 			}
 		}
+		
+		setReferenceID(Integer.parseInt(resultsArray[0]));
+		setSavePath(Paths.get(resultsArray[1]));
+		
 		Matcher fieldNameMatcher = Pattern.compile(fieldNameRegex).matcher(configString);
 		while(fieldNameMatcher.find()){
 			fieldNameAliases.put(fieldNameMatcher.group(1), fieldNameMatcher.group(2));
@@ -105,7 +110,6 @@ public class Config {
 		while (it.hasNext()) {
 			HashMap.Entry<String, String> pair = (HashMap.Entry<String, String>) it.next();
 			hashMapString += pair.getKey() + " = " + pair.getValue() + ";\n";
-			it.remove(); // avoids a ConcurrentModificationException
 		}
 		return hashMapString;
 	}

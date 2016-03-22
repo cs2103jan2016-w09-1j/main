@@ -118,21 +118,21 @@ public class Parser {
 
 	}
 
-	//Format: show .by [field]
+	// Format: show .by [field]
 	private void parseSort(String input) {
 		String[] inputArray = input.split(SPLITBY_WHITESPACE);
 		currentCommand.addFieldToMap(TaskField.SORT.getTaskKeyName(), inputArray[1]);
 
 	}
 
-	//Format: undo
+	// Format: undo
 	private void parseUndo() {
 		// TODO Auto-generated method stub
 		currentCommand.addFieldToMap(TaskField.UNDO.getTaskKeyName(), "");
 
 	}
 
-	//Format: help
+	// Format: help
 	private void parseHelp() {
 		currentCommand.addFieldToMap(TaskField.HELP.getTaskKeyName(), "");
 	}
@@ -155,21 +155,20 @@ public class Parser {
 		String sName = "";
 		String sDate = "";
 
-		//Case 3: add Tea With Grandma .from Thursday .to Friday
-		//Haven't implemented
-		
-		
+		// Case 3: add Tea With Grandma .from Thursday .to Friday
+		// Haven't implemented
+
 		// Parse the name
 		for (int i = 0; i < parseKeyIndex; i++) {
 			if (inputArray[i].equals("on")) {
 				break;
 			}
-			sName += inputArray[i]/* + " "*/;
+			sName += inputArray[i]/* + " " */;
 		}
 		// THROW ERROR FOR INVALID INPUT
 		// Parse the date
 		for (int i = parseKeyIndex + 1; i < inputArray.length; i++) {
-			sDate += inputArray[i]/* + " "*/;
+			sDate += inputArray[i]/* + " " */;
 		}
 		// Need to format the date
 		currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), sName);
@@ -177,8 +176,8 @@ public class Parser {
 
 	}
 
-	//Format: update [id/name] [number] [field] to [updatedvalue]
-	//update name Tea With Grandma date to 22/7/2016
+	// Format: update [id/name] [number] [field] to [updatedvalue]
+	// update name Tea With Grandma date to 22/7/2016
 	private void parseUpdate(String input) {
 		String[] inputArray = input.split(SPLITBY_WHITESPACE);
 		for (int i = 0; i < inputArray.length; i++) {
@@ -190,11 +189,12 @@ public class Parser {
 			currentCommand.addFieldToMap(TaskField.ID.getTaskKeyName(), inputArray[1]);
 		} else if (getNameOrID == 0) {
 			currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), inputArray[1]);
-			//currentCommand.addFieldToMap(TaskField.UPDATENAME.getTaskKeyName(), inputArray[1]);
+			// currentCommand.addFieldToMap(TaskField.UPDATENAME.getTaskKeyName(),
+			// inputArray[1]);
 		} else {
 			// Throw error
 		}
-		//TaskField taskField = TaskField.get(inputArray[2]);
+		// TaskField taskField = TaskField.get(inputArray[2]);
 		String updateValue = "";
 		for (int i = 4; i < inputArray.length; i++) {
 			updateValue += inputArray[i];
@@ -207,7 +207,7 @@ public class Parser {
 		}
 	}
 
-	//Format: delete id 10
+	// Format: delete id 10
 	public void parseDelete(String input) {
 		String[] inputArray = input.split(SPLITBY_WHITESPACE);
 		String deleteBy = inputArray[0];
@@ -221,7 +221,7 @@ public class Parser {
 		}
 	}
 
-	//Format: show .by name
+	// Format: show .by name
 	public void parseShow(String input) {
 		String[] inputArray = input.split(SPLITBY_WHITESPACE);
 		// String showBy=inputArray[1];

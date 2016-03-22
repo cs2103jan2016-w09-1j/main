@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
-<Pane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onKeyReleased="#exit" prefHeight="260.0" prefWidth="339.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="secondController">
+<Pane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="260.0" prefWidth="339.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="secondController">
    <children>
       <VBox id="vbox" layoutX="13.0" layoutY="12.0" prefHeight="237.0" prefWidth="313.0" spacing="8.0" styleClass="main" stylesheets="@cs2103_w09_1j/esther/UI.css">
          <opaqueInsets>

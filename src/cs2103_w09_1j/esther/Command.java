@@ -113,32 +113,33 @@ public class Command {
 	 */
 	public String getSpecificParameter(String parameter) {
 		String value;
-		switch (parameter) {
-			case "taskName" :
+		TaskField field = TaskField.get(parameter);
+		switch (field) {
+			case NAME :
 				value = _parameters.get(parameter);
 				break;
 			
-			case "updateName" :
+			case UPDATENAME :
 				value = _parameters.get(parameter);
 				break;
 				
-			case "date" :
+			case DATE :
 				value = _parameters.get(parameter);
 				break;
 			
-			case "priority" :
+			case PRIORITY :
 				value = _parameters.get(parameter);
 				break;
 				
-			case "taskID" :
+			case ID :
 				value = _parameters.get(parameter);
 				break;
 			
-			case "completed" :
+			case COMPLETED :
 				value = _parameters.get(parameter);
 				break;
 			
-			case "order" :
+			case SHOW :
 				value = _parameters.get(parameter);
 				break;
 				
