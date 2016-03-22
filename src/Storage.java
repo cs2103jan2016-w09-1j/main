@@ -35,7 +35,6 @@ public class Storage {
 		storageLogger.info("Initializing Storage");
 		currentConfig = readConfigFile();
 		processConfig();
-		readSaveFile();
 	}
 
 	/**
@@ -174,7 +173,7 @@ public class Storage {
 		storageLogger.info("Accessing save file at "+path.toString());
 		BufferedReader reader = Files.newBufferedReader(path);
 		while (reader.ready()) {
-			outputString += reader.readLine();
+			outputString += reader.readLine() + "\n";
 		}
 		reader.close();
 		return outputString;
