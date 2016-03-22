@@ -47,28 +47,15 @@ public class UIController implements Initializable {
 			String userInput = input.getText();
 			System.out.println(userInput);
 
-			/*if (userInput.equalsIgnoreCase("load")) {
-				try {
-					logic = new Logic();
-				} catch (Exception e) {
-					System.out.println(e.getMessage());
-				}
-
-				// TODO stub: need logic feedback
-				display.setText("All Tasks here!");
-				intro.setText("All available tasks: ");
-				commandLog.setText("Loaded tasks!");
-				input.clear();
-			} else {*/
-			/*TODO String logicOutput =logic.executeCommand(userInput); 
-			 * down below is for testing purpose
-			 */
-			//String logicOutput = "searchSearch Result should be displayed here";
-			String logicOutput = "search";
+			String logicOutput =logic.executeCommand(userInput); 
+			 /* down below is for testing purpose
+			  *String logicOutput = "searchSearch Result should be displayed here";
+			  *String logicOutput = "search";
+			  */
 			isSearch(logicOutput, commandLog);
 			input.clear();
 		}
-		//}
+		
 	}
 
 	void isSearch(String in, Label label) throws Exception {
@@ -86,6 +73,7 @@ public class UIController implements Initializable {
 			stage.initModality(Modality.WINDOW_MODAL);
 			stage.initOwner(label.getScene().getWindow());
 			Scene scene = new Scene(secondWindow);
+			scene.getStylesheets().add("cs2103_w09_1j/esther/UI.css");
 			stage.setScene(scene);
 			stage.setTitle("Search Result");
 			stage.show();
@@ -105,18 +93,17 @@ public class UIController implements Initializable {
 			}
 
 			// TODO stub: receive logic internal memory
-			display.setText("Refreshed tasks");
+			display.setText(logic.executeCommand("show .by date"));
 
 		} else {
 			label.setText(in);
 			// TODO stub: receive logic internal memory
-			display.setText("Refreshed tasks");
+			display.setText(logic.executeCommand("show .by date"));
 		}
 	}
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
-		// TODO Auto-generated method stub
 		try {
 			logic = new Logic();
 		} catch (Exception e) {
@@ -124,7 +111,7 @@ public class UIController implements Initializable {
 		}
 
 		// TODO stub: need logic feedback
-		display.setText("All Tasks here!");
+		display.setText(logic.executeCommand("show .by date"));
 		intro.setText("All available tasks: ");
 		commandLog.setText("Loaded tasks!");
 		input.clear();
