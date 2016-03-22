@@ -1,0 +1,30 @@
+1. Number all user guide and dev guide sections and subsections
+2. Introduction too vague - manage tasks and events
+3. What do you see on startup (first run or second run)
+4. Examples are narrow
+5. markup on square brackets on pg 4
+6. Heading not bold enough
+ . rephrase section on explaining square brackets
+7. make command template more prominent
+8. on/by are keywords
+9. rephrase task fields on pg 5
+10. update taskname/taskID
+11. example and list don't match
+12. slash is ambiguous
+13. undo is current session only
+14. examples in cheat sheet
+
+1. The guide x3 in introduction
+2. remove numbers for expectations section
+3. make sequence diagrams same size
+4. make diagrams sharp
+5. class diagram -> component structure
+6. rephrase UI structure section
+7. API method table 
+	a. parallel description
+	b. consistent border
+8. address developers more directly - which part of information is essential
+9. markup commands pg 23
+10. Section heading separate
+
+try to cut pages
