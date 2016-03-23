@@ -1,5 +1,6 @@
 package cs2103_w09_1j.esther;
 
+import cs2103_w09_1j.esther.Command.CommandKey;
 
 public class Status {
 
@@ -73,13 +74,14 @@ public class Status {
 
 	private static String successCall(String taskName, String taskID, String commandType) {
 		String message = null;
+		CommandKey command = CommandKey.get(commandType);
 
-		switch(commandType) {
-		case "add" :
+		switch(command) {
+		case ADD :
 			message = String.format(MESSAGE_SUCCESS_ADD, taskName);
 			break;
 
-		case "delete" :
+		case DELETE :
 			if (taskName != null) {
 				message = String.format(MESSAGE_SUCCESS_DELETE, taskName);
 			} else {
@@ -87,7 +89,7 @@ public class Status {
 			}
 			break;
 
-		case "update" :
+		case UPDATE :
 			if (taskName != null) {
 				message = String.format(MESSAGE_SUCCESS_UPDATE, taskName);
 			} else {
@@ -95,7 +97,7 @@ public class Status {
 			}
 			break;
 
-		case "completed" :
+		case COMPLETED :
 			if (taskName != null) {
 				message = String.format(MESSAGE_SUCCESS_SET_COMPLETED, taskName);
 			} else {
@@ -103,11 +105,16 @@ public class Status {
 			}
 			break;
 
-		case "undo" :
+		case UNDO :
 			message = MESSAGE_ERROR_UNDO;
 			break;
 
-		case "help" :
+		case HELP :
+			message = MESSAGE_HELP;
+			break;
+			
+		default :
+			message = "SUCCESS DEFAULT CASE. WHY.";
 			break;
 
 		}
@@ -117,13 +124,14 @@ public class Status {
 	
 	private static String errorCall(String taskName, String taskID, String commandType) {
 		String message = null;
+		CommandKey command = CommandKey.get(commandType);
 		
-		switch(commandType) {
-		case "add" :
+		switch(command) {
+		case ADD :
 			message = String.format(MESSAGE_ERROR_ADD, taskName);
 			break;
 
-		case "delete" :
+		case DELETE :
 			if (taskName != null) {
 				message = String.format(MESSAGE_ERROR_DELETE, taskName);
 			} else {
@@ -131,7 +139,7 @@ public class Status {
 			}
 			break;
 			
-		case "update" : // includes both update error and not found error
+		case UPDATE : // includes both update error and not found error
 			if (taskName != null) {
 				message = String.format(MESSAGE_ERROR_UPDATE, taskName);
 			} else if (taskID != null){
@@ -141,7 +149,7 @@ public class Status {
 			}
 			break;
 			
-		case "completed" :
+		case COMPLETED :
 			if (taskName != null) {
 				message = String.format(MESSAGE_ERROR_SET_COMPLETED, taskName);
 			} else {
@@ -149,11 +157,16 @@ public class Status {
 			}
 			break;
 
-		case "undo" :
+		case UNDO :
 			message = MESSAGE_ERROR_UNDO;
 			break;
 
-		case "help" :
+		case HELP :
+			message = MESSAGE_HELP;
+			break;
+			
+		default :
+			message = "ERROR DEFAULT CASE. WHY.";
 			break;
 		}
 		

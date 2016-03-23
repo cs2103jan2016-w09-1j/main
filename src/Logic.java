@@ -408,7 +408,8 @@ class Logic {
 						//"Delete task: cannot write to file.", ioe);
 			Status._msg = Status.msg.ERROR;
 		}
-		return Status.getMessage(taskName, command.getSpecificParameter("taskID"), command.getCommand());
+		return Status.getMessage(taskName, command.getSpecificParameter(TaskField.ID.getTaskKeyName()),
+								 command.getCommand());
 	}
 	
 	/**
@@ -423,7 +424,7 @@ class Logic {
 		Task toUpdate = null;
 		int updateIndex = -1;
 		String taskName = command.getSpecificParameter(TaskField.NAME.getTaskKeyName());
-		String checkTaskId = command.hasParameter(TaskField.ID.getTaskKeyName())
+		String taskID = command.hasParameter(TaskField.ID.getTaskKeyName())
 						? command.getSpecificParameter(TaskField.ID.getTaskKeyName())
 						: "-1";
 		//System.out.println(checkTaskId);
@@ -431,7 +432,7 @@ class Logic {
 		//logger.logp(Level.INFO, "Logic", "updateTask(Command command)", "Updating a task.", params);
 		for (int i = 0; i < _tasks.size(); i++) {
 			if (_tasks.get(i).getName().equals(taskName) ||
-				_tasks.get(i).getId() == Integer.parseInt(checkTaskId)) {
+				_tasks.get(i).getId() == Integer.parseInt(taskID)) {
 				toUpdate = _tasks.get(i);
 				updateIndex = i;
 				break;
@@ -461,7 +462,8 @@ class Logic {
 						//"Update task: cannot write to file.", ioe);
 			Status._msg = Status.msg.ERROR;
 		}
-		return Status.getMessage(taskName, command.getSpecificParameter("taskID"), command.getCommand());
+		return Status.getMessage(taskName, command.getSpecificParameter(TaskField.ID.getTaskKeyName()),
+								 command.getCommand());
 	}
 
 	/**
@@ -507,7 +509,8 @@ class Logic {
 						//"Complete task: cannot write to file.", ioe);
 			Status._msg = Status.msg.ERROR;
 		}
-		return Status.getMessage(taskName, command.getSpecificParameter("taskID"), command.getCommand());
+		return Status.getMessage(taskName, command.getSpecificParameter(TaskField.ID.getTaskKeyName()),
+								 command.getCommand());
 	} 
 	
 	/**
