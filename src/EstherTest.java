@@ -11,6 +11,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import cs2103_w09_1j.esther.Task;
+
 public class EstherTest {
 	String pathString = "esther.txt";
 	Path saveLoc = Paths.get(pathString);
@@ -34,18 +36,29 @@ public class EstherTest {
 	
 	@Test
 	public void addTest(){
-		String result = logic.executeCommand("add addtask .on 03/07/2016");
-		assertTrue(result.contains("success"));
+		assertTrue(logic.executeCommand("add addtask .on 03/07/2016").contains("success"));
+		assertTrue(logic.executeCommand("add addtask2 .on 23/3/2016").contains("success"));
 	}
 	
 	@Test
 	public void deleteNameTest(){
+		// equivalence partition for delete based on name
 		assertTrue(logic.executeCommand("add deltask .on 03/07/2016").contains("success"));
 		assertTrue(logic.executeCommand("delete name deltask").contains("success"));
 	}
 	
 	@Test
+	public void deleteIDTest(){
+		// equivalence partition for delete based on id
+		Task task = new Task();
+		task.setGlobalId(0);
+		assertTrue(logic.executeCommand("add deltask .on 03/07/2016").contains("success"));
+		assertTrue(logic.executeCommand("delete id 0").contains("success"));
+	}
+	
+	@Test
 	public void updateNameTest(){
+		// equivalence partition for updating different fields based on name reference
 		assertTrue(logic.executeCommand("add updTask .on 03/07/2016").contains("success"));
 		assertTrue(logic.executeCommand("update name updTask taskName to updatedTask").contains("success"));
 		assertTrue(logic.executeCommand("update name updatedTask date to 04/07/2016").contains("success"));
@@ -54,6 +67,7 @@ public class EstherTest {
 	
 	@Test
 	public void updateIDTest(){
+		// equivalence partition for updating different fields based on ID reference
 		assertTrue(logic.executeCommand("add updTask .on 03/07/2016").contains("success"));
 		assertTrue(logic.executeCommand("update name updTask ID to 0").contains("success"));
 	}
