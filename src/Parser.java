@@ -60,7 +60,7 @@ public class Parser {
 
 	public static void main(String[] args) throws ParseException, InvalidInputException {
 		Parser parser = new Parser();
-		Command command = parser.acceptUserInput("add \"meeting on monday\" from to");
+		Command command = parser.acceptUserInput("add \"meeting on monday\" from 3pm to 5pm");
 		HashMap<String, String> map = command.getParameters();
 		for (Map.Entry<String, String> entry : map.entrySet()) {
 			String key = entry.getKey();
@@ -200,13 +200,15 @@ public class Parser {
 					endDateTime+=inputArray[i]+" ";
 				}
 				
-				
+				currentCommand.addFieldToMap(TaskField.STARTDATE.getTaskKeyName(), startDateTime);
+				currentCommand.addFieldToMap(TaskField.ENDDATE.getTaskKeyName(), endDateTime);
 			}
 			else{
 				String dateTime="";
 				for(int i=supposeToBeParseKeyIndex;i<inputArray.length;i++){
 					dateTime+=inputArray[i]+" ";
 				}
+				currentCommand.addFieldToMap(TaskField.ENDDATE.getTaskKeyName(), dateTime);
 			}
 		}
 
