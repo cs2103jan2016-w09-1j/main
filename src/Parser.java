@@ -12,19 +12,20 @@ import cs2103_w09_1j.esther.Task.TaskField;
 public class Parser {
 
 	public static final String ERROR_NOSUCHCOMMAND = "No such command. Please type help to check the available commands.";
-	public static final String ERROR_ADDFORMAT="Wrong format. Format for add command: add [taskname] [from] [date] [time] [to] [date] [time]";
-	public static final String ERROR_DELETEFORMAT="Wrong format.Format for delete command: delete [taskname/taskid]";
+	public static final String ERROR_ADDFORMAT = "Wrong format. Format for add command: add [taskname] [from] [date] [time] [to] [date] [time]";
+	public static final String ERROR_DELETEFORMAT = "Wrong format.Format for delete command: delete [taskname/taskid]";
 	public static final String ERROR_SEARCHFORMAT = "Wrong format. Format for search command: search [searchword]";
 	public static final String ERROR_SHOWFORMAT = "Wrong format. Format for show command : show [on/by/from] [name/id/priority]";
 	public static final String ERROR_SORTFORMAT = "Wrong format. Format for sort command: sort by [name/id/startDate/endDate]";
 	public static final String ERROR_COMPLETEFORMAT = "Wrong format. Format for complete command: complete [taskName/taskID]";
-	public static final String ERROR_UNKNOWN="Unknown error.";
-	
-	public static final String SPLITBY_WHITESPACE = " ";
+	public static final String ERROR_UNKNOWN = "Unknown error.";
+
+	public static final char QUOTE = '"';
+	public static final String WHITESPACE = " ";
 	private Command currentCommand;
 
 	public enum ParseKey {
-		ON(" on "), BY(" by "), FROM(" from "), TO(" to ");
+		ON("on"), BY("by"), FROM("from"), TO("to");
 
 		private String parseKeyName;
 		private static final Map<String, ParseKey> lookup = new HashMap<String, ParseKey>();
@@ -59,7 +60,7 @@ public class Parser {
 
 	public static void main(String[] args) throws ParseException, InvalidInputException {
 		Parser parser = new Parser();
-		Command command = parser.acceptUserInput("add office");
+		Command command = parser.acceptUserInput("add \"meeting on monday\" from to");
 		HashMap<String, String> map = command.getParameters();
 		for (Map.Entry<String, String> entry : map.entrySet()) {
 			String key = entry.getKey();
@@ -73,15 +74,13 @@ public class Parser {
 	}
 
 	public Command acceptUserInput(String input) throws ParseException, InvalidInputException {
-		System.out.println(input);
 		String commandName = "";
 		String commandInput = "";
 		currentCommand.clear();
 		try {
 			int endOfCommandName = input.indexOf(" ");
-			System.out.println(endOfCommandName);
 			commandName = input.substring(0, endOfCommandName);
-			commandInput = input.substring(endOfCommandName, input.length());
+			commandInput = input.substring(endOfCommandName + 1, input.length());
 		} catch (StringIndexOutOfBoundsException sioobe) {
 			commandName = input;
 		}
@@ -131,123 +130,92 @@ public class Parser {
 	// add "Tea With Grandma" on tomorrow
 	// Current implementation only date
 	private void parseAdd(String input) throws ParseException, InvalidInputException {
-		
-		if(input==""){
+		// Case 1: add
+		if (input.isEmpty()) {
 			throw new InvalidInputException(ERROR_ADDFORMAT);
 		}
-		int taskNameStartIndex = -1;
-		int taskNameEndIndex = -1;
-		taskNameStartIndex = input.indexOf("\"");
 
-		if (taskNameStartIndex != -1) {
-			taskNameEndIndex = input.lastIndexOf("\"");
+		String[] inputArray = input.split(WHITESPACE);
+		String taskName = "";
+		int endOfTaskName = -1;
+		System.out.println(inputArray[0]);
+		if (inputArray[0].charAt(0) == QUOTE) {
+			taskName += inputArray[0].substring(1, inputArray[0].length()) + WHITESPACE;
+			for (int i = 1; i < inputArray.length; i++) {
+				if (inputArray[i].charAt(inputArray[i].length() - 1) == QUOTE) {
+					taskName += inputArray[i].substring(0, inputArray[i].length() - 1);
+					endOfTaskName = i;
+					break;
+				} else {
+					taskName += inputArray[i] + WHITESPACE;
+					endOfTaskName = -1;
+				}
+			}
+		} else {
+			for (int i = 0; i < inputArray.length; i++) {
+				if (getParseKey(inputArray[i])) {
+					endOfTaskName = i;
+					break;
+				}
+				taskName += inputArray[i] + " ";
+				endOfTaskName = i;
+			}
 		}
 
-		String afterQuotes = input.substring(taskNameEndIndex + 1);
-		ParseKey givenParseKey = getParseKey(afterQuotes);
-		// Case 1: add Tea With Grandma (No parse key)
-
-		String taskName = "";
-		if (givenParseKey == null) {
-			if (taskNameStartIndex != -1 && taskNameEndIndex != -1) {
-				taskName = input.substring(taskNameStartIndex + 1, taskNameEndIndex);
-			} else {
-				taskName = input;
-			}
-			currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), taskName);
+		currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), taskName);
+		// Case 2: add on Monday (No name) or add "something (no end ")
+		if (endOfTaskName == -1) {
+			throw new InvalidInputException(ERROR_ADDFORMAT);
+		}
+		// Case 3: add something or add "Office meeting on Sunday" (no date and
+		// time)
+		else if (endOfTaskName == inputArray.length - 1) {
 			return;
 		}
-
-		// Case 2: add Tea With Grandma [from] Thursday 3pm [to] friday 3pm
-		int parseKeyIndex = input.indexOf(givenParseKey.getParseKeyName());
-		if (taskNameStartIndex != -1 && taskNameEndIndex != -1) {
-			taskName = input.substring(taskNameStartIndex + 1, taskNameEndIndex);
-		} else {
-			taskName = input.substring(0, parseKeyIndex - 1);
+		// Case 4: add something on (empty date/time)
+		else if (endOfTaskName == inputArray.length) {
+			throw new InvalidInputException(ERROR_ADDFORMAT);
 		}
-		currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), taskName);
-
-		// Parse for date and time
-		int dateTimeIndex = afterQuotes.indexOf(givenParseKey.getParseKeyName());
-		String dateTimeField = afterQuotes.substring(dateTimeIndex + givenParseKey.getParseKeyName().length() + 1);
-
-		SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-		SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
-		String startDate = "";
-		String endDate = "";
-		String startTime = "";
-		String endTime = "";
-
-		System.out.println(dateTimeField);
-		String listedDateFormat = getProperDateFormat(dateTimeField);
-		String listedTimeFormat = getProperTimeFormat(dateTimeField, listedDateFormat);
-		System.out.println(listedDateFormat);
-		System.out.println(listedTimeFormat);
-		DateParser dp = new DateParser();
-		// List<Date> dates=null;
-		// if(listedDateFormat.equals("")&&listedTimeFormat.equals("")){
-		// dates= new PrettyTimeParser().parse(dateTimeField);
-		// }
-		// String date = "";
-		// String time = "";
-		String[] dateTimeList = getDateTime(dateTimeField, listedDateFormat, listedTimeFormat);
-		String date = dateTimeList[0];
-		System.out.println(date);
-		String time = dateTimeList[1];
-		System.out.println(time);
-		switch (givenParseKey) {
-		case ON:
-		case BY:
-			// Date fullEndDate = dates.get(0);
-			// endDate = dateFormat.format(fullEndDate);
-			// endTime = timeFormat.format(fullEndDate);
-
-			if (date != null) {
-				currentCommand.addFieldToMap(TaskField.ENDDATE.getTaskKeyName(), date);
+		// Case 5: normal case add something on date/time
+		else {
+			int supposeToBeParseKeyIndex = endOfTaskName + 1;
+			ParseKey parseKey = ParseKey.get(inputArray[supposeToBeParseKeyIndex]);
+			if (parseKey == null) {
+				throw new InvalidInputException(ERROR_ADDFORMAT);
 			}
-			if (time != null) {
-				currentCommand.addFieldToMap(TaskField.ENDTIME.getTaskKeyName(), time);
-			}
-			break;
-		case FROM:
-			// Date fromDate = dates.get(0);
-			// startDate = dateFormat.format(fromDate);
-			// startTime = timeFormat.format(fromDate);
-			if (date != null) {
-				currentCommand.addFieldToMap(TaskField.STARTTIME.getTaskKeyName(), date);
-			}
-			if (time != null) {
-				currentCommand.addFieldToMap(TaskField.STARTTIME.getTaskKeyName(), time);
-			}
-			int toIndex = dateTimeField.lastIndexOf(ParseKey.TO.getParseKeyName());
-			if (toIndex != -1) {
-				// if (dates.get(1) != null) {
-				String toField = input.substring(toIndex + 1);
-				listedDateFormat = getProperDateFormat(dateTimeField);
-				listedTimeFormat = getProperTimeFormat(dateTimeField, listedDateFormat);
-				dateTimeList = getDateTime(dateTimeField, listedDateFormat, listedTimeFormat);
-				date = dateTimeList[0];
-				time = dateTimeList[1];
-				// Date toDate = dates.get(1);
-				// endDate = dateFormat.format(toDate);
-				// endTime = timeFormat.format(toDate);
-				if (date != "") {
-					currentCommand.addFieldToMap(TaskField.ENDDATE.getTaskKeyName(), date);
+
+			int toParseKeyIndex = 0;
+			if (parseKey == ParseKey.FROM) {
+				//Case 6: add something from date/time to date/time
+				toParseKeyIndex = getToKeyIndex(inputArray, supposeToBeParseKeyIndex + 2);
+				if (toParseKeyIndex == -1) {
+					throw new InvalidInputException(ERROR_ADDFORMAT);
 				}
-				if (time != "") {
-					currentCommand.addFieldToMap(TaskField.ENDTIME.getTaskKeyName(), time);
+				String startDateTime="";
+				String endDateTime="";
+				for(int i=supposeToBeParseKeyIndex;i<toParseKeyIndex;i++){
+					startDateTime+=inputArray[i]+" ";
+				}
+				for(int i=toParseKeyIndex;i<inputArray.length;i++){
+					endDateTime+=inputArray[i]+" ";
+				}
+				
+				
+			}
+			else{
+				String dateTime="";
+				for(int i=supposeToBeParseKeyIndex;i<inputArray.length;i++){
+					dateTime+=inputArray[i]+" ";
 				}
 			}
-			break;
 		}
-		return;
 
 	}
 
 	// Format: update [taskName/taskID] [taskField] to [updatedValue]
 	// update Tea With Grandma date to 22/07/2016
 	private void parseUpdate(String input) {
-		String[] inputArray = input.split(SPLITBY_WHITESPACE);
+		String[] inputArray = input.split(WHITESPACE);
 		int parseKeyIndex = getParseKeyIndex(inputArray); // get the .to
 
 		for (int i = 0; i < inputArray.length; i++) {
@@ -315,7 +283,7 @@ public class Parser {
 			currentCommand.addFieldToMap(TaskField.SHOW.getTaskKeyName(), TaskField.ID.getTaskKeyName());
 			return;
 		}
-		String[] inputArray = input.split(SPLITBY_WHITESPACE);
+		String[] inputArray = input.split(WHITESPACE);
 
 		if (inputArray.length != 2) {
 			throw new InvalidInputException(ERROR_SORTFORMAT);
@@ -329,7 +297,7 @@ public class Parser {
 		if (input == "") {
 			throw new InvalidInputException(ERROR_SORTFORMAT);
 		}
-		String[] inputArray = input.split(SPLITBY_WHITESPACE);
+		String[] inputArray = input.split(WHITESPACE);
 		if (inputArray.length != 2) {
 			throw new InvalidInputException(ERROR_SORTFORMAT);
 		}
@@ -372,13 +340,13 @@ public class Parser {
 		}
 	}
 
-	private ParseKey getParseKey(String input) {
+	private boolean getParseKey(String input) {
 		for (ParseKey parseKeyName : ParseKey.values()) {
-			if (input.contains(parseKeyName.getParseKeyName())) {
-				return parseKeyName;
+			if (input.equals(parseKeyName.getParseKeyName())) {
+				return true;
 			}
 		}
-		return null;
+		return false;
 	}
 
 	private int getParseKeyIndex(String[] inputArray) {
@@ -392,9 +360,9 @@ public class Parser {
 		return -1;
 	}
 
-	private int getSpecificKeyIndex(String key, String[] inputArray, int startIndex) {
+	private int getToKeyIndex(String[] inputArray, int startIndex) {
 		for (int i = startIndex; i < inputArray.length; i++) {
-			if (inputArray[i].equals(key)) {
+			if (inputArray[i].equals(ParseKey.TO.getParseKeyName())) {
 				return i;
 			}
 		}
