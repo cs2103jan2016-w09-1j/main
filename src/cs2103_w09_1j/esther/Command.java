@@ -16,7 +16,7 @@ import cs2103_w09_1j.esther.Task.TaskField;
 
 public class Command {
 	
-	private String _command;
+	private String _commandName;
 	private HashMap<String, String> _parameters;
 	
 	public enum CommandKey {
@@ -55,7 +55,7 @@ public class Command {
 	}
 	
 	public Command() {
-		this._command = "";
+		this._commandName = "";
 		this._parameters = new HashMap<String, String>();
 	}
 	
@@ -81,7 +81,7 @@ public class Command {
 	 * @author Tay Guo Qiang
 	 */
 	public String getCommand() {
-		return _command;
+		return _commandName;
 	}
 
 	/**
@@ -91,7 +91,7 @@ public class Command {
 	 * @author Tay Guo Qiang
 	 */
 	public void setCommand(String command) {
-		_command = command;
+		_commandName = command;
 	}
 
 	/**
@@ -172,7 +172,7 @@ public class Command {
 	}
 	
 	public void clear() {
-		this._command = "";
+		this._commandName = "";
 		this._parameters.clear();
 	}
 
