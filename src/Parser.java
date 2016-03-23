@@ -1,11 +1,7 @@
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
-import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
 
 import cs2103_w09_1j.esther.Command;
 import cs2103_w09_1j.esther.Command.CommandKey;
@@ -14,11 +10,21 @@ import cs2103_w09_1j.esther.InvalidInputException;
 import cs2103_w09_1j.esther.Task.TaskField;
 
 public class Parser {
+
+	public static final String ERROR_NOSUCHCOMMAND = "No such command. Please type help to check the available commands.";
+	public static final String ERROR_ADDFORMAT="Wrong format. Format for add command: add [taskname] [from] [date] [time] [to] [date] [time]";
+	public static final String ERROR_DELETEFORMAT="Wrong format.Format for delete command: delete [taskname/taskid]";
+	public static final String ERROR_SEARCHFORMAT = "Wrong format. Format for search command: search [searchword]";
+	public static final String ERROR_SHOWFORMAT = "Wrong format. Format for show command : show [on/by/from] [name/id/priority]";
+	public static final String ERROR_SORTFORMAT = "Wrong format. Format for sort command: sort by [name/id/startDate/endDate]";
+	public static final String ERROR_COMPLETEFORMAT = "Wrong format. Format for complete command: complete [taskName/taskID]";
+	public static final String ERROR_UNKNOWN="Unknown error.";
+	
 	public static final String SPLITBY_WHITESPACE = " ";
 	private Command currentCommand;
 
 	public enum ParseKey {
-		ON("on"), BY("by"), FROM("from"), TO("to");
+		ON(" on "), BY(" by "), FROM(" from "), TO(" to ");
 
 		private String parseKeyName;
 		private static final Map<String, ParseKey> lookup = new HashMap<String, ParseKey>();
@@ -51,9 +57,9 @@ public class Parser {
 
 	}
 
-	public static void main(String[] args) throws ParseException {
+	public static void main(String[] args) throws ParseException, InvalidInputException {
 		Parser parser = new Parser();
-		Command command = parser.acceptUserInput("add Office Meeting");
+		Command command = parser.acceptUserInput("add office");
 		HashMap<String, String> map = command.getParameters();
 		for (Map.Entry<String, String> entry : map.entrySet()) {
 			String key = entry.getKey();
@@ -66,14 +72,16 @@ public class Parser {
 		this.currentCommand = new Command();
 	}
 
-	public Command acceptUserInput(String input) throws ParseException {
+	public Command acceptUserInput(String input) throws ParseException, InvalidInputException {
+		System.out.println(input);
 		String commandName = "";
 		String commandInput = "";
 		currentCommand.clear();
 		try {
 			int endOfCommandName = input.indexOf(" ");
+			System.out.println(endOfCommandName);
 			commandName = input.substring(0, endOfCommandName);
-			commandInput = input.substring(endOfCommandName + 1, input.length());
+			commandInput = input.substring(endOfCommandName, input.length());
 		} catch (StringIndexOutOfBoundsException sioobe) {
 			commandName = input;
 		}
@@ -83,7 +91,7 @@ public class Parser {
 
 	}
 
-	private void parseCommand(String commandName, String commandInput) throws ParseException {
+	private void parseCommand(String commandName, String commandInput) throws ParseException, InvalidInputException {
 		CommandKey key = CommandKey.get(commandName);
 		switch (key) {
 		case ADD:
@@ -95,6 +103,9 @@ public class Parser {
 		case DELETE:
 			parseDelete(commandInput);
 			break;
+		case SEARCH:
+			parseSearch(commandInput);
+			break;
 		case SHOW:
 			parseShow(commandInput);
 			break;
@@ -102,49 +113,28 @@ public class Parser {
 			parseSort(commandInput);
 			break;
 		case COMPLETED:
-			parseCompleted(commandInput);
-			break;
-		case HELP:
-			parseHelp();
+			parseComplete(commandInput);
 			break;
 		case UNDO:
 			parseUndo();
 			break;
+		case HELP:
+			parseHelp();
+			break;
 		default:
-			System.out.println("Haven't code");
+			throw new InvalidInputException(ERROR_NOSUCHCOMMAND);
 		}
 
-	}
-
-	// Format: show by [field]
-	private void parseSort(String input) {
-		String[] inputArray = input.split(SPLITBY_WHITESPACE);
-		try{
-		currentCommand.addFieldToMap(TaskField.SORT.getTaskKeyName(), inputArray[1]);
-		}catch(ArrayIndexOutOfBoundsException ai){
-			System.out.println("Sort error");
-		}
-
-	}
-
-	// Format: undo
-	private void parseUndo() {
-		// TODO Auto-generated method stub
-		currentCommand.addFieldToMap(TaskField.UNDO.getTaskKeyName(), "");
-
-	}
-
-	// Format: help
-	private void parseHelp() {
-		currentCommand.addFieldToMap(TaskField.HELP.getTaskKeyName(), "");
 	}
 
 	// Format: add [taskName] [on] [date]
 	// add "Tea With Grandma" on tomorrow
 	// Current implementation only date
-	private void parseAdd(String input) throws ParseException {
-		// String[] inputArray = input.split(SPLITBY_WHITESPACE);
-		// int parseKeyIndex = getParseKeyIndex(inputArray);
+	private void parseAdd(String input) throws ParseException, InvalidInputException {
+		
+		if(input==""){
+			throw new InvalidInputException(ERROR_ADDFORMAT);
+		}
 		int taskNameStartIndex = -1;
 		int taskNameEndIndex = -1;
 		taskNameStartIndex = input.indexOf("\"");
@@ -295,10 +285,9 @@ public class Parser {
 	}
 
 	// Format: delete 10
-	public void parseDelete(String input) {
-		if(input==""){
-			System.out.println("Delete no string");
-			return;
+	private void parseDelete(String input) throws InvalidInputException {
+		if (input == "") {
+			throw new InvalidInputException(ERROR_DELETEFORMAT);
 		}
 		// String[] inputArray = input.split(SPLITBY_WHITESPACE);
 		int getNameOrID = isNameOrID(input);
@@ -307,49 +296,74 @@ public class Parser {
 		} else if (getNameOrID == 0) {
 			currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), input);
 		} else {
-			// Throw error
+			throw new InvalidInputException(ERROR_UNKNOWN);
 		}
+	}
+
+	// Format: search [task name]
+	private void parseSearch(String input) throws InvalidInputException {
+		if (input == "") {
+			throw new InvalidInputException(ERROR_SEARCHFORMAT);
+		}
+		currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), input);
 	}
 
 	// Format: show by name
-	public void parseShow(String input) {
-		if(input==""){
-			System.out.println("Show error");
+	private void parseShow(String input) throws InvalidInputException {
+
+		if (input == "") {
+			currentCommand.addFieldToMap(TaskField.SHOW.getTaskKeyName(), TaskField.ID.getTaskKeyName());
 			return;
 		}
 		String[] inputArray = input.split(SPLITBY_WHITESPACE);
-		// String showBy=inputArray[1];
-		// TaskField showField=TaskField.get(showBy);
+
+		if (inputArray.length != 2) {
+			throw new InvalidInputException(ERROR_SORTFORMAT);
+		}
 		currentCommand.addFieldToMap(TaskField.SHOW.getTaskKeyName(), inputArray[1]);
 	}
-	/*
-	 * public Date getDate(DateFormat dateFormat){ switch(dateFormat){ case
-	 * MONDAY:
-	 * 
-	 * break; case TUESDAY: break; case WEDNESDAY: break; case THURSDAY: break;
-	 * case FRIDAY: break; case SATURDAY: break; case SUNDAY: break; case
-	 * TOMORROW: break; case TODAY: break; case NORMAL: break; } }
-	 */
+
+	// Format: show by [field]
+	private void parseSort(String input) throws InvalidInputException {
+
+		if (input == "") {
+			throw new InvalidInputException(ERROR_SORTFORMAT);
+		}
+		String[] inputArray = input.split(SPLITBY_WHITESPACE);
+		if (inputArray.length != 2) {
+			throw new InvalidInputException(ERROR_SORTFORMAT);
+		}
+		currentCommand.addFieldToMap(TaskField.SORT.getTaskKeyName(), inputArray[1]);
+
+	}
 
 	// Format: complete 20
-	public void parseCompleted(String input) {
-		if(input==""){
-			System.out.println("Complete error");
-			return;
+	private void parseComplete(String input) throws InvalidInputException {
+		if (input == "") {
+			throw new InvalidInputException(ERROR_COMPLETEFORMAT);
 		}
-		// String[] inputArray = input.split(SPLITBY_WHITESPACE);
-		// String completedBy = input;
 		int getNameOrID = isNameOrID(input);
 		if (getNameOrID == 1) {
 			currentCommand.addFieldToMap(TaskField.ID.getTaskKeyName(), input);
 		} else if (getNameOrID == 1) {
 			currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), input);
 		} else {
-			// Throw error
+			throw new InvalidInputException(ERROR_UNKNOWN);
 		}
 	}
 
-	public int isNameOrID(String givenInput) {
+	// Format: undo
+	private void parseUndo() {
+		currentCommand.addFieldToMap(TaskField.UNDO.getTaskKeyName(), "");
+
+	}
+
+	// Format: help
+	private void parseHelp() {
+		currentCommand.addFieldToMap(TaskField.HELP.getTaskKeyName(), "");
+	}
+
+	private int isNameOrID(String givenInput) {
 		try {
 			Integer.parseInt(givenInput);
 			return 1;
@@ -358,7 +372,7 @@ public class Parser {
 		}
 	}
 
-	public ParseKey getParseKey(String input) {
+	private ParseKey getParseKey(String input) {
 		for (ParseKey parseKeyName : ParseKey.values()) {
 			if (input.contains(parseKeyName.getParseKeyName())) {
 				return parseKeyName;
@@ -367,7 +381,7 @@ public class Parser {
 		return null;
 	}
 
-	public int getParseKeyIndex(String[] inputArray) {
+	private int getParseKeyIndex(String[] inputArray) {
 		for (ParseKey parseKeyName : ParseKey.values()) {
 			for (int i = 0; i < inputArray.length; i++) {
 				if (inputArray[i].equals(parseKeyName.getParseKeyName())) {
@@ -378,7 +392,7 @@ public class Parser {
 		return -1;
 	}
 
-	public int getSpecificKeyIndex(String key, String[] inputArray, int startIndex) {
+	private int getSpecificKeyIndex(String key, String[] inputArray, int startIndex) {
 		for (int i = startIndex; i < inputArray.length; i++) {
 			if (inputArray[i].equals(key)) {
 				return i;
@@ -387,19 +401,19 @@ public class Parser {
 		return -1;
 	}
 
-	public String getProperDateFormat(String inputDate) {
+	private String getProperDateFormat(String inputDate) {
 		DateParser dp = new DateParser();
 		String dateFormat = dp.getDateFormat(inputDate);
 		return dateFormat;
 	}
 
-	public String getProperTimeFormat(String input, String dateFormat) {
+	private String getProperTimeFormat(String input, String dateFormat) {
 		DateParser dp = new DateParser();
 		String timeFormat = dp.getTimeFormat(input, dateFormat);
 		return timeFormat;
 	}
 
-	public String[] getDateTime(String input, String listedDateFormat, String listedTimeFormat) throws ParseException {
+	private String[] getDateTime(String input, String listedDateFormat, String listedTimeFormat) throws ParseException {
 		String[] dateTimeList = new String[2];
 		DateParser dp = new DateParser();
 		if (listedDateFormat != "" && listedTimeFormat != "") {

@@ -20,7 +20,7 @@ public class Command {
 	private HashMap<String, String> _parameters;
 	
 	public enum CommandKey {
-		ADD("add"), UPDATE("update"), DELETE("delete"), UNDO("undo"), COMPLETED("complete"), SHOW("show"), SORT(
+		ADD("add"), UPDATE("update"), DELETE("delete"), UNDO("undo"), COMPLETED("complete"), SEARCH("search"), SHOW("show"), SORT(
 				"sort"), HELP("help");
 
 		private String commandKeyName;
