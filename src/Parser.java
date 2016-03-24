@@ -1,10 +1,10 @@
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
 import cs2103_w09_1j.esther.Command;
 import cs2103_w09_1j.esther.Command.CommandKey;
+import cs2103_w09_1j.esther.Config;
 import cs2103_w09_1j.esther.DateParser;
 import cs2103_w09_1j.esther.InvalidInputException;
 import cs2103_w09_1j.esther.Task.TaskField;
@@ -13,6 +13,7 @@ public class Parser {
 
 	public static final String ERROR_NOSUCHCOMMAND = "No such command. Please type help to check the available commands.";
 	public static final String ERROR_ADDFORMAT = "Wrong format. Format for add command: add [taskname] [from] [date] [time] [to] [date] [time]";
+	public static final String ERROR_UPDATEFORMAT = "Wrong format. Format for update command: update [taskname/taskID] [fieldname] to [newvalue].";
 	public static final String ERROR_DELETEFORMAT = "Wrong format.Format for delete command: delete [taskname/taskid]";
 	public static final String ERROR_SEARCHFORMAT = "Wrong format. Format for search command: search [searchword]";
 	public static final String ERROR_SHOWFORMAT = "Wrong format. Format for show command : show [on/by/from] [name/id/priority]";
@@ -23,6 +24,7 @@ public class Parser {
 	public static final char QUOTE = '"';
 	public static final String WHITESPACE = " ";
 	private Command currentCommand;
+	private HashMap<String, String> fieldNameAliases;
 
 	public enum ParseKey {
 		ON("on"), BY("by"), FROM("from"), TO("to");
@@ -59,8 +61,9 @@ public class Parser {
 	}
 
 	public static void main(String[] args) throws ParseException, InvalidInputException {
-		Parser parser = new Parser();
-		Command command = parser.acceptUserInput("add \"meeting on monday\" from 3pm to 5pm");
+		Config config = new Config();
+		Parser parser = new Parser(config.getFieldNameAliases());
+		Command command = parser.acceptUserInput("update \"meeting office\" p to 3");
 		HashMap<String, String> map = command.getParameters();
 		for (Map.Entry<String, String> entry : map.entrySet()) {
 			String key = entry.getKey();
@@ -69,8 +72,9 @@ public class Parser {
 		}
 	}
 
-	public Parser() {
+	public Parser(HashMap<String, String> fieldNameAliases) {
 		this.currentCommand = new Command();
+		this.fieldNameAliases = fieldNameAliases;
 	}
 
 	public Command acceptUserInput(String input) throws ParseException, InvalidInputException {
@@ -154,7 +158,6 @@ public class Parser {
 		} else {
 			for (int i = 0; i < inputArray.length; i++) {
 				if (getParseKey(inputArray[i])) {
-					endOfTaskName = i;
 					break;
 				}
 				taskName += inputArray[i] + " ";
@@ -184,29 +187,31 @@ public class Parser {
 				throw new InvalidInputException(ERROR_ADDFORMAT);
 			}
 
-			int toParseKeyIndex = 0;
 			if (parseKey == ParseKey.FROM) {
-				//Case 6: add something from date/time to date/time
-				toParseKeyIndex = getToKeyIndex(inputArray, supposeToBeParseKeyIndex + 2);
-				if (toParseKeyIndex == -1) {
+				// Case 6: add something from date/time to date/time
+				int toParseKeyIndex = getNextParseKeyIndex(inputArray, supposeToBeParseKeyIndex + 2);
+				if (toParseKeyIndex == -1 || inputArray[toParseKeyIndex] != ParseKey.TO.getParseKeyName()) {
 					throw new InvalidInputException(ERROR_ADDFORMAT);
 				}
-				String startDateTime="";
-				String endDateTime="";
-				for(int i=supposeToBeParseKeyIndex;i<toParseKeyIndex;i++){
-					startDateTime+=inputArray[i]+" ";
+				String startDateTime = "";
+				String endDateTime = "";
+				for (int i = supposeToBeParseKeyIndex; i < toParseKeyIndex; i++) {
+					startDateTime += inputArray[i] + " ";
 				}
-				for(int i=toParseKeyIndex;i<inputArray.length;i++){
-					endDateTime+=inputArray[i]+" ";
+				for (int i = toParseKeyIndex; i < inputArray.length; i++) {
+					endDateTime += inputArray[i] + " ";
 				}
-				
+
 				currentCommand.addFieldToMap(TaskField.STARTDATE.getTaskKeyName(), startDateTime);
 				currentCommand.addFieldToMap(TaskField.ENDDATE.getTaskKeyName(), endDateTime);
-			}
-			else{
-				String dateTime="";
-				for(int i=supposeToBeParseKeyIndex;i<inputArray.length;i++){
-					dateTime+=inputArray[i]+" ";
+			} else {
+				int otherParseKeyIndex = getNextParseKeyIndex(inputArray, supposeToBeParseKeyIndex);
+				if (otherParseKeyIndex != -1) {
+					throw new InvalidInputException(ERROR_ADDFORMAT);
+				}
+				String dateTime = "";
+				for (int i = supposeToBeParseKeyIndex; i < inputArray.length; i++) {
+					dateTime += inputArray[i] + " ";
 				}
 				currentCommand.addFieldToMap(TaskField.ENDDATE.getTaskKeyName(), dateTime);
 			}
@@ -216,42 +221,61 @@ public class Parser {
 
 	// Format: update [taskName/taskID] [taskField] to [updatedValue]
 	// update Tea With Grandma date to 22/07/2016
-	private void parseUpdate(String input) {
+	private void parseUpdate(String input) throws InvalidInputException {
 		String[] inputArray = input.split(WHITESPACE);
-		int parseKeyIndex = getParseKeyIndex(inputArray); // get the .to
 
-		for (int i = 0; i < inputArray.length; i++) {
-			System.out.print(inputArray[i] + " | ");
+		int toParseKeyIndex = getToKeyIndex(inputArray, 0); // get the to
+		if (toParseKeyIndex == -1) {
+			throw new InvalidInputException(ERROR_UPDATEFORMAT);
 		}
 
-		String updateBy = "";
-		for (int i = 0; i < parseKeyIndex - 1; i++) {
-			updateBy += inputArray[i] + " ";
-		}
-		int getNameOrID = isNameOrID(updateBy);
-		if (getNameOrID == 1) {
-			currentCommand.addFieldToMap(TaskField.ID.getTaskKeyName(), updateBy);
-		} else if (getNameOrID == 0) {
-			currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), updateBy);
-			// currentCommand.addFieldToMap(TaskField.UPDATENAME.getTaskKeyName(),
-			// inputArray[1]);
+		String taskName = "";
+		int endOfTaskName = -1;
+		if (inputArray[0].charAt(0) == QUOTE) {
+			taskName = inputArray[0].substring(1, inputArray[0].length()) + WHITESPACE;
+			for (int i = 1; i < toParseKeyIndex - 1; i++) {
+				if (inputArray[i].charAt(inputArray[i].length() - 1) == QUOTE) {
+					taskName += inputArray[i].substring(0, inputArray[i].length() - 1);
+					endOfTaskName = i;
+					break;
+				}
+				taskName += inputArray[i] + WHITESPACE;
+			}
+			if (endOfTaskName == -1) {
+				throw new InvalidInputException(ERROR_UPDATEFORMAT);
+			}
 		} else {
-			// Throw error
+			for (int i = 0; i < toParseKeyIndex - 1; i++) {
+				taskName += inputArray[i] + WHITESPACE;
+			}
 		}
-		// TaskField taskField = TaskField.get(inputArray[2]);
-		String updateValue = "";
-		for (int i = parseKeyIndex + 1; i < inputArray.length; i++) {
-			updateValue += inputArray[i] + " ";
+
+		int getNameOrID = isNameOrID(taskName);
+		if (getNameOrID == 1) {
+			currentCommand.addFieldToMap(TaskField.ID.getTaskKeyName(), taskName);
+		} else if (getNameOrID == 0) {
+			currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), taskName);
+		} else {
+			throw new InvalidInputException(ERROR_UNKNOWN);
 		}
-		System.out.println(updateValue);
-		TaskField givenField = TaskField.get(inputArray[parseKeyIndex - 1]);
-		currentCommand.addFieldToMap(givenField.getTaskKeyName(), updateValue);
-		// if (inputArray[2].equals("taskName")) {
-		// currentCommand.addFieldToMap(TaskField.UPDATENAME.getTaskKeyName(),
-		// updateValue);
-		// } else {
-		// currentCommand.addFieldToMap(inputArray[2], updateValue);
-		// }
+
+		String taskFieldName = fieldNameAliases.get(inputArray[toParseKeyIndex - 1]);
+		if (taskFieldName == null) {
+			throw new InvalidInputException(ERROR_UPDATEFORMAT);
+		}
+
+		TaskField aliaseField = TaskField.get(taskFieldName);
+		if (aliaseField == null) {
+			throw new InvalidInputException(ERROR_UPDATEFORMAT);
+		}
+		String newValue = "";
+		for (int i = toParseKeyIndex + 1; i < inputArray.length; i++) {
+			newValue += inputArray[i] + " ";
+		}
+		if (newValue.isEmpty()) {
+			throw new InvalidInputException(ERROR_UPDATEFORMAT);
+		}
+		currentCommand.addFieldToMap(aliaseField.getTaskKeyName(), newValue);
 	}
 
 	// Format: delete 10
@@ -351,9 +375,9 @@ public class Parser {
 		return false;
 	}
 
-	private int getParseKeyIndex(String[] inputArray) {
+	private int getNextParseKeyIndex(String[] inputArray, int startIndex) {
 		for (ParseKey parseKeyName : ParseKey.values()) {
-			for (int i = 0; i < inputArray.length; i++) {
+			for (int i = startIndex; i < inputArray.length; i++) {
 				if (inputArray[i].equals(parseKeyName.getParseKeyName())) {
 					return i;
 				}
