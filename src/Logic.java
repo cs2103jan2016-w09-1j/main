@@ -262,6 +262,7 @@ class Logic {
 		assert _config != null;
 		//System.out.println(_config.getReferenceID());
 		Task.setGlobalId(_config.getReferenceID());
+		//System.out.println("Storage and Config initialized.");
 	}
 
 	/**
@@ -273,6 +274,7 @@ class Logic {
 		//logger.logp(Level.CONFIG, "Parser", "Parser()", "Initializing Parser.");
 		_parser = new Parser(/*_config*/); // TODO for Parser: accept HashMap
 		assert _parser != null;
+		//System.out.println("Parser initialized.");
 	}
 	
 	/**
@@ -286,6 +288,7 @@ class Logic {
 		//logger.logp(Level.CONFIG, "Logic", "updateInternalStorage",
 					//"Reading tasks into inner memory upon initialization.");
 		updateInternalStorage();
+		//System.out.println("Inner variables initialized.");
 	}
 	
 	/**
@@ -890,7 +893,7 @@ class Logic {
 	// TODO: error handling
 	private void undoUpdate(Task task) {
 		int taskID = task.getId();
-		int updateIndex = -1;
+		int updateIndex = NOT_FOUND_INDEX;
 		for (int i = 0; i < _tasks.size(); i++) {
 			if (_tasks.get(i).getId() == taskID) {
 				updateIndex = i;
@@ -899,7 +902,7 @@ class Logic {
 		}
 		_tasks.set(updateIndex, task);
 		try {
-		_storage.writeSaveFile(_tasks);
+			_storage.writeSaveFile(_tasks);
 		} catch (IOException ioe) {
 			// set Exception state
 			// retrieve error message
@@ -915,7 +918,7 @@ class Logic {
 	// TODO: error handling
 	private void undoCompleted(Task task) {
 		int taskID = task.getId();
-		int updateIndex = -1;
+		int updateIndex = NOT_FOUND_INDEX;
 		for (int i = 0; i < _tasks.size(); i++) {
 			if (_tasks.get(i).getId() == taskID) {
 				updateIndex = i;

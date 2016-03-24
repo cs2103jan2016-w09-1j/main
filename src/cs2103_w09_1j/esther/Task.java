@@ -118,6 +118,7 @@ public class Task implements Comparable<Task> {
 		this.setDate(date);
 		this.setPriority(priority);
 		this.setCompleted(false);
+		this.setIsValid(true);
 		_id = _assignId;
 		_assignId++;
 	}
@@ -161,7 +162,7 @@ public class Task implements Comparable<Task> {
 		this.setDate(date);
 		this.setPriority(priority);
 		this.setCompleted(complete);
-		this.set_isValid(true);
+		this.setIsValid(true);
 	}
 
 	/**
@@ -387,7 +388,7 @@ public class Task implements Comparable<Task> {
 		return _isValid;
 	}
 
-	public void set_isValid(boolean _isValid) {
+	public void setIsValid(boolean _isValid) {
 		this._isValid = _isValid;
 	}
 
@@ -404,6 +405,7 @@ public class Task implements Comparable<Task> {
 		copy.setID(_id);
 		copy.setPriority(_priority);
 		copy.setCompleted(_isCompleted);
+		copy.setIsValid(_isValid);
 		return copy;
 	}
 
