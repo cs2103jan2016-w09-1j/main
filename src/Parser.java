@@ -63,7 +63,7 @@ public class Parser {
 	public static void main(String[] args) throws ParseException, InvalidInputException {
 		Config config = new Config();
 		Parser parser = new Parser(config.getFieldNameAliases());
-		Command command = parser.acceptUserInput("update \"meeting office\" p to 3");
+		Command command = parser.acceptUserInput("someothercommand");
 		HashMap<String, String> map = command.getParameters();
 		for (Map.Entry<String, String> entry : map.entrySet()) {
 			String key = entry.getKey();
@@ -96,6 +96,9 @@ public class Parser {
 
 	private void parseCommand(String commandName, String commandInput) throws ParseException, InvalidInputException {
 		CommandKey key = CommandKey.get(commandName);
+		if (key == null) {
+			throw new InvalidInputException(ERROR_NOSUCHCOMMAND);
+		}
 		switch (key) {
 		case ADD:
 			parseAdd(commandInput);
@@ -115,7 +118,7 @@ public class Parser {
 		case SORT:
 			parseSort(commandInput);
 			break;
-		case COMPLETED:
+		case COMPLETE:
 			parseComplete(commandInput);
 			break;
 		case UNDO:
@@ -125,7 +128,7 @@ public class Parser {
 			parseHelp();
 			break;
 		default:
-			throw new InvalidInputException(ERROR_NOSUCHCOMMAND);
+			throw new InvalidInputException(ERROR_UNKNOWN);
 		}
 
 	}
@@ -280,10 +283,17 @@ public class Parser {
 
 	// Format: delete 10
 	private void parseDelete(String input) throws InvalidInputException {
-		if (input == "") {
+		if (input.isEmpty()) {
 			throw new InvalidInputException(ERROR_DELETEFORMAT);
 		}
-		// String[] inputArray = input.split(SPLITBY_WHITESPACE);
+
+		if (input.charAt(0) == QUOTE) {
+			if (input.charAt(input.length() - 1) == QUOTE) {
+				input = input.substring(1, input.length() - 1);
+			} else {
+				throw new InvalidInputException(ERROR_DELETEFORMAT);
+			}
+		}
 		int getNameOrID = isNameOrID(input);
 		if (getNameOrID == 1) {
 			currentCommand.addFieldToMap(TaskField.ID.getTaskKeyName(), input);
@@ -296,8 +306,16 @@ public class Parser {
 
 	// Format: search [task name]
 	private void parseSearch(String input) throws InvalidInputException {
-		if (input == "") {
+		if (input.isEmpty()) {
 			throw new InvalidInputException(ERROR_SEARCHFORMAT);
+		}
+
+		if (input.charAt(0) == QUOTE) {
+			if (input.charAt(input.length() - 1) == QUOTE) {
+				input = input.substring(1, input.length() - 1);
+			} else {
+				throw new InvalidInputException(ERROR_SEARCHFORMAT);
+			}
 		}
 		currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), input);
 	}
@@ -305,7 +323,7 @@ public class Parser {
 	// Format: show by name
 	private void parseShow(String input) throws InvalidInputException {
 
-		if (input == "") {
+		if (input.isEmpty()) {
 			currentCommand.addFieldToMap(TaskField.SHOW.getTaskKeyName(), TaskField.ID.getTaskKeyName());
 			return;
 		}
@@ -314,7 +332,12 @@ public class Parser {
 		if (inputArray.length != 2) {
 			throw new InvalidInputException(ERROR_SORTFORMAT);
 		}
-		currentCommand.addFieldToMap(TaskField.SHOW.getTaskKeyName(), inputArray[1]);
+
+		String fieldName = fieldNameAliases.get(inputArray[1]);
+		if (fieldName == null) {
+			throw new InvalidInputException(ERROR_SORTFORMAT);
+		}
+		currentCommand.addFieldToMap(TaskField.SHOW.getTaskKeyName(), fieldName);
 	}
 
 	// Format: show by [field]
@@ -327,19 +350,32 @@ public class Parser {
 		if (inputArray.length != 2) {
 			throw new InvalidInputException(ERROR_SORTFORMAT);
 		}
-		currentCommand.addFieldToMap(TaskField.SORT.getTaskKeyName(), inputArray[1]);
+
+		String fieldName = fieldNameAliases.get(inputArray[1]);
+		if (fieldName == null) {
+			throw new InvalidInputException(ERROR_SORTFORMAT);
+		}
+		currentCommand.addFieldToMap(TaskField.SORT.getTaskKeyName(), fieldName);
 
 	}
 
 	// Format: complete 20
 	private void parseComplete(String input) throws InvalidInputException {
-		if (input == "") {
+		if (input.isEmpty()) {
 			throw new InvalidInputException(ERROR_COMPLETEFORMAT);
+		}
+		
+		if (input.charAt(0) == QUOTE) {
+			if (input.charAt(input.length() - 1) == QUOTE) {
+				input = input.substring(1, input.length() - 1);
+			} else {
+				throw new InvalidInputException(ERROR_COMPLETEFORMAT);
+			}
 		}
 		int getNameOrID = isNameOrID(input);
 		if (getNameOrID == 1) {
 			currentCommand.addFieldToMap(TaskField.ID.getTaskKeyName(), input);
-		} else if (getNameOrID == 1) {
+		} else if (getNameOrID == 0) {
 			currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), input);
 		} else {
 			throw new InvalidInputException(ERROR_UNKNOWN);
