@@ -19,7 +19,7 @@ public class Storage {
 	private static final String BY_NEXTLINE = "\\n";
 	private static final String configName = "esther.config";
 	private static final Path configPath = Paths.get(configName);
-	private static final Logger storageLogger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+	private static final Logger storageLogger = Logger.getLogger("storageLogger");
 
 	/**
 	 * Constructor for Storage class
