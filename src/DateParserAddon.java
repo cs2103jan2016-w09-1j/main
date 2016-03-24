@@ -1,8 +1,6 @@
 import java.util.Calendar;
 import java.util.Date;
-import java.util.PrimitiveIterator.OfDouble;
-
-import com.sun.xml.internal.ws.util.StringUtils;
+import java.util.regex.Pattern;
 
 import java.text.SimpleDateFormat;
 
@@ -12,31 +10,57 @@ public class DateParserAddon {
 	private final String[] thisWeekWords = { "this", "coming" };
 	private final String[] nextWeekWords = { "next" };
 	private final String[] dayWords = { "today", "the day after", "tomorrow" };
-	private final String[] weekDayWords = { "mon", "tue", "wed", "thu", "fri", "sat", "sun" };
+	private final String[] weekDayWords = { "sun", "mon", "tue", "wed", "thu", "fri", "sat" };
 
 	private Calendar today = Calendar.getInstance();
 
-	String[] findWordyDate(String string) {
+	String findWordyDate(String dateStr) {
+		String result = null;
 		Calendar newDay = (Calendar) today.clone();
-		boolean containsThisWeekWords, containsNextWeekWords = false;
-		int dayOfWeek;
-		containsThisWeekWords = containsStrings(string, thisWeekWords);
-		if (!containsThisWeekWords) {
-			containsNextWeekWords = containsStrings(string, nextWeekWords);
-		}
-		if (containsThisWeekWords || containsNextWeekWords) {
-			dayOfWeek = findDayInWeek(string);
-			if (dayOfWeek != -1) {
-				int weeksToAdd = containsNextWeekWords ? 1 : 0;
-				newDay.add(Calendar.WEEK_OF_YEAR, weeksToAdd);
-				int daysToAdd = differenceInDays(today.get(Calendar.DAY_OF_WEEK),dayOfWeek);
-				newDay.add(Calendar.DAY_OF_YEAR, daysToAdd);
-			}
-		}
-		return null;
+		
+		//look for "this", "coming" and "next"
+		result = findDayOfWeekWords(dateStr, newDay);
+		
+		return result;
 	}
 
-	private int findDayInWeek(String string) {
+	/**
+	 * @param dateStr
+	 * @param result
+	 * @param newDay
+	 * @return
+	 */
+	private String findDayOfWeekWords(String dateStr, Calendar newDay) {
+		String result = null;
+		boolean containsThisWeekWords, containsNextWeekWords = false;
+		int dayOfWeek;
+		//contains "this" or "coming"
+		containsThisWeekWords = containsStrings(dateStr, thisWeekWords);
+		if (!containsThisWeekWords) {
+			//contains "next"
+			containsNextWeekWords = containsStrings(dateStr, nextWeekWords);
+		}
+		if (containsThisWeekWords || containsNextWeekWords) {
+			//contains "sun" - "sat"
+			dayOfWeek = findDayOfWeek(dateStr);
+			if (dayOfWeek != -1) {
+				//advance week if contains "next"
+				if(containsNextWeekWords){
+					newDay.add(Calendar.WEEK_OF_YEAR, 1);
+				}
+				//set day of week
+				newDay.set(Calendar.DAY_OF_WEEK, dayOfWeek);
+				//advance week if day was set to before today
+				if(newDay.compareTo(today) < 0) {
+					newDay.add(Calendar.WEEK_OF_YEAR, 1);
+				}
+				result = newDay.getTime().toString();
+			}
+		}
+		return result;
+	}
+
+	private int findDayOfWeek(String string) {
 		int day = -2;
 		for (int i = 0; i < weekDayWords.length; i++) {
 			if (containsIgnoreCase(string, weekDayWords[i])) {
@@ -62,8 +86,27 @@ public class DateParserAddon {
 		}
 		return containsString;
 	}
+	
+	/**
+	 * This method assumes the substring is present
+	 * @param originalString
+	 * @param substringToRemove
+	 * @return
+	 */
+	private String removeSubstring(String originalString, String substringToRemove){
+		String modifiedStr = Pattern.compile(substringToRemove, Pattern.CASE_INSENSITIVE).matcher(originalString).replaceAll("");
+		return modifiedStr;
+	}
+	
+	private String removeSubstrings(String originalString, String[] substrings){
+		String modifiedStr = originalString;
+		for (int i = 0; i < substrings.length; i++) {
+			modifiedStr = removeSubstring(modifiedStr, substrings[i]);
+		}
+		return modifiedStr;
+	}
 
-	String[] findTime(String string) {
+	String findTime(String string) {
 		return null;
 	}
 
