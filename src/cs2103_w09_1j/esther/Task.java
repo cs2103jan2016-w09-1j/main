@@ -31,7 +31,7 @@ import sun.util.resources.cldr.id.LocaleNames_id;
 
 public class Task implements Comparable<Task> {
 	public enum TaskField {
-		NAME("taskName"), ID("taskID"), PRIORITY("priority"), DATE("date"), SORT("sort"), UPDATENAME(
+		NAME("taskName"), ID("taskID"), PRIORITY("priority"), DATE("date"), SORT("order"), UPDATENAME(
 				"updateName"), SHOW("order"), UNDO("undo"),HELP("help"), COMPLETED("completed");
 
 		private String taskKeyName;

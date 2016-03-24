@@ -48,7 +48,9 @@ import cs2103_w09_1j.esther.InvalidInputException;
 
 class Logic {
 	
-	//private UI _ui; // -> TODO: WHICH INSTANCE OF UI SHOULD I GET: UICONTROLLER OR USERINTERFACE?
+	private static final int NOT_FOUND_INDEX = -1;
+	private static final String EMPTY_STATE = "Invalid";
+	
 	private Parser _parser;
 	private Storage _storage;
 	private ArrayList<Task> _tasks;
@@ -60,7 +62,7 @@ class Logic {
 	// =========================================================================================== //
 	// =========================== HIGH-LEVEL IMPLEMENTATION OF LOGIC ============================ //
 	// These methods are the highest-level implementation of the core structure of Logic.          //
-	// The methods falling into this category are: 												   //
+	// The important methods falling into this category are: 									   //
 	// 1. Constructor, Logic()																	   //
 	// 2. public String executeCommand(String input)											   //
 	// 3. private String executeCommand(Command command)										   //
@@ -76,41 +78,12 @@ class Logic {
 	 */
 	public Logic() throws ParseException, IOException {
 		//initializeLogger();
-		_storage = new Storage();
-		//logger.logp(Level.CONFIG, "Storage", "Storage()", "Initializing Storage.");
-		assert _storage != null;
-		_config = _storage.getConfig();
-		//logger.logp(Level.CONFIG, "Storage", "getConfig()", "Initializing Config.");
-		assert _config != null;
-		//logger.logp(Level.CONFIG, "Parser", "Parser()", "Initializing Parser.");
-		_parser = new Parser(/*_config*/); // TODO for Parser: accept HashMap
-		assert _parser != null;
-		_tasks = new ArrayList<Task>();
-		_undoStack = new Stack<State>();
-		//logger.logp(Level.CONFIG, "Logic", "updateInternalStorage",
-					//"Reading tasks into inner memory upon initialization.");
-		updateInternalStorage();
-		System.out.println(_config.getReferenceID());
-		Task.setGlobalId(_config.getReferenceID());
-		
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-	        @Override
-	        public void run() {
-	        	System.out.println("Saving current system configurations.");
-	            try {
-	            	//logger.logp(Level.INFO, "Logic", "addTask(Command command)",
-	            				  //"Updating Config file in Logic and Storage.");
-	            	_config.setReferenceID(Task.getGlobalId());
-	            	_storage.updateConfig(_config);
-	            } catch (IOException ioe) {
-	            	//logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
-	            				  //"Cannot update Config file in Logic and Storage.", ioe);
-	                System.out.println("Error updating Config file in both Logic and Storage.");
-	            }
-	        }   
-	    });
-	}	
-
+		initializeStorageAndConfig();
+		initializeParser();
+		initializeLogicSystemVariables();
+		attachShutdownHandler();
+	}
+	
 	/**
 	 * An overloaded method that operates on an input and passes the call
 	 * to the actual handler method. If a null Command object is detected,
@@ -186,7 +159,7 @@ class Logic {
 				break;*/
 				
 			case UNDO :
-				statusMessage = undo();
+				statusMessage = undo(command);
 				break;
 				
 			case HELP :
@@ -227,7 +200,7 @@ class Logic {
 	 * 		   contents stored in the text file.
 	 * @@author A0129660A
 	 */
-	public ArrayList<Task> getInternalStorage() {
+	protected ArrayList<Task> getInternalStorage() {
 		return _tasks;
 	}
 	
@@ -274,6 +247,73 @@ class Logic {
 	}
 	
 	/**
+	 * Initializes Storage and Config systems in Logic.
+	 * 
+	 * @throws ParseException
+	 * @throws IOException
+	 * @@author A0129660A
+	 */
+	private void initializeStorageAndConfig() throws ParseException, IOException {
+		_storage = new Storage();
+		//logger.logp(Level.CONFIG, "Storage", "Storage()", "Initializing Storage.");
+		assert _storage != null;
+		_config = _storage.getConfig();
+		//logger.logp(Level.CONFIG, "Storage", "getConfig()", "Initializing Config.");
+		assert _config != null;
+		//System.out.println(_config.getReferenceID());
+		Task.setGlobalId(_config.getReferenceID());
+	}
+
+	/**
+	 * Initializes Parser system in Logic.
+	 * 
+	 * @@author A0129660A
+	 */
+	private void initializeParser() {
+		//logger.logp(Level.CONFIG, "Parser", "Parser()", "Initializing Parser.");
+		_parser = new Parser(/*_config*/); // TODO for Parser: accept HashMap
+		assert _parser != null;
+	}
+	
+	/**
+	 * Initializes internal system variables in Logic.
+	 * 
+	 * @@author A0129660A
+	 */
+	private void initializeLogicSystemVariables() {
+		_tasks = new ArrayList<Task>();
+		_undoStack = new Stack<State>();
+		//logger.logp(Level.CONFIG, "Logic", "updateInternalStorage",
+					//"Reading tasks into inner memory upon initialization.");
+		updateInternalStorage();
+	}
+	
+	/**
+	 * Attaches a shutdown-event handler to perform necessary system updates
+	 * when ESTHER is shut down.
+	 * 
+	 * @@author A0129660A
+	 */
+	private void attachShutdownHandler() {
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+	        @Override
+	        public void run() {
+	        	System.out.println("Saving current system configurations.");
+	            try {
+	            	//logger.logp(Level.INFO, "Logic", "addTask(Command command)",
+	            				  //"Updating Config file in Logic and Storage.");
+	            	_config.setReferenceID(Task.getGlobalId());
+	            	_storage.updateConfig(_config);
+	            } catch (IOException ioe) {
+	            	//logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
+	            				  //"Cannot update Config file in Logic and Storage.", ioe);
+	                System.out.println("Error updating Config file in both Logic and Storage.");
+	            }
+	        }   
+	    });
+	}
+	
+	/**
 	 * Updates the internal memory of the Logic to account
 	 * for any changes done to the text file.
 	 * 
@@ -315,6 +355,28 @@ class Logic {
 		_tasks = new ArrayList<Task>();
 	}
 	
+	/**
+	 * Update Logic's list of tasks into text file.
+	 * 
+	 * @throws IOException
+	 * @@author A0129660A
+	 */
+	private void updateTextFile() throws IOException {
+		_storage.writeSaveFile(_tasks);
+	}
+	
+	/**
+	 * Updates the undo stack whenever a user operation is carried out.
+	 * 
+	 * @param command a Command object representing the user operation being carried out
+	 * @param task a Task object representing the task that was operated on
+	 * @@author A0129660A
+	 */
+	private void updateUndoStack(Command command, Task task) {
+		_undoStack.push(storePreviousState(command, task));
+	} 
+
+	
 	// ================================ SYSTEM METHODS FOR LOGIC ================================= //
 	// =========================================================================================== //
 	
@@ -330,8 +392,8 @@ class Logic {
 	// Methods may be added or modified here, as desired by the developer. For your convenience,   //
 	// the general idea to add/modify functions is stated as follows:							   //
 	// 1. Create the private method first														   //
-	// 2. Add your case statements under 2 methods:												   //
-	//    																						   //
+	// 2. Add your case statements for methods performing control flow							   //
+	// 3. Update any status codes, where required												   //
 	// =========================================================================================== //
 	
 	/**
@@ -347,27 +409,12 @@ class Logic {
 	 * @@author A0129660A
 	 */
 	private String addTask(Command command) {		
-		String taskName = command.getSpecificParameter(TaskField.NAME.getTaskKeyName());
 		//logger.logp(Level.INFO, "Logic", "addTask(Command command)",
 					//"Adding a task.", taskName);
-		try {
-			Task task = new Task(command);
-			_tasks.add(task);
-			_storage.writeSaveFile(_tasks);
-			_undoStack.push(storePreviousState(command, task));
-			Status._msg = Status.msg.SUCCESS;
-		} catch (ParseException pe) {
-			//logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
-						//"Add task: Inappropriate date format passed into Task.", pe);
-			Status._msg = Status.msg.ERROR;
-		} catch (IOException ioe) {
-			//logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
-					//"Add task: Error in writing to file.", ioe);
-			Status._msg = Status.msg.ERROR;
-		}
-		return Status.getMessage(taskName, null, command.getCommand());
+		createAndAddTaskToFile(command);
+		return getOperationStatus(command);
 	}
-	
+		
 	/**
 	 * Removes the task from the text file.
 	 * 
@@ -376,40 +423,8 @@ class Logic {
 	 * @@author A0129660A
 	 */
 	private String removeTask(Command command) {
-		Task removed = null;
-		String taskName = command.getSpecificParameter(TaskField.NAME.getTaskKeyName());
-		String taskID = command.hasParameter(TaskField.ID.getTaskKeyName())
-						? command.getSpecificParameter(TaskField.ID.getTaskKeyName())
-						: "-1";
-		//System.out.println(taskID);
-		String[] params = {taskName, command.getSpecificParameter(TaskField.ID.getTaskKeyName())};
-		//logger.logp(Level.INFO, "Logic", "removeTask(Command command)",	"Removing a task.", params);
-		for (Task existingTask: _tasks) {
-			if (existingTask.getName().equals(taskName) ||
-				existingTask.getId() == Integer.parseInt(taskID)) {
-				removed = existingTask;
-				break;
-			}
-		}
-		
-		try {
-			if (removed != null) {
-				_tasks.remove(removed);
-				_storage.writeSaveFile(_tasks);
-				_undoStack.push(storePreviousState(command, removed));
-				Status._msg = Status.msg.SUCCESS;
-			} else {
-				//logger.logp(Level.WARNING, "Logic", "removeTask(Command command)",
-							//"Delete task: Task not found. Possible user-side error or no name/ID matching.");
-				Status._msg = Status.msg.ERROR;
-			}
-		} catch (IOException ioe) {
-			//logger.logp(Level.SEVERE, "Logic", "removeTask(Command command)",
-						//"Delete task: cannot write to file.", ioe);
-			Status._msg = Status.msg.ERROR;
-		}
-		return Status.getMessage(taskName, command.getSpecificParameter(TaskField.ID.getTaskKeyName()),
-								 command.getCommand());
+		removeTaskAndUpdateFile(command);
+		return getOperationStatus(command);
 	}
 	
 	/**
@@ -421,31 +436,263 @@ class Logic {
 	 */
 	private String updateTask(Command command) {
 		//logger.log(Level.INFO, "Updating a task.");
-		Task toUpdate = null;
-		int updateIndex = -1;
+		updateTaskInFile(command);
+		return getOperationStatus(command);
+	}
+
+	/**
+	 * Sets a task as completed.
+	 * 
+	 * @param task	a Task object representation of the user's input
+	 * @return		a message indicating the status of the set-task-completed operation
+	 * @@author A0129660A
+	 */
+	private String completeTask(Command command) {
+		//logger.logp(Level.INFO, "Logic", "completeTask(Command command)", "Completing a task.", params);
+		completeTaskInFile(command);
+		return getOperationStatus(command);
+	}
+	
+	/**
+	 * Displays all tasks recorded in the text file.
+	 * 
+	 * NOTE: implementation can be extended to display
+	 * only certain tasks to the user.
+	 * 
+	 * @return a list of all tasks to show to the user.
+	 * @@author A0129660A
+	 */
+	private String showTask(Command command) {
+		updateUndoStack(command, null);
+		sortAndUpdateFile(command);
+		String result = getInternalStorageInString(); 
+		Status._msg = Status.msg.SUCCESS;
+		return result;
+	}
+
+	/**
+	 * Sorts the list of tasks recorded in the text file.
+	 * By default, tasks are sorted by the order defined
+	 * in the Task class.
+	 * 
+	 * NOTE: implementation can be extended to sort the
+	 * list of tasks by user-defined criteria.
+	 * 
+	 * @see 	Task#compareTo(Task)
+	 * @return	a message indicating the status of the sort operation
+	 * @@author A0129660A
+	 */
+	private String sortFile(Command command) {
+		updateUndoStack(command, null);
+		sortAndUpdateFile(command);
+		return getOperationStatus(command);
+	}
+	
+	/**
+	 * Searches for a task based on the user's desired criteria.
+	 * 
+	 * NOTE: default search is by whether a task contains a specified
+	 * task name or not. This implementation can be extended to support
+	 * varying user criteria.
+	 * 
+	 * @param  task	a Task object representation of a keyword to lookup
+	 * @return a list of Task objects that match the search criteria
+	 * @@author A0129660A
+	 */
+	// TODO: implement (for later stages)
+	private String/*ArrayList<Task>*/ searchFile(Command command) {
+		String results = "Search:\n";
+		// String searchKey = command.getSpecificParameter("something_for_search");
+		//logger.logp(Level.INFO, "Logic", "searchFile(Command command)",
+				  	  //"Searching tasks in file.", searchKey);
+		//ArrayList<Task> results = new ArrayList<Task>();
+		for (Task entry: _tasks) {
+			if (entry.getName().contains(command.getSpecificParameter("taskName"))) {
+				results += (entry.toString() + "\n");
+				//results.add(entry);
+			}
+		}
+		System.out.println(results);
+		return results;
+	}
+	
+	/**
+	 * Undo one step back into the previous state of the program.
+	 * 
+	 * @param command a Command objecting representing the user operation to be carried out
+	 * @return a message indicating status of the undo operation
+	 * @@author A0129660A
+	 */
+	//TODO: change to method taking in Command as arg
+	private String undo(Command command) {
+		try {
+			State previousState = _undoStack.pop();
+			CommandKey commandType = CommandKey.get(previousState.getCommand());
+			//logger.logp(Level.INFO, "Logic", "undo()", "Undoing a previous operation.", commandType);
+			switch (commandType) {
+				case ADD :
+					undoAdd(previousState.getState().get(0));
+					break;
+					
+				case DELETE :
+					undoDelete(previousState.getState().get(0));
+					break;
+					
+				case UPDATE :
+					undoUpdate(previousState.getState().get(0));
+					break;
+					
+				case COMPLETED :
+					undoCompleted(previousState.getState().get(0));
+					break;
+					
+				case SHOW :
+					undoDisplay(previousState.getState());
+					break;
+					
+				case SORT :
+					undoSort(previousState.getState());
+					break;
+					
+				/*case SEARCH :
+				 	// TODO for Parser: add enum field + value
+					// undo a search does not make logical sense
+					break;*/
+					
+				case HELP :
+					break;
+			
+				default :
+					//logger.logp(Level.INFO, "Logic", "undo()", "Dummy State encountered.");
+					Status._msg = Status.msg.ERROR;
+					return getOperationStatus(command);
+			}
+			//System.out.println("Undo successful.");
+			Status._msg = Status.msg.SUCCESS;
+		} catch (EmptyStackException e) {
+			//logger.logp(Level.INFO, "Logic", "undo()", "User cannot undo any further.");
+			//System.out.println("Undo not successful.");
+			Status._msg = Status.msg.ERROR;
+		}
+		return getOperationStatus(command);
+	}
+	
+	// ============================ USER OPERATION METHODS FOR LOGIC ============================= //
+	// =========================================================================================== //
+	
+	
+	
+	// =========================================================================================== //
+	// ====================== LOWER-LEVEL USER OPERATION METHODS FOR LOGIC ======================= //
+	// These methods are lower-level methods used within user operation methods.				   //
+	// During code re-factoring, you may place these lower-level methods here.					   //
+	// =========================================================================================== //
+	
+	/**
+	 * Creates and adds a task in both Logic and Storage.
+	 * 
+	 * @param command a Command object representing the user operation being carried out
+	 * @return the Task that was added; null if an error occurred
+	 */
+	private void createAndAddTaskToFile(Command command) {
+		Task addedTask = null;
+		try {
+			addedTask = new Task(command);
+			_tasks.add(addedTask);
+			updateTextFile();
+			updateUndoStack(command, addedTask);
+			Status._msg = Status.msg.SUCCESS;
+		} catch (ParseException pe) {
+			//logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
+						//"Add task: Inappropriate date format passed into Task.", pe);
+			Status._msg = Status.msg.ERROR;
+		} catch (IOException ioe) {
+			//logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
+					//"Add task: Error in writing to file.", ioe);
+			Status._msg = Status.msg.ERROR;
+		}
+	}
+	
+	/**
+	 * Retrieves the index of a task if a task can be found. NOT_FOUND_INDEX is returned
+	 * if there are duplicate tasks found or if no tasks can be found.
+	 * 
+	 * @param command the Command object representing the user operation being carried out
+	 * @return the index of a task, if a single task can be located; -1 if no task can be found
+	 * 		   or if there are duplicate tasks
+	 * @@author A0129660A
+	 */
+	private int getTaskIndex(Command command) {
+		int index = -1;
+		boolean hasDuplicate = false;
 		String taskName = command.getSpecificParameter(TaskField.NAME.getTaskKeyName());
 		String taskID = command.hasParameter(TaskField.ID.getTaskKeyName())
 						? command.getSpecificParameter(TaskField.ID.getTaskKeyName())
-						: "-1";
-		//System.out.println(checkTaskId);
+						: String.valueOf(NOT_FOUND_INDEX);
+		//System.out.println(taskID);
 		String[] params = {taskName, command.getSpecificParameter(TaskField.ID.getTaskKeyName())};
-		//logger.logp(Level.INFO, "Logic", "updateTask(Command command)", "Updating a task.", params);
+		//logger.logp(Level.INFO, "Logic", "removeTask(Command command)",	"Removing a task.", params);
 		for (int i = 0; i < _tasks.size(); i++) {
 			if (_tasks.get(i).getName().equals(taskName) ||
 				_tasks.get(i).getId() == Integer.parseInt(taskID)) {
-				toUpdate = _tasks.get(i);
-				updateIndex = i;
-				break;
+				if (index != NOT_FOUND_INDEX) {
+					hasDuplicate = true;
+				}
+				index = i;
 			}
 		}
+		if (hasDuplicate) {
+			index = NOT_FOUND_INDEX;
+		}
+		return index;
+	}
+	
+	/**
+	 * Removes a task from both Logic's internal storage as well as from the text file.
+	 * 
+	 * @param command a Command object representing the user operation being carried out
+	 */
+	private void removeTaskAndUpdateFile(Command command) {
+		Task removed = null;
+		int taskIndex = getTaskIndex(command);
+		try {
+			if (taskIndex != NOT_FOUND_INDEX) {
+				removed = _tasks.get(taskIndex);
+				_tasks.remove(removed);
+				updateTextFile();
+				updateUndoStack(command, removed);
+				Status._msg = Status.msg.SUCCESS;
+			} else {
+				//logger.logp(Level.WARNING, "Logic", "removeTask(Command command)",
+							//"Delete task: Task not found. Possible user-side error or no name/ID matching.");
+				Status._msg = Status.msg.ERROR;
+			}
+		} catch (IOException ioe) {
+			//logger.logp(Level.SEVERE, "Logic", "removeTask(Command command)",
+						//"Delete task: cannot write to file.", ioe);
+			Status._msg = Status.msg.ERROR;
+		}
+	}
+	
+	/**
+	 * Updates a task in both Logic's internal storage as well as from the text file. 
+	 * 
+	 * @param command a Command object representing the user operation being carried out
+	 * @@author A0129660A
+	 */
+	private void updateTaskInFile(Command command) {
+		Task toUpdate = null;
+		int taskIndex = getTaskIndex(command);
 		
 		try {
-			if (toUpdate != null) {
-				String old = toUpdate.getName();
-				_undoStack.push(storePreviousState(command, toUpdate.clone()));
+			if (taskIndex != NOT_FOUND_INDEX) {
+				//String old = toUpdate.getName();
+				toUpdate = _tasks.get(taskIndex);
+				Task copyOfOldTask = toUpdate.clone();
 				toUpdate.updateTask(command);
-				_tasks.set(updateIndex, toUpdate);
-				_storage.writeSaveFile(_tasks);
+				_tasks.set(taskIndex, toUpdate);
+				updateTextFile();
+				updateUndoStack(command, copyOfOldTask);
 				//System.out.println("Old name: " + old + " New name: " + _tasks.get(updateIndex).getName());
 				Status._msg = Status.msg.SUCCESS;
 			} else {
@@ -462,43 +709,32 @@ class Logic {
 						//"Update task: cannot write to file.", ioe);
 			Status._msg = Status.msg.ERROR;
 		}
-		return Status.getMessage(taskName, command.getSpecificParameter(TaskField.ID.getTaskKeyName()),
-								 command.getCommand());
 	}
-
+	
 	/**
-	 * Sets a task as completed.
+	 * Completes a task in both Logic's internal storage as well as the text file.
 	 * 
-	 * @param task	a Task object representation of the user's input
-	 * @return		a message indicating the status of the set-task-completed operation
+	 * @param command a Command object representing the user operation being carried out
 	 * @@author A0129660A
 	 */
-	private String completeTask(Command command) {
+	private void completeTaskInFile(Command command) {
 		Task toUpdate = null;
-		String taskName = command.getSpecificParameter(TaskField.NAME.getTaskKeyName());
-		String taskID = command.hasParameter(TaskField.ID.getTaskKeyName())
-						? command.getSpecificParameter(TaskField.ID.getTaskKeyName())
-						: "-1";
-		//System.out.println(taskID);
-		String[] params = {taskName, command.getSpecificParameter(TaskField.ID.getTaskKeyName())};
-		//logger.logp(Level.INFO, "Logic", "completeTask(Command command)", "Completing a task.", params);
-		int updateIndex = -1;
-		for (int i = 0; i < _tasks.size(); i++) {
-			if (_tasks.get(i).getName().equals(taskName) ||
-				_tasks.get(i).getId() == Integer.parseInt(taskID)) {
-				toUpdate = _tasks.get(i);
-				updateIndex = i;
-				break;
-			}
-		}
+		int taskIndex = getTaskIndex(command);
 
 		try {
-			if (toUpdate != null) {
-				_undoStack.push(storePreviousState(command, toUpdate.clone()));
-				toUpdate.setCompleted(true);
-				_tasks.set(updateIndex, toUpdate);
-				_storage.writeSaveFile(_tasks);
-				Status._msg = Status.msg.SUCCESS;
+			if (taskIndex != NOT_FOUND_INDEX) {
+				toUpdate = _tasks.get(taskIndex);
+				if (toUpdate.isCompleted()) {
+					Status._msg = Status.msg.ERROR;
+				}
+				else {
+					Task copyOfOldTask = toUpdate.clone();
+					toUpdate.setCompleted(true);
+					_tasks.set(taskIndex, toUpdate);
+					updateTextFile();
+					updateUndoStack(command, copyOfOldTask);
+					Status._msg = Status.msg.SUCCESS;
+				}
 			} else {
 				//logger.logp(Level.WARNING, "Logic", "completeTask(Command command)",
 							//"Complete task: Task not found. Possible user-side error or no name/ID matching.");
@@ -509,65 +745,10 @@ class Logic {
 						//"Complete task: cannot write to file.", ioe);
 			Status._msg = Status.msg.ERROR;
 		}
-		return Status.getMessage(taskName, command.getSpecificParameter(TaskField.ID.getTaskKeyName()),
-								 command.getCommand());
-	} 
-	
-	/**
-	 * Displays all tasks recorded in the text file.
-	 * 
-	 * NOTE: implementation can be extended to display
-	 * only certain tasks to the user.
-	 * 
-	 * @return a list of all tasks to show to the user.
-	 * @@author A0129660A
-	 */
-	private String showTask(Command command) {
-		try {
-			_undoStack.push(storePreviousState(command, null));
-			String sortOrder = command.getSpecificParameter(TaskField.SHOW.getTaskKeyName());
-			//logger.logp(Level.INFO, "Logic", "showTask(Command command)",
-						//"Displaying all tasks by user-specified order.", sortOrder);
-			if (sortOrder != null) {
-				/* 
-				 * Should I alter Task's sortCriterion to default
-				 * back to priority after user successfully sorts
-				 * tasks by his/her own desired order? 
-				 */
-				Task.setSortCriterion(sortOrder);
-				Collections.sort(_tasks);
-				_storage.writeSaveFile(_tasks);
-			}
-		} catch (IOException ioe) {
-			//logger.logp(Level.SEVERE, "Logic", "showTask(Command command)",
-						//"Displaying all tasks: cannot write to file.", ioe);
-			Status._msg = Status.msg.ERROR;
-			System.out.println(command.getCommand());
-			return Status.getMessage(null, null, command.getCommand());
-		}
-		String listToDisplay = "";
-		for (int i = 0; i < _tasks.size(); i++) {
-			listToDisplay += _tasks.get(i).toString() + "\n";
-		}
-		Status._msg = Status.msg.SUCCESS;
-		return listToDisplay;
 	}
-
-	/**
-	 * Sorts the list of tasks recorded in the text file.
-	 * By default, tasks are sorted by the order defined
-	 * in the Task class.
-	 * 
-	 * NOTE: implementation can be extended to sort the
-	 * list of tasks by user-defined criteria.
-	 * 
-	 * @see 	Task#compareTo(Task)
-	 * @return	a message indicating the status of the sort operation
-	 * @@author A0129660A
-	 */
-	private String sortFile(Command command) {
-		_undoStack.push(storePreviousState(command, null));
-		String sortOrder = command.getSpecificParameter(TaskField.SHOW.getTaskKeyName());
+	
+	private void sortAndUpdateFile(Command command) {
+		String sortOrder = command.getSpecificParameter(TaskField.SORT.getTaskKeyName());
 		try {
 			//logger.logp(Level.INFO, "Logic", "sortFile(Command command)",
 						//"Sorting all tasks by user-specified order.", sortOrder);
@@ -579,7 +760,7 @@ class Logic {
 				 */
 				Task.setSortCriterion(sortOrder);
 				Collections.sort(_tasks);
-				_storage.writeSaveFile(_tasks);
+				updateTextFile();
 				Status._msg = Status.msg.SUCCESS;
 			}
 		} catch (IOException ioe) {
@@ -587,37 +768,6 @@ class Logic {
 						//"Sort file: cannot write to file.", ioe);
 			Status._msg = Status.msg.ERROR;
 		}
-		return Status.getMessage(null, null, command.getCommand());
-	}
-	
-	/**
-	 * Searches for a task based on the user's desired criteria.
-	 * 
-	 * NOTE: default search is by whether a task contains a specified
-	 * task name or not. This implementation can be extended to support
-	 * varying user criteria.
-	 * 
-	 * @param  task	a Task object representation of a keyword to lookup
-	 * @return a list of Task objects that match the search criteria
-	 * @@author A0129660A
-	 */
-	// TODO: implement (for later stages)
-	private String/*ArrayList<Task>*/ searchFile(Command command) {
-		String stringResults = "search";
-		// String searchKey = command.getSpecificParameter("something_for_search");
-		//logger.logp(Level.INFO, "Logic", "searchFile(Command command)",
-				  	  //"Searching tasks in file.", searchKey);
-		//ArrayList<Task> results = new ArrayList<Task>();
-		//updateInternalStorage();
-		for (Task entry: _tasks) {
-			if (entry.getName().contains(command.getSpecificParameter("taskName"))) {
-				stringResults += (entry.toString() + "\n");
-				//results.add(entry);
-			}
-		}
-		//return results;
-		System.out.println(stringResults);
-		return stringResults;
 	}
 	
 	/**
@@ -665,8 +815,8 @@ class Logic {
 
 			case SORT :
 				previous = new State(commandName);
-				assert command.getSpecificParameter(TaskField.SHOW.getTaskKeyName()) != null;
-				previous.setSortOrder(command.getSpecificParameter(TaskField.SHOW.getTaskKeyName()));
+				assert command.getSpecificParameter(TaskField.SORT.getTaskKeyName()) != null;
+				previous.setSortOrder(command.getSpecificParameter(TaskField.SORT.getTaskKeyName()));
 				ArrayList<Task> preSortTaskList = (ArrayList<Task>) _tasks.clone();
 				previous.storeInnerMemoryState(preSortTaskList);
 				break;
@@ -682,88 +832,13 @@ class Logic {
 				break;
 				
 			default :
-				previous = new State("Invalid");
+				previous = new State(EMPTY_STATE);
 				//logger.logp(Level.INFO, "Logic", "storePreviousState(Command command, Task original)",
 							//"Dummy state is created.");
 				break;
 		}
 		return previous;
 	}
-	
-	/**
-	 * Undo one step back into the previous state of the program.
-	 * 
-	 * @return a message indicating status of the undo operation
-	 * @@author A0129660A
-	 */
-	private String undo() {
-		String commandName = "undo";
-		try {
-			State previousState = _undoStack.pop();
-			commandName = previousState.getCommand();
-			CommandKey commandType = CommandKey.get(previousState.getCommand());
-			//logger.logp(Level.INFO, "Logic", "undo()", "Undoing a previous operation.", commandType);
-			switch (commandType) {
-				case ADD :
-					undoAdd(previousState.getState().get(0));
-					break;
-					
-				case DELETE :
-					undoDelete(previousState.getState().get(0));
-					break;
-					
-				case UPDATE :
-					undoUpdate(previousState.getState().get(0));
-					break;
-					
-				case COMPLETED :
-					undoCompleted(previousState.getState().get(0));
-					break;
-					
-				case SHOW :
-					undoDisplay(previousState.getState());
-					break;
-					
-				case SORT :
-					undoSort(previousState.getState());
-					break;
-					
-				/*case SEARCH :
-				 	// TODO for Parser: add enum field + value
-					// undo a search does not make logical sense
-					break;*/
-					
-				case HELP :
-					break;
-			
-				default :
-					//logger.logp(Level.INFO, "Logic", "undo()", "Dummy State encountered.");
-					Status._msg = Status.msg.ERROR;
-					break;
-			}
-			//System.out.println("Undo successful.");
-			if (commandName != null) {
-				Status._msg = Status.msg.SUCCESS;
-			}
-		} catch (EmptyStackException e) {
-			//logger.logp(Level.INFO, "Logic", "undo()", "User cannot undo any further.");
-			//System.out.println("Undo not successful.");
-			Status._msg = Status.msg.ERROR;
-		}
-		return Status.getMessage(null, null, commandName);
-	}
-	
-	// ============================ USER OPERATION METHODS FOR LOGIC ============================= //
-	// =========================================================================================== //
-	
-	
-	
-	// =========================================================================================== //
-	// ====================== LOWER-LEVEL USER OPERATION METHODS FOR LOGIC ======================= //
-	// These methods are lower-level methods used within user operation methods.				   //
-	// During code re-factoring, you may place these lower-level methods here.					   //
-	//																							   //
-	// =========================================================================================== //
 	
 	/**
 	 * Reverts an add-task operation.
@@ -889,6 +964,34 @@ class Logic {
 			// retrieve error message
 			// return error message
 		}
+	}
+	
+	/**
+	 * Retrieves the status message of the user operation that is being carried out by Logic.
+	 * 
+	 * @param command a Command object representing the user operation being carried out
+	 * @return the status message of the user operation being carried out
+	 * @@author A0129660A
+	 */
+	private String getOperationStatus(Command command) {
+		if (isUndoCommand(command)) {
+			return Status.getMessage(null, null, command.getCommand());
+		} else {
+			return Status.getMessage(command.getSpecificParameter(TaskField.NAME.getTaskKeyName()),
+									 command.getSpecificParameter(TaskField.ID.getTaskKeyName()),
+									 command.getCommand());
+		}
+	}
+
+	/**
+	 * Checks if a command is an undo operation.
+	 * 
+	 * @param command a Command representing the user operation to be carried out
+	 * @return true if the Command represents an undo command, false otherwise
+	 * @@author A0129660A
+	 */
+	private boolean isUndoCommand(Command command) {
+		return command.getCommand().equals("undo");
 	}
 
 	// ====================== LOWER-LEVEL USER OPERATION METHODS FOR LOGIC ======================= //
