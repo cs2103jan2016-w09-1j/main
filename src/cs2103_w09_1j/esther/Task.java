@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,7 +33,7 @@ import sun.util.resources.cldr.id.LocaleNames_id;
 public class Task implements Comparable<Task> {
 	public enum TaskField {
 		NAME("taskName"), ID("taskID"), PRIORITY("priority"), DATE("date"), SORT("sort"), UPDATENAME(
-				"updateName"), SHOW("order"), UNDO("undo"),HELP("help"), COMPLETED("completed");
+				"updateName"), SHOW("order"), UNDO("undo"), HELP("help"), COMPLETED("completed");
 
 		private String taskKeyName;
 		private static final Map<String, TaskField> lookup = new HashMap<String, TaskField>();
@@ -64,25 +65,29 @@ public class Task implements Comparable<Task> {
 		}
 	}
 
-	private static SimpleDateFormat _dateFormatter = new SimpleDateFormat("dd/MM/yyyy"); // TODO: to
-																							// change
-																							// over
-																							// time
-	private static String _sortCriterion = "priority";
-	private static int _assignId = 0;
 	private String _name;
 	private Date _date;
 	private int _priority; // for now, lower number indicates higher priority
 	private int _id;
 	private boolean _isCompleted;
+	private boolean _isValid = false;
 
-	private static String idnoString = "ID\\: (\\d+)\\| ";
-	private static String dateString = "\\[([^\\]]+)\\] ";
-	private static String nameString = "([^\\|]+)\\| ";
-	private static String prioString = "Priority: (\\d+)\\| ";
-	private static String compString = "Completed: (true|false)";
-	private static String[] regexArray = {idnoString, dateString, nameString, prioString, compString};
-	
+	private static String _sortCriterion = "priority";
+	private static int _assignId = 0;
+
+	private final static SimpleDateFormat _dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
+	private final static Logger taskLogger = Logger.getLogger("taskLogger");
+	private final static int NUM_FIELDS = 5;
+	private final static String completedStr = "Completed";
+	private final static String notCompletedStr = "Incomplete";
+
+	private final static String delimiterPattern = "\\|";
+	private final static String idnoString = "ID\\: (\\d+)";
+	private final static String dateString = "\\[([^\\]]+)\\] ";
+	private final static String nameString = "([^\\|]+)";
+	private final static String prioString = "Priority: (\\d+)";
+	private final static String compString = "(" + completedStr + "|" + notCompletedStr + ")";
+	private final static String[] regexArray = { idnoString, dateString, nameString, prioString, compString };
 
 	/**
 	 * Constructs an empty Task object.
@@ -118,54 +123,63 @@ public class Task implements Comparable<Task> {
 	}
 
 	/**
-	 * Builds a task from a String with specific format "ID: {id}| [{dd/MM/yyyy}] {name}| Priority: {prio}| Completed: {com}"
+	 * Builds a task from a String with specific format
+	 * "ID: {id}| [{dd/MM/yyyy}] {name}| Priority: {prio}| Completed: {com}"
 	 * 
 	 * @param string
 	 * @author Jeremy Hon
-	 * @throws ParseException 
+	 * @throws ParseException
 	 */
 	public Task(String string) throws ParseException {
 		this();
-		String[] resultsArray = new String[5];
-		String matcherInput = string;
-		for (int i = 0; i < regexArray.length; i++) {
-			resultsArray[i] = findMatch(regexArray[i], matcherInput);
-			if(resultsArray[i] == null){
-				System.out.println("Match failed on "+i+"th element");
-				return;
-			} else {
-				matcherInput = matcherInput.replaceFirst(regexArray[i], "");
-			}
+		String[] resultsArray = new String[NUM_FIELDS];
+		String[] matcherInput = string.split(delimiterPattern);
+		
+		if(matcherInput.length != NUM_FIELDS){
+			return;
 		}
 		
+		for (int i = 0; i < regexArray.length; i++) {
+			resultsArray[i] = findMatch(regexArray[i], matcherInput[i]);
+			if (resultsArray[i] == null) {
+				taskLogger.warning("Task builder could not parse " + i + "th element for task " + resultsArray[0]);
+				resultsArray[i] = "";
+			}
+		}
+
+		if(resultsArray[0] == ""){
+			return;
+		}
 		int localID = Integer.parseInt(resultsArray[0]);
-		Date date = _dateFormatter.parse(resultsArray[1]);
+		Date date = parseDate(resultsArray[1]);
 		String taskName = resultsArray[2];
 		int priority = Integer.parseInt(resultsArray[3]);
-		boolean complete = Boolean.parseBoolean(resultsArray[4]);
-		
+		boolean complete = parseCompleted(resultsArray[4]);
+
+		this.setID(localID);
 		this.setName(taskName.trim());
 		this.setDate(date);
 		this.setPriority(priority);
 		this.setCompleted(complete);
-		_id = localID;
+		this.set_isValid(true);
 	}
-	
+
 	/**
 	 * Returns the matching string given a regex and a string
+	 * 
 	 * @param regex
 	 * @param input
 	 * @return
 	 */
-	public static String findMatch(String regex, String input){
+	public static String findMatch(String regex, String input) {
 		Matcher matcher = Pattern.compile(regex).matcher(input);
-		if(matcher.find()){
+		if (matcher.find()) {
 			return matcher.group(1);
 		} else {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Returns a human-readable String representation of a Task.
 	 * 
@@ -175,11 +189,11 @@ public class Task implements Comparable<Task> {
 	@Override
 	public String toString() {
 		String taskString = "";
-		taskString += "ID: " + _id + "| ";
-		taskString += "[" + _dateFormatter.format(_date) + "] ";
-		taskString += _name + "| ";
-		taskString += "Priority: " + _priority + "| ";
-		taskString += "Completed: " + _isCompleted;
+		taskString += "ID: " + _id + " | ";
+		taskString += "[" + dateToString() + "] | ";
+		taskString += _name + " | ";
+		taskString += "Priority: " + _priority + " | ";
+		taskString += completedToString();
 		taskString += "\n";
 		return taskString;
 	}
@@ -224,6 +238,26 @@ public class Task implements Comparable<Task> {
 	 */
 	public void setDate(Date date) {
 		_date = date;
+	}
+
+	/**
+	 * 
+	 * @return
+	 * @author Jeremy Hon
+	 */
+	public String dateToString() {
+		if (_date == null) {
+			return "";
+		} else {
+			return _dateFormatter.format(_date);
+		}
+	}
+	
+	public Date parseDate(String dateStr) throws ParseException {
+		if(dateStr == null || dateStr.length() == 0){
+			return null;
+		}
+		return _dateFormatter.parse(dateStr);
 	}
 
 	/**
@@ -289,10 +323,10 @@ public class Task implements Comparable<Task> {
 	 *            the task ID
 	 * @author Tay Guo Qiang
 	 */
-	public void setId(int id) {
+	public void setID(int id) {
 		_id = id;
 	}
-	
+
 	/**
 	 * Gets the global ID variable for system usage.
 	 * 
@@ -302,7 +336,7 @@ public class Task implements Comparable<Task> {
 	public static int getGlobalId() {
 		return _assignId;
 	}
-	
+
 	/**
 	 * Sets the global ID variable for system usage.
 	 * 
@@ -335,6 +369,29 @@ public class Task implements Comparable<Task> {
 	}
 
 	/**
+	 * @author Jeremy Hon
+	 */
+	public String completedToString() {
+		if (isCompleted()) {
+			return completedStr;
+		} else {
+			return notCompletedStr;
+		}
+	}
+	
+	public boolean parseCompleted(String completeStr) {
+		return completeStr.contains(completedStr);
+	}
+
+	public boolean isValid() {
+		return _isValid;
+	}
+
+	public void set_isValid(boolean _isValid) {
+		this._isValid = _isValid;
+	}
+
+	/**
 	 * Creates a copy of this Task object.
 	 * 
 	 * @return a copy of the Task object
@@ -344,14 +401,15 @@ public class Task implements Comparable<Task> {
 		Task copy = new Task();
 		copy.setName(_name);
 		copy.setDate(_date);
-		copy.setId(_id);
+		copy.setID(_id);
 		copy.setPriority(_priority);
 		copy.setCompleted(_isCompleted);
 		return copy;
 	}
 
 	/**
-	 * Updates the state of the Task object based on the Command object parameters.
+	 * Updates the state of the Task object based on the Command object
+	 * parameters.
 	 * 
 	 * @param command
 	 *            the Command object containing the required parameters
@@ -372,7 +430,7 @@ public class Task implements Comparable<Task> {
 			this.setPriority(Integer.parseInt(command.getSpecificParameter(TaskField.PRIORITY.getTaskKeyName())));
 		}
 		if (command.hasParameter(TaskField.ID.getTaskKeyName())) {
-			this.setId(Integer.parseInt(command.getSpecificParameter(TaskField.ID.getTaskKeyName())));
+			this.setID(Integer.parseInt(command.getSpecificParameter(TaskField.ID.getTaskKeyName())));
 		}
 		if (command.hasParameter(TaskField.COMPLETED.getTaskKeyName())) {
 			this.setCompleted(Boolean.parseBoolean(command.getSpecificParameter(TaskField.COMPLETED.getTaskKeyName())));
@@ -380,30 +438,29 @@ public class Task implements Comparable<Task> {
 	}
 
 	/**
-	 * The comparison method for comparing tasks. This method
-	 * is used for sorting tasks in certain order. The default
-	 * sorting order is by task priority, then by task deadline
-	 * and finally by name of task. However, other sorting
-	 * criteria, such as by name or by date, is also supported.
+	 * The comparison method for comparing tasks. This method is used for
+	 * sorting tasks in certain order. The default sorting order is by task
+	 * priority, then by task deadline and finally by name of task. However,
+	 * other sorting criteria, such as by name or by date, is also supported.
 	 * 
 	 * @param task
 	 *            the Task object to compare to
-	 * @return 0 if the Task compared to is equal to itself;
-	 *         a value less than 0 if the Task compared to comes after itself;
-	 *         and a value more than 0 if the Task compared to comes before itself.
+	 * @return 0 if the Task compared to is equal to itself; a value less than 0
+	 *         if the Task compared to comes after itself; and a value more than
+	 *         0 if the Task compared to comes before itself.
 	 * @author Tay Guo Qiang
 	 */
 	@Override
 	public int compareTo(Task task) {
 		switch (_sortCriterion) {
-			case "date" :
-				return compareByDate(task);
-				
-			case "name" :
-				return compareByName(task);
-				
-			default :
-				return compareByPriority(task);
+		case "date":
+			return compareByDate(task);
+
+		case "name":
+			return compareByName(task);
+
+		default:
+			return compareByPriority(task);
 		}
 	}
 
@@ -414,9 +471,9 @@ public class Task implements Comparable<Task> {
 	 * 
 	 * @param task
 	 *            the Task object to compare to
-	 * @return 0 if the Task compared to is equal to itself;
-	 *         a value less than 0 if the Task compared to comes after itself;
-	 *         and a value more than 0 if the Task compared to comes before itself.
+	 * @return 0 if the Task compared to is equal to itself; a value less than 0
+	 *         if the Task compared to comes after itself; and a value more than
+	 *         0 if the Task compared to comes before itself.
 	 * @author Tay Guo Qiang
 	 */
 	private int compareByDate(Task task) {
@@ -438,9 +495,9 @@ public class Task implements Comparable<Task> {
 	 * 
 	 * @param task
 	 *            the Task object to compare to
-	 * @return 0 if the Task compared to is equal to itself;
-	 *         a value less than 0 if the Task compared to comes after itself;
-	 *         and a value more than 0 if the Task compared to comes before itself.
+	 * @return 0 if the Task compared to is equal to itself; a value less than 0
+	 *         if the Task compared to comes after itself; and a value more than
+	 *         0 if the Task compared to comes before itself.
 	 * @author Tay Guo Qiang
 	 */
 	private int compareByName(Task task) {
@@ -460,9 +517,9 @@ public class Task implements Comparable<Task> {
 	 * 
 	 * @param task
 	 *            the Task object to compare to
-	 * @return 0 if the Task compared to is equal to itself;
-	 *         a value less than 0 if the Task compared to comes after itself;
-	 *         and a value more than 0 if the Task compared to comes before itself.
+	 * @return 0 if the Task compared to is equal to itself; a value less than 0
+	 *         if the Task compared to comes after itself; and a value more than
+	 *         0 if the Task compared to comes before itself.
 	 * @author Tay Guo Qiang
 	 */
 	private int compareByPriority(Task task) {
