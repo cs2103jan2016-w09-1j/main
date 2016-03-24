@@ -83,7 +83,7 @@ public class Task implements Comparable<Task> {
 
 	private final static String delimiterPattern = "\\|";
 	private final static String idnoString = "ID\\: (\\d+)";
-	private final static String dateString = "\\[([^\\]]+)\\] ";
+	private final static String dateString = "\\[([^\\]]+)\\]";
 	private final static String nameString = "([^\\|]+)";
 	private final static String prioString = "Priority: (\\d+)";
 	private final static String compString = "(" + completedStr + "|" + notCompletedStr + ")";
