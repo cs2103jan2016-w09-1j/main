@@ -52,6 +52,7 @@ public class Storage {
 		if (isValidFile(filePath)) {
 			storageLogger.info("File Valid. Proceeding to load");
 			loadSaveFile(filePath);
+			validifyTasksBuffer();
 		} else {
 			storageLogger.warning("File Invalid. Returning empty list of tasks");
 		}
@@ -84,6 +85,7 @@ public class Storage {
 		assert(tasks != null);
 		storageLogger.info("Saving tasks to save file");
 		tasksBuffer = tasks;
+		validifyTasksBuffer();
 		writeFile(tasksToString(tasksBuffer), savePath);
 	}
 
@@ -222,6 +224,14 @@ public class Storage {
 		} catch (ParseException pe) {
 			storageLogger.info("Error encounted parsing config file. Using default");
 			return new Config();
+		}
+	}
+	
+	private void validifyTasksBuffer() {
+		for (Task task : tasksBuffer) {
+			if(task == null || !task.isValid()){
+				tasksBuffer.remove(task);
+			}
 		}
 	}
 
