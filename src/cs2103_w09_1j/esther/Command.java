@@ -127,7 +127,19 @@ public class Command {
 				value = _parameters.get(parameter);
 				break;
 				
-			case DATE :
+			case STARTDATE :
+				value = _parameters.get(parameter);
+				break;
+				
+			case ENDDATE :
+				value = _parameters.get(parameter);
+				break;
+				
+			case STARTTIME :
+				value = _parameters.get(parameter);
+				break;
+				
+			case ENDTIME :
 				value = _parameters.get(parameter);
 				break;
 			

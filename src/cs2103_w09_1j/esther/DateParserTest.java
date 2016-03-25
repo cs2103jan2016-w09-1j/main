@@ -6,7 +6,6 @@ import java.util.Date;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.ocpsoft.prettytime.format.SimpleTimeFormat;
 
 public class DateParserTest {
 

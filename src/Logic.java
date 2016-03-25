@@ -17,14 +17,8 @@
  * 
  * 
  * =================== [CURRENT STATUS] ===================
- * TODO:
- * 1. For SEARCH function, call UI method to pass data to UI
- *    (compulsory implementation, confirm with Mingxuan)
- * 2. Read data from config file after initializing Storage,
- *    retrieve HashMap of fields from there (Storage will have
- *    2 initialization methods for different things: Config +
- *    ArrayList<Task>)
- * 3. Pass this HashMap to Parser after initializing Parser
+ * Most of ESTHER is broken due to Task changes. When all
+ * necessary fixes are done, will proceed to test.
  * 
  * @@author A0129660A
  */
@@ -56,7 +50,7 @@ class Logic {
 	private Storage _storage;
 	private ArrayList<Task> _tasks;
 	private Stack<State> _undoStack;
-	private Config _config; // TODO: for retrieving HashMap of Task Fields to pass to Parser
+	private Config _config;
 	//private static Logger //logger = Logger.getLogger("Logic");
 
 	
@@ -100,15 +94,26 @@ class Logic {
 	public String executeCommand(String userInput) {
 		//logger.logp(Level.INFO, "Logic", "executeCommand",
 					//"Parsing user input into Command object for execution.", userInput);
-		Command command = _parser.acceptUserInput(userInput);
-		// TODO: change this to try-catch in future
-		if (command == null) {
-			//logger.log(Level.WARNING, "Error from Parser: encountered null Command object.");
+		try {
+			Command command = _parser.acceptUserInput(userInput);
+			if (command == null) {
+				//logger.log(Level.WARNING, "Error from Parser: encountered null Command object.");
+				Status._outcome = Status.Outcome.ERROR;
+				Status._errorCode = Status.ErrorCode.INVALID_COMMAND;
+				return Status.getMessage(null, null, null);
+			}
+			return executeCommand(command);
+		} catch (InvalidInputException iie) {
+			//logger.log(Level.WARNING, "Invalid input supplied by user.");
+			Status._outcome = Status.Outcome.ERROR;
+			Status._errorCode = Status.ErrorCode.INVALID_COMMAND;
+			return Status.getMessage(null, null, null);
+		} catch (ParseException pe) {
+			//logger.log(Level.WARNING, "Invalid input supplied by user.");
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.INVALID_COMMAND;
 			return Status.getMessage(null, null, null);
 		}
-		return executeCommand(command);
 	}
 	
 	/**
@@ -144,7 +149,7 @@ class Logic {
 				statusMessage = updateTask(command);
 				break;
 				
-			case COMPLETED :
+			case COMPLETE :
 				statusMessage = completeTask(command);
 				break;
 				
@@ -275,7 +280,8 @@ class Logic {
 	 */
 	private void initializeParser() {
 		//logger.logp(Level.CONFIG, "Parser", "Parser()", "Initializing Parser.");
-		_parser = new Parser(/*_config*/); // TODO for Parser: accept HashMap
+		HashMap<String, String> fieldNameAliases = _config.getFieldNameAliases();
+		_parser = new Parser(fieldNameAliases);
 		assert _parser != null;
 		//System.out.println("Parser initialized.");
 	}
@@ -547,7 +553,7 @@ class Logic {
 					undoUpdate(previousState.getState().get(0));
 					break;
 					
-				case COMPLETED :
+				case COMPLETE :
 					undoCompleted(previousState.getState().get(0));
 					break;
 					
@@ -812,7 +818,7 @@ class Logic {
 				previous.storeOriginalTaskState(original);
 				break;
 				
-			case COMPLETED :
+			case COMPLETE :
 				previous = new State(commandName);
 				previous.storeOriginalTaskState(original);
 				break;

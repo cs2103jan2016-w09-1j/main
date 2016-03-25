@@ -110,7 +110,7 @@ public class Status {
 			}
 			break;
 
-		case COMPLETED :
+		case COMPLETE :
 			if (taskName != null) {
 				message = String.format(MESSAGE_SUCCESS_COMPLETED, taskName);
 			} else {
@@ -166,7 +166,7 @@ public class Status {
 			message = getUpdateErrorMessage(taskName, taskID);
 			break;
 			
-		case COMPLETED :
+		case COMPLETE :
 			message = getCompleteErrorMessage(taskName, taskID);
 			break;
 			
