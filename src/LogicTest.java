@@ -500,7 +500,7 @@ public class LogicTest {
 	public void undo_Failed_Add_Task_Nothing_Happen() {
 		logic.executeCommand(errorAddCommand);
 		String alert = logic.executeCommand(undoCommand);
-		assertEquals("Undo should have failed.", "[ERROR] Cannot undo any further.\n", alert);
+		assertEquals("Undo should have failed.", "Cannot undo any further.\n", alert);
 	}
 	
 	@Test
@@ -526,7 +526,7 @@ public class LogicTest {
 	public void undo_Failed_Delete_Task_Nothing_Happen() {
 		logic.executeCommand(deleteCommand);
 		String alert = logic.executeCommand(undoCommand);
-		assertEquals("Undo should have failed.", "[ERROR] Cannot undo any further.\n", alert);
+		assertEquals("Undo should have failed.", "Cannot undo any further.\n", alert);
 	}
 	
 	@Test
@@ -552,7 +552,7 @@ public class LogicTest {
 	public void undo_Failed_Update_Task_Nothing_Happen() {
 		logic.executeCommand(updateCommand);
 		String alert = logic.executeCommand(undoCommand);
-		assertEquals("Undo should have failed.", "[ERROR] Cannot undo any further.\n", alert);
+		assertEquals("Undo should have failed.", "Cannot undo any further.\n", alert);
 	}
 	
 	@Test
@@ -578,7 +578,7 @@ public class LogicTest {
 	public void undo_Failed_Complete_Task_Nothing_Happen() {
 		logic.executeCommand(setCompletedCommand);
 		String alert = logic.executeCommand(undoCommand);
-		assertEquals("Undo should have failed.", "[ERROR] Cannot undo any further.\n", alert);
+		assertEquals("Undo should have failed.", "Cannot undo any further.\n", alert);
 	}
 	
 	@Test

@@ -10,7 +10,7 @@ package cs2103_w09_1j.esther;
  * largely deprecated and it has been recommended
  * by Java that we use Calendar class instead.
  * 
- * @author Tay Guo Qiang
+ * @@author A0129660A
  *         (add your name to list of authors if you made
  *         changes to this class definition)
  */
@@ -31,6 +31,10 @@ import java.util.regex.Pattern;
 import sun.util.resources.cldr.id.LocaleNames_id;
 
 public class Task implements Comparable<Task> {
+	private static final String SORT_BY_DATE_KEYWORD = "date";
+	private static final String SORT_BY_NAME_KEYWORD = "name";
+	private static final String SORT_BY_PRIORITY_KEYWORD = "priority";
+	
 	public enum TaskField {
 		NAME("taskName"), ID("taskID"), PRIORITY("priority"), DATE("date"), SORT("order"), UPDATENAME(
 				"updateName"), SHOW("order"), UNDO("undo"), HELP("help"), COMPLETED("completed");
@@ -92,7 +96,7 @@ public class Task implements Comparable<Task> {
 	/**
 	 * Constructs an empty Task object.
 	 * 
-	 * @author Tay Guo Qiang
+	 * @@author A0129660A
 	 */
 	public Task() {
 
@@ -105,7 +109,7 @@ public class Task implements Comparable<Task> {
 	 *            the Command object containing the required parameters
 	 * @throws ParseException
 	 * @return a Task with the attributes set with the parameters
-	 * @author Tay Guo Qiang
+	 * @@author A0129660A
 	 */
 	public Task(Command command) throws ParseException {
 		this();
@@ -203,7 +207,7 @@ public class Task implements Comparable<Task> {
 	 * Gets the name of the Task.
 	 * 
 	 * @return the name of the task
-	 * @author Tay Guo Qiang
+	 * @@author A0129660A
 	 */
 	public String getName() {
 		return _name;
@@ -214,7 +218,7 @@ public class Task implements Comparable<Task> {
 	 * 
 	 * @param name
 	 *            the desired task name
-	 * @author Tay Guo Qiang
+	 * @@author A0129660A
 	 */
 	public void setName(String name) {
 		_name = name;
@@ -224,7 +228,7 @@ public class Task implements Comparable<Task> {
 	 * Gets the deadline of the Task.
 	 * 
 	 * @return the deadline of the task
-	 * @author Tay Guo Qiang
+	 * @@author A0129660A
 	 */
 	public Date getDate() {
 		return _date;
@@ -235,7 +239,7 @@ public class Task implements Comparable<Task> {
 	 * 
 	 * @param date
 	 *            the desired task deadline
-	 * @author Tay Guo Qiang
+	 * @@author A0129660A
 	 */
 	public void setDate(Date date) {
 		_date = date;
@@ -268,7 +272,7 @@ public class Task implements Comparable<Task> {
 	 * 
 	 * @see Task#compareTo(Task)
 	 * @return a String representing the sorting criterion
-	 * @author Tay Guo Qiang
+	 * @@author A0129660A
 	 */
 	public static String getSortCriterion() {
 		return _sortCriterion;
@@ -280,7 +284,7 @@ public class Task implements Comparable<Task> {
 	 * @see Task#compareTo(Task)
 	 * @param sortCriterion
 	 *            the criteria to sort tasks by
-	 * @author Tay Guo Qiang
+	 * @@author A0129660A
 	 */
 	public static void setSortCriterion(String sortCriterion) {
 		_sortCriterion = sortCriterion;
@@ -290,7 +294,7 @@ public class Task implements Comparable<Task> {
 	 * Gets the priority of the Task.
 	 * 
 	 * @return the priority level of the task
-	 * @author Tay Guo Qiang
+	 * @@author A0129660A
 	 */
 	public int getPriority() {
 		return _priority;
@@ -301,7 +305,7 @@ public class Task implements Comparable<Task> {
 	 * 
 	 * @param priority
 	 *            the desired task's priority level
-	 * @author Tay Guo Qiang
+	 * @@author A0129660A
 	 */
 	public void setPriority(int priority) {
 		_priority = priority;
@@ -311,7 +315,7 @@ public class Task implements Comparable<Task> {
 	 * Gets the ID of the Task.
 	 * 
 	 * @return the task ID
-	 * @author Tay Guo Qiang
+	 * @@author A0129660A
 	 */
 	public int getId() {
 		return _id;
@@ -322,7 +326,7 @@ public class Task implements Comparable<Task> {
 	 * 
 	 * @param id
 	 *            the task ID
-	 * @author Tay Guo Qiang
+	 * @@author A0129660A
 	 */
 	public void setID(int id) {
 		_id = id;
@@ -332,7 +336,7 @@ public class Task implements Comparable<Task> {
 	 * Gets the global ID variable for system usage.
 	 * 
 	 * @return the global ID variable in this class
-	 * @author Tay Guo Qiang
+	 * @@author A0129660A
 	 */
 	public static int getGlobalId() {
 		return _assignId;
@@ -342,7 +346,7 @@ public class Task implements Comparable<Task> {
 	 * Sets the global ID variable for system usage.
 	 * 
 	 * @return the global ID variable in this class
-	 * @author Tay Guo Qiang
+	 * @@author A0129660A
 	 */
 	public static void setGlobalId(int newId) {
 		_assignId = newId;
@@ -352,7 +356,7 @@ public class Task implements Comparable<Task> {
 	 * Gets completion status of the Task.
 	 * 
 	 * @return task status (whether it is completed or not)
-	 * @author Tay Guo Qiang
+	 * @@author A0129660A
 	 */
 	public boolean isCompleted() {
 		return _isCompleted;
@@ -363,7 +367,7 @@ public class Task implements Comparable<Task> {
 	 * 
 	 * @param isCompleted
 	 *            the status of the task (completed or not)
-	 * @author Tay Guo Qiang
+	 * @@author A0129660A
 	 */
 	public void setCompleted(boolean isCompleted) {
 		_isCompleted = isCompleted;
@@ -396,7 +400,7 @@ public class Task implements Comparable<Task> {
 	 * Creates a copy of this Task object.
 	 * 
 	 * @return a copy of the Task object
-	 * @author Tay Guo Qiang
+	 * @@author A0129660A
 	 */
 	public Task clone() {
 		Task copy = new Task();
@@ -416,7 +420,7 @@ public class Task implements Comparable<Task> {
 	 * @param command
 	 *            the Command object containing the required parameters
 	 * @throws ParseException
-	 * @author Tay Guo Qiang
+	 * @@author A0129660A
 	 */
 	public void updateTask(Command command) throws ParseException {
 		if (command.hasParameter(TaskField.NAME.getTaskKeyName())) {
@@ -450,15 +454,15 @@ public class Task implements Comparable<Task> {
 	 * @return 0 if the Task compared to is equal to itself; a value less than 0
 	 *         if the Task compared to comes after itself; and a value more than
 	 *         0 if the Task compared to comes before itself.
-	 * @author Tay Guo Qiang
+	 * @@author A0129660A
 	 */
 	@Override
 	public int compareTo(Task task) {
 		switch (_sortCriterion) {
-		case "date":
+		case SORT_BY_DATE_KEYWORD :
 			return compareByDate(task);
 
-		case "name":
+		case SORT_BY_NAME_KEYWORD :
 			return compareByName(task);
 
 		default:
@@ -476,7 +480,7 @@ public class Task implements Comparable<Task> {
 	 * @return 0 if the Task compared to is equal to itself; a value less than 0
 	 *         if the Task compared to comes after itself; and a value more than
 	 *         0 if the Task compared to comes before itself.
-	 * @author Tay Guo Qiang
+	 * @@author A0129660A
 	 */
 	private int compareByDate(Task task) {
 		if (_date.equals(task.getDate())) {
@@ -500,7 +504,7 @@ public class Task implements Comparable<Task> {
 	 * @return 0 if the Task compared to is equal to itself; a value less than 0
 	 *         if the Task compared to comes after itself; and a value more than
 	 *         0 if the Task compared to comes before itself.
-	 * @author Tay Guo Qiang
+	 * @@author A0129660A
 	 */
 	private int compareByName(Task task) {
 		if (_name.equals(task.getName())) {
@@ -522,7 +526,7 @@ public class Task implements Comparable<Task> {
 	 * @return 0 if the Task compared to is equal to itself; a value less than 0
 	 *         if the Task compared to comes after itself; and a value more than
 	 *         0 if the Task compared to comes before itself.
-	 * @author Tay Guo Qiang
+	 * @@author A0129660A
 	 */
 	private int compareByPriority(Task task) {
 		if (_priority == task.getPriority()) {

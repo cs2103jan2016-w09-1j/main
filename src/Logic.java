@@ -49,7 +49,8 @@ import cs2103_w09_1j.esther.InvalidInputException;
 class Logic {
 	
 	private static final int NOT_FOUND_INDEX = -1;
-	private static final String EMPTY_STATE = "Invalid";
+	private static final String EMPTY_STATE = "Empty";
+	private static final String DEFAULT_SORT_ORDER = "date";
 	
 	private Parser _parser;
 	private Storage _storage;
@@ -103,7 +104,8 @@ class Logic {
 		// TODO: change this to try-catch in future
 		if (command == null) {
 			//logger.log(Level.WARNING, "Error from Parser: encountered null Command object.");
-			Status._msg = null;
+			Status._outcome = Status.Outcome.ERROR;
+			Status._errorCode = Status.ErrorCode.INVALID_COMMAND;
 			return Status.getMessage(null, null, null);
 		}
 		return executeCommand(command);
@@ -163,7 +165,7 @@ class Logic {
 				break;
 				
 			case HELP :
-				Status._msg = Status.msg.SUCCESS;
+				Status._outcome = Status.Outcome.SUCCESS;
 				statusMessage = Status.getMessage(null, null, commandName);
 				break;
 				
@@ -171,7 +173,8 @@ class Logic {
 				assert commandType != null;
 				//logger.logp(Level.INFO, "Logic", "executeCommand(Command command)",
 							//"Unrecognized command.");
-				Status._msg = null;
+				Status._outcome = Status.Outcome.ERROR;
+				Status._errorCode = Status.ErrorCode.INVALID_COMMAND;
 				statusMessage = Status.getMessage(null, null, commandName);
 				break;
 		}
@@ -469,7 +472,7 @@ class Logic {
 		updateUndoStack(command, null);
 		sortAndUpdateFile(command);
 		String result = getInternalStorageInString(); 
-		Status._msg = Status.msg.SUCCESS;
+		Status._outcome = Status.Outcome.SUCCESS;
 		return result;
 	}
 
@@ -526,7 +529,6 @@ class Logic {
 	 * @return a message indicating status of the undo operation
 	 * @@author A0129660A
 	 */
-	//TODO: change to method taking in Command as arg
 	private String undo(Command command) {
 		try {
 			State previousState = _undoStack.pop();
@@ -567,15 +569,15 @@ class Logic {
 			
 				default :
 					//logger.logp(Level.INFO, "Logic", "undo()", "Dummy State encountered.");
-					Status._msg = Status.msg.ERROR;
+					Status._outcome = Status.Outcome.ERROR;
+					Status._errorCode = Status.ErrorCode.SYSTEM;
 					return getOperationStatus(command);
 			}
-			//System.out.println("Undo successful.");
-			Status._msg = Status.msg.SUCCESS;
 		} catch (EmptyStackException e) {
 			//logger.logp(Level.INFO, "Logic", "undo()", "User cannot undo any further.");
 			//System.out.println("Undo not successful.");
-			Status._msg = Status.msg.ERROR;
+			Status._outcome = Status.Outcome.ERROR;
+			Status._errorCode = Status.ErrorCode.UNDO;
 		}
 		return getOperationStatus(command);
 	}
@@ -604,15 +606,17 @@ class Logic {
 			_tasks.add(addedTask);
 			updateTextFile();
 			updateUndoStack(command, addedTask);
-			Status._msg = Status.msg.SUCCESS;
+			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (ParseException pe) {
 			//logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
 						//"Add task: Inappropriate date format passed into Task.", pe);
-			Status._msg = Status.msg.ERROR;
+			Status._outcome = Status.Outcome.ERROR;
+			Status._errorCode = Status.ErrorCode.ADD_INVALID_FORMAT;
 		} catch (IOException ioe) {
 			//logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
 					//"Add task: Error in writing to file.", ioe);
-			Status._msg = Status.msg.ERROR;
+			Status._outcome = Status.Outcome.ERROR;
+			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
 	}
 	
@@ -664,16 +668,18 @@ class Logic {
 				_tasks.remove(removed);
 				updateTextFile();
 				updateUndoStack(command, removed);
-				Status._msg = Status.msg.SUCCESS;
+				Status._outcome = Status.Outcome.SUCCESS;
 			} else {
 				//logger.logp(Level.WARNING, "Logic", "removeTask(Command command)",
 							//"Delete task: Task not found. Possible user-side error or no name/ID matching.");
-				Status._msg = Status.msg.ERROR;
+				Status._outcome = Status.Outcome.ERROR;
+				Status._errorCode = Status.ErrorCode.DELETE_NOT_FOUND;
 			}
 		} catch (IOException ioe) {
 			//logger.logp(Level.SEVERE, "Logic", "removeTask(Command command)",
 						//"Delete task: cannot write to file.", ioe);
-			Status._msg = Status.msg.ERROR;
+			Status._outcome = Status.Outcome.ERROR;
+			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
 	}
 	
@@ -697,20 +703,23 @@ class Logic {
 				updateTextFile();
 				updateUndoStack(command, copyOfOldTask);
 				//System.out.println("Old name: " + old + " New name: " + _tasks.get(updateIndex).getName());
-				Status._msg = Status.msg.SUCCESS;
+				Status._outcome = Status.Outcome.SUCCESS;
 			} else {
 				//logger.logp(Level.WARNING, "Logic", "updateTask(Command command)",
 							//"Update task: Task not found. Possible user-side error or no name/ID matching.");
-				Status._msg = Status.msg.ERROR;
+				Status._outcome = Status.Outcome.ERROR;
+				Status._errorCode = Status.ErrorCode.UPDATE_NOT_FOUND;
 			}
 		} catch (ParseException pe) {
 			//logger.logp(Level.SEVERE, "Logic", "updateTask(Command command)",
 						//"Update task: Inappropriate date formated passed into Task.", pe);
-			Status._msg = Status.msg.ERROR;
+			Status._outcome = Status.Outcome.ERROR;
+			Status._errorCode = Status.ErrorCode.UPDATE_INVALID_FIELD;
 		} catch (IOException ioe) {
 			//logger.logp(Level.SEVERE, "Logic", "updateTask(Command command)",
 						//"Update task: cannot write to file.", ioe);
-			Status._msg = Status.msg.ERROR;
+			Status._outcome = Status.Outcome.ERROR;
+			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
 	}
 	
@@ -728,7 +737,7 @@ class Logic {
 			if (taskIndex != NOT_FOUND_INDEX) {
 				toUpdate = _tasks.get(taskIndex);
 				if (toUpdate.isCompleted()) {
-					Status._msg = Status.msg.ERROR;
+					Status._outcome = Status.Outcome.ERROR;
 				}
 				else {
 					Task copyOfOldTask = toUpdate.clone();
@@ -736,17 +745,19 @@ class Logic {
 					_tasks.set(taskIndex, toUpdate);
 					updateTextFile();
 					updateUndoStack(command, copyOfOldTask);
-					Status._msg = Status.msg.SUCCESS;
+					Status._outcome = Status.Outcome.SUCCESS;
 				}
 			} else {
 				//logger.logp(Level.WARNING, "Logic", "completeTask(Command command)",
 							//"Complete task: Task not found. Possible user-side error or no name/ID matching.");
-				Status._msg = Status.msg.ERROR;
+				Status._outcome = Status.Outcome.ERROR;
+				Status._errorCode = Status.ErrorCode.COMPLETED_NOT_FOUND;
 			}
 		} catch (IOException ioe) {
 			//logger.logp(Level.SEVERE, "Logic", "completeTask(Command command)",
 						//"Complete task: cannot write to file.", ioe);
-			Status._msg = Status.msg.ERROR;
+			Status._outcome = Status.Outcome.ERROR;
+			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
 	}
 	
@@ -756,20 +767,18 @@ class Logic {
 			//logger.logp(Level.INFO, "Logic", "sortFile(Command command)",
 						//"Sorting all tasks by user-specified order.", sortOrder);
 			if (sortOrder != null) {
-				/* 
-				 * Should I alter Task's sortCriterion to default
-				 * back to priority after user successfully sorts
-				 * tasks by his/her own desired order? 
-				 */
 				Task.setSortCriterion(sortOrder);
-				Collections.sort(_tasks);
-				updateTextFile();
-				Status._msg = Status.msg.SUCCESS;
+			} else {
+				Task.setSortCriterion(DEFAULT_SORT_ORDER);
 			}
+			Collections.sort(_tasks);
+			updateTextFile();
+			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
 			//logger.logp(Level.SEVERE, "Logic", "sortFile(Command command)",
 						//"Sort file: cannot write to file.", ioe);
-			Status._msg = Status.msg.ERROR;
+			Status._outcome = Status.Outcome.ERROR;
+			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
 	}
 	
@@ -825,13 +834,15 @@ class Logic {
 				break;
 				
 			/*case SEARCH : // TODO for Parser: add enum field + value
-				// not needed to store a State for searching tasks
+				previous = new State(EMPTY_STATE);
 				break;*/
 
 			case UNDO :
+				previous = new State(EMPTY_STATE);
 				break;
 
 			case HELP :
+				previous = new State(EMPTY_STATE);
 				break;
 				
 			default :
@@ -851,20 +862,21 @@ class Logic {
 	// TODO: error handling
 	private void undoAdd(Task task) {
 		int taskID = task.getId();
-		int removeIndex = -1;
+		int removeIndex = NOT_FOUND_INDEX;
 		for (int i = 0; i < _tasks.size(); i++) {
 			if (_tasks.get(i).getId() == taskID) {
 				removeIndex = i;
 				break;
 			}
 		}
+		assert removeIndex != NOT_FOUND_INDEX;
 		_tasks.remove(removeIndex);
 		try {
 			_storage.writeSaveFile(_tasks);
+			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
-			// set Exception state
-			// retrieve error message
-			// return error message
+			Status._outcome = Status.Outcome.ERROR;
+			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
 	}
 	
@@ -878,10 +890,10 @@ class Logic {
 		_tasks.add(task);
 		try {
 			_storage.writeSaveFile(_tasks);
+			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
-			// set Exception state
-			// retrieve error message
-			// return error message
+			Status._outcome = Status.Outcome.ERROR;
+			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
 	}
 	
@@ -900,13 +912,14 @@ class Logic {
 				break;
 			}
 		}
+		assert updateIndex != NOT_FOUND_INDEX;
 		_tasks.set(updateIndex, task);
 		try {
 			_storage.writeSaveFile(_tasks);
+			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
-			// set Exception state
-			// retrieve error message
-			// return error message
+			Status._outcome = Status.Outcome.ERROR;
+			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
 	}
 	
@@ -925,13 +938,14 @@ class Logic {
 				break;
 			}
 		}
+		assert updateIndex != NOT_FOUND_INDEX;
 		_tasks.set(updateIndex, task);
 		try {
 			_storage.writeSaveFile(_tasks);
+			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
-			// set Exception state
-			// retrieve error message
-			// return error message
+			Status._outcome = Status.Outcome.ERROR;
+			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
 	}
 	
@@ -945,10 +959,10 @@ class Logic {
 		_tasks = tasks;
 		try {
 			_storage.writeSaveFile(_tasks);
+			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
-			// set Exception state
-			// retrieve error message
-			// return error message
+			Status._outcome = Status.Outcome.ERROR;
+			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
 	}
 	
@@ -962,10 +976,10 @@ class Logic {
 		_tasks = tasks;
 		try {
 			_storage.writeSaveFile(_tasks);
+			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
-			// set Exception state
-			// retrieve error message
-			// return error message
+			Status._outcome = Status.Outcome.ERROR;
+			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
 	}
 	
