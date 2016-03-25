@@ -10,7 +10,14 @@ package cs2103_w09_1j.esther;
  * largely deprecated and it has been recommended
  * by Java that we use Calendar class instead.
  * 
+<<<<<<< HEAD
  * @@author A0129660A
+=======
+ * CHANGES MADE: Added to TaskField, STARTDATE, ENDDATE, STARTTIME, ENDTIME, 
+ * 				 Removed date to cater start and end date.
+ * 
+ * @author Tay Guo Qiang
+>>>>>>> refs/remotes/origin/Parser
  *         (add your name to list of authors if you made
  *         changes to this class definition)
  */
@@ -31,13 +38,10 @@ import java.util.regex.Pattern;
 import sun.util.resources.cldr.id.LocaleNames_id;
 
 public class Task implements Comparable<Task> {
-	private static final String SORT_BY_DATE_KEYWORD = "date";
-	private static final String SORT_BY_NAME_KEYWORD = "name";
-	private static final String SORT_BY_PRIORITY_KEYWORD = "priority";
-	
 	public enum TaskField {
-		NAME("taskName"), ID("taskID"), PRIORITY("priority"), DATE("date"), SORT("order"), UPDATENAME(
-				"updateName"), SHOW("order"), UNDO("undo"), HELP("help"), COMPLETED("completed");
+		NAME("taskName"), ID("taskID"), PRIORITY("priority"), STARTDATE("startDate"), ENDDATE("endDate"),
+		STARTTIME("startTime"), ENDTIME("endTime"), SORT("order"), UPDATENAME("updateName"), SHOW("order"),
+		UNDO("undo"), HELP("help"), COMPLETED("completed");
 
 		private String taskKeyName;
 		private static final Map<String, TaskField> lookup = new HashMap<String, TaskField>();
@@ -68,6 +72,11 @@ public class Task implements Comparable<Task> {
 			}
 		}
 	}
+	
+	private static final String SORT_BY_DATE_KEYWORD = "date";
+	private static final String SORT_BY_NAME_KEYWORD = "name";
+	private static final String SORT_BY_PRIORITY_KEYWORD = "priority";
+	private static final int DEFAULT_STARTING_ID = 0;
 
 	private String _name;
 	private Date _date;
@@ -76,8 +85,8 @@ public class Task implements Comparable<Task> {
 	private boolean _isCompleted;
 	private boolean _isValid = false;
 
-	private static String _sortCriterion = "priority";
-	private static int _assignId = 0;
+	private static String _sortCriterion = SORT_BY_PRIORITY_KEYWORD;
+	private static int _assignId = DEFAULT_STARTING_ID;
 
 	private final static SimpleDateFormat _dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
 	private final static Logger taskLogger = Logger.getLogger("taskLogger");
@@ -114,6 +123,7 @@ public class Task implements Comparable<Task> {
 	public Task(Command command) throws ParseException {
 		this();
 		String taskName = command.getSpecificParameter(TaskField.NAME.getTaskKeyName());
+		// TODO for Logic: change this DATE field
 		Date date = command.hasParameter(TaskField.DATE.getTaskKeyName())
 				? _dateFormatter.parse(command.getSpecificParameter(TaskField.DATE.getTaskKeyName())) : null;
 		int priority = command.hasParameter(TaskField.PRIORITY.getTaskKeyName())
@@ -155,6 +165,7 @@ public class Task implements Comparable<Task> {
 		if(resultsArray[0] == ""){
 			return;
 		}
+
 		int localID = Integer.parseInt(resultsArray[0]);
 		Date date = parseDate(resultsArray[1]);
 		String taskName = resultsArray[2];
@@ -429,6 +440,7 @@ public class Task implements Comparable<Task> {
 		if (command.hasParameter(TaskField.UPDATENAME.getTaskKeyName())) {
 			this.setName(command.getSpecificParameter(TaskField.UPDATENAME.getTaskKeyName()));
 		}
+		// TODO for Logic: adjust update
 		if (command.hasParameter(TaskField.DATE.getTaskKeyName())) {
 			this.setDate(_dateFormatter.parse(command.getSpecificParameter(TaskField.DATE.getTaskKeyName())));
 		}
