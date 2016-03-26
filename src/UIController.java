@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -49,59 +50,75 @@ public class UIController implements Initializable {
 
 			String logicOutput =logic.executeCommand(userInput); 
 			 /* down below is for testing purpose
-			  *String logicOutput = "searchSearch Result should be displayed here";
+			  *String logicOutput = "search:\n" + "Search Result should be displayed here";
 			  *String logicOutput = "search";
+			  *String logicOutput = "help:\n" + "this is the help menu";
 			  */
-			isSearch(logicOutput, commandLog);
+			logicResult(logicOutput, commandLog);
 			input.clear();
 		}
 		
 	}
 
-	void isSearch(String in, Label label) throws Exception {
-		String header = in.substring(0, 6);
+	void logicResult(String in, Label label) throws Exception {
+		String header = in.substring(0, 8);
 		System.out.println(header);
-		if (header.equalsIgnoreCase("search")) {
-			label.setText("Search completed");
-			String searchResult = in.substring(6);
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("secondWindow.fxml"));
-			Pane secondWindow = (Pane) loader.load();
-			secondController second = loader.getController();
-			second.setMainController(this);
-
-			Stage stage = new Stage();
-			stage.initModality(Modality.WINDOW_MODAL);
-			stage.initOwner(label.getScene().getWindow());
-			Scene scene = new Scene(secondWindow);
-			scene.getStylesheets().add("cs2103_w09_1j/esther/UI.css");
-			stage.setScene(scene);
-			stage.setTitle("Search Result");
-			stage.show();
-			scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
-				@Override
-				public void handle(KeyEvent event) {
-					if (event.getCode() == KeyCode.ESCAPE) {
-						stage.close();
-					}
-				}
-			});
-
+		if (header.equalsIgnoreCase("search:\n")) {
+			label.setText("Search completed!");
+			String searchResult = in.substring(8);
+			
+			secondController searchController = createSecondWindow(label, "Search Result");
 			if (searchResult.length() > 0) {
-				second.setSearchResult(searchResult);
+				searchController.setResult(searchResult);
 			} else {
-				second.setSearchResult("No result found!");
+				searchController.setResult("No result found!");
 			}
 
-			// TODO stub: receive logic internal memory
 			display.setText(logic.getInternalStorageInString());
+			
+		} else if (in.substring(0, 6).equalsIgnoreCase("help:\n")) {
+			String help = in.substring(6);
+			label.setText("Help Menu");
+			secondController helpController = createSecondWindow(label, "Help");
+			helpController.setResult(help);
 
 		} else {
 			label.setText(in);
-			// TODO stub: receive logic internal memory
 			display.setText(logic.getInternalStorageInString());
 		}
 	}
 
+	private secondController createSecondWindow(Label lb, String title) {
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("secondWindow.fxml"));
+		Pane secondWindow = null;
+		try {
+			secondWindow = (Pane) loader.load();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		secondController second = loader.getController();
+		second.setMainController(this);
+
+		Stage stage = new Stage();
+		stage.initModality(Modality.WINDOW_MODAL);
+		stage.initOwner(lb.getScene().getWindow());
+		Scene scene = new Scene(secondWindow);
+		scene.getStylesheets().add("cs2103_w09_1j/esther/UI.css");
+		stage.setScene(scene);
+		stage.setTitle(title);
+		stage.show();
+		scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
+			@Override
+			public void handle(KeyEvent event) {
+				if (event.getCode() == KeyCode.ESCAPE) {
+					stage.close();
+				}
+			}
+		});
+
+		return second;
+	}
+	
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		try {
@@ -110,10 +127,8 @@ public class UIController implements Initializable {
 			System.out.println(e.getMessage());
 		}
 
-		// TODO stub: need logic feedback
 		display.setText(logic.executeCommand("show .by date"));
 		intro.setText("All available tasks: ");
 		commandLog.setText("Loaded tasks!");
-		input.clear();
 	}
 }

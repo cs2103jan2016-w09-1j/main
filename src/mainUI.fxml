@@ -12,7 +12,7 @@
 
 <GridPane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UIController">
    <children>
-      <VBox id="VBox" fx:id="displayWindow" layoutX="7.0" layoutY="14.0" prefHeight="312.0" prefWidth="586.0" spacing="8.0" styleClass="main" GridPane.columnIndex="0" GridPane.rowIndex="0">
+      <VBox id="VBox" fx:id="displayWindow" layoutX="7.0" layoutY="14.0" spacing="8.0" styleClass="main" GridPane.columnIndex="0" GridPane.hgrow="ALWAYS" GridPane.rowIndex="0" GridPane.vgrow="ALWAYS">
          <padding>
             <Insets bottom="10" left="10" right="10" top="10" />
          </padding>
@@ -33,7 +33,7 @@
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
          </GridPane.margin>
       </VBox>
-      <Label fx:id="commandLog" layoutX="14.0" layoutY="326.0" prefHeight="17.0" prefWidth="574.0" GridPane.columnIndex="0" GridPane.rowIndex="1">
+      <Label fx:id="commandLog" layoutX="14.0" layoutY="326.0" GridPane.columnIndex="0" GridPane.rowIndex="1">
          <padding>
             <Insets bottom="10.0" left="10.0" right="10.0" top="1.0" />
          </padding>
@@ -41,7 +41,7 @@
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
          </GridPane.margin>
       </Label>
-      <TextField fx:id="input" layoutX="8.0" layoutY="363.0" onKeyPressed="#ENTER" prefHeight="33.0" prefWidth="586.0" GridPane.columnIndex="0" GridPane.rowIndex="2">
+      <TextField fx:id="input" layoutX="8.0" layoutY="363.0" onKeyPressed="#ENTER" GridPane.columnIndex="0" GridPane.rowIndex="2">
          <padding>
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
          </padding>
