@@ -23,7 +23,7 @@ public class ParserTest {
 	String endDate = "endDate";
 	String startTime = "startTime";
 	String endTime = "endTime";
-
+	String priority = "priority";
 	@Rule
 	public final ExpectedException exception = ExpectedException.none();
 
@@ -67,8 +67,6 @@ public class ParserTest {
 	@Test
 	public void testAddBasic3() throws ParseException, InvalidInputException {
 		input = "add Office Meeting on today";
-		command.clear();
-		resultCommand.clear();
 		command.setCommand("add");
 		command.addFieldToMap(taskName, "Office Meeting");
 		Date date = new Date();
@@ -83,8 +81,6 @@ public class ParserTest {
 	@Test
 	public void testAddBasic4() throws ParseException, InvalidInputException {
 		input = "add Office Meeting on today 3pm";
-		command.clear();
-		resultCommand.clear();
 		command.setCommand("add");
 		command.addFieldToMap(taskName, "Office Meeting");
 		Date date = new Date();
@@ -99,8 +95,6 @@ public class ParserTest {
 	@Test
 	public void testAddBasic5() throws ParseException, InvalidInputException {
 		input = "add Office Meeting on 3pm today";
-		command.clear();
-		resultCommand.clear();
 		command.setCommand("add");
 		command.addFieldToMap(taskName, "Office Meeting");
 		Date date = new Date();
@@ -115,8 +109,6 @@ public class ParserTest {
 	@Test
 	public void testAddBasic6() throws ParseException, InvalidInputException {
 		input = "add Office Meeting on 23/03/2016";
-		command.clear();
-		resultCommand.clear();
 		command.setCommand("add");
 		command.addFieldToMap(taskName, "Office Meeting");
 		command.addFieldToMap(endDate, "23/03/2016");
@@ -128,8 +120,6 @@ public class ParserTest {
 	@Test
 	public void testAddBasic7() throws ParseException, InvalidInputException {
 		input = "add Office Meeting from aug 26 3pm to mar 20 4pm";
-		command.clear();
-		resultCommand.clear();
 		command.setCommand("add");
 		command.addFieldToMap(taskName, "Office Meeting");
 		command.addFieldToMap(startDate, "26/08/2016");
@@ -143,8 +133,6 @@ public class ParserTest {
 	@Test
 	public void testAddBasic8() throws ParseException, InvalidInputException {
 		input = "add meeting from 4 may to 3pm";
-		command.clear();
-		resultCommand.clear();
 		command.setCommand("add");
 		command.addFieldToMap(taskName, "meeting");
 		command.addFieldToMap(startDate, "04/05/2016");
@@ -185,11 +173,66 @@ public class ParserTest {
 		resultCommand = parser.acceptUserInput(input);
 	}
 
-	@Test(expected=InvalidInputException.class)
-	public void testAddAlternate6() throws ParseException, InvalidInputException{
-		input="add meeting from to 23 may";
-		resultCommand=parser.acceptUserInput(input);
+	@Test(expected = InvalidInputException.class)
+	public void testAddAlternate6() throws ParseException, InvalidInputException {
+		input = "add meeting from to 23 may";
+		resultCommand = parser.acceptUserInput(input);
 	}
+
+	@Test
+	public void testUpdateBasic1() throws ParseException, InvalidInputException {
+		input = "update meeting startdate to 23 feb";
+		command.setCommand("update");
+		command.addFieldToMap(taskName, "meeting");
+		command.addFieldToMap(startDate, "23/02/2017");
+		resultCommand = parser.acceptUserInput(input);
+		Assert.assertEquals(command.getParameters(), resultCommand.getParameters());
+	}
+
+	@Test
+	public void testUpdateBasic2() throws ParseException, InvalidInputException {
+		input = "update meeting priority to 3";
+		command.setCommand("update");
+		command.addFieldToMap(taskName, "meeting");
+		command.addFieldToMap(priority, "3");
+		resultCommand = parser.acceptUserInput(input);
+		Assert.assertEquals(command.getParameters(), resultCommand.getParameters());
+	}
+	
+	@Test
+	public void testUpdateBasic3() throws ParseException, InvalidInputException {
+		input = "update meeting starttime to 0500";
+		command.setCommand("update");
+		command.addFieldToMap(taskName, "meeting");
+		command.addFieldToMap(startTime, "05:00");
+		resultCommand = parser.acceptUserInput(input);
+		Assert.assertEquals(command.getParameters(), resultCommand.getParameters());
+	}
+	
+	@Test(expected = InvalidInputException.class)
+	public void testUpdateAlternate1() throws ParseException, InvalidInputException {
+		input = "update";
+		resultCommand = parser.acceptUserInput(input);
+	}
+
+	@Test(expected = InvalidInputException.class)
+	public void testUpdateAlternate2() throws ParseException, InvalidInputException {
+		input = "update meeting";
+		resultCommand = parser.acceptUserInput(input);
+	}
+	
+	@Test(expected = InvalidInputException.class)
+	public void testUpdateAlternate3() throws ParseException, InvalidInputException {
+		input = "update meeting time to 4pm";
+		resultCommand = parser.acceptUserInput(input);
+	}
+	
+	@Test(expected = InvalidInputException.class)
+	public void testUpdateAlternate4() throws ParseException, InvalidInputException {
+		input = "update meeting starttime to 23 feb";
+		resultCommand = parser.acceptUserInput(input);
+	}
+	
 	// Basic case
 	@Test
 	public void testDeleteBasic1() throws ParseException, InvalidInputException {

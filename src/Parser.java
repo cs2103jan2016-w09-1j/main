@@ -13,7 +13,7 @@ import cs2103_w09_1j.esther.Task.TaskField;
 
 public class Parser {
 
-	public static final String ERROR_WRONGFORMAT = "Wrong format.";
+	public static final String ERROR_WRONGFORMAT = "Wrong format. ";
 	public static final String ERROR_NOSUCHCOMMAND = "No such command. Please type help to check the available commands.";
 	public static final String ERROR_ADDFORMAT = "Wrong format. Format for add command: add [taskname] [from] [date] [time] [to] [date] [time]";
 	public static final String ERROR_UPDATEFORMAT = ERROR_WRONGFORMAT
@@ -28,7 +28,9 @@ public class Parser {
 			+ "\nFormat for sort command: sort by [name/id/startDate/endDate]";
 	public static final String ERROR_COMPLETEFORMAT = ERROR_WRONGFORMAT
 			+ "\nFormat for complete command: complete [taskName/taskID]";
-	public static final String ERROR_DATETIMEFORMAT = "Wrong format. Your date or time is invalid. Please check again.";
+	public static final String ERROR_DATETIMEFORMAT = ERROR_WRONGFORMAT
+			+ "\nYour date or time is invalid. Please check again.";
+	public static final String ERROR_PRIORITYFORMAT="Priority is only allowed in integer format.";
 	public static final String ERROR_UNKNOWN = "Unknown error.";
 
 	public static final char QUOTE = '"';
@@ -77,7 +79,7 @@ public class Parser {
 	public static void main(String[] args) throws ParseException, InvalidInputException {
 		Config config = new Config();
 		Parser parser = new Parser(config.getFieldNameAliases());
-		Command command = parser.acceptUserInput("add meeting from 4 may to 3pm");
+		Command command = parser.acceptUserInput("update task1 priority to nine");
 		HashMap<String, String> map = command.getParameters();
 		for (Map.Entry<String, String> entry : map.entrySet()) {
 			String key = entry.getKey();
@@ -288,6 +290,7 @@ public class Parser {
 			for (int i = 0; i < toParseKeyIndex - 1; i++) {
 				taskName += inputArray[i] + WHITESPACE;
 			}
+			taskName = taskName.substring(0, taskName.length() - 1);
 		}
 
 		int getNameOrID = isNameOrID(taskName);
@@ -312,14 +315,20 @@ public class Parser {
 		for (int i = toParseKeyIndex + 1; i < inputArray.length; i++) {
 			newValue += inputArray[i] + " ";
 		}
+		newValue = newValue.substring(0, newValue.length() - 1);
 		if (newValue.isEmpty()) {
 			throw new InvalidInputException(ERROR_UPDATEFORMAT);
 		}
-
 		if (aliaseField == TaskField.STARTDATE || aliaseField == TaskField.ENDDATE) {
 			newValue = dateParser.getDateTime(newValue)[0];
 		} else if (aliaseField == TaskField.STARTTIME || aliaseField == TaskField.ENDTIME) {
 			newValue = dateParser.getDateTime(newValue)[1];
+		} else if (aliaseField == TaskField.PRIORITY) {
+			try {
+				Integer.parseInt(newValue);
+			} catch (NumberFormatException nfe) {
+				throw new InvalidInputException(ERROR_PRIORITYFORMAT);
+			}
 		}
 
 		if (newValue == null) {
