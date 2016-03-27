@@ -48,6 +48,7 @@ public class DateParser {
 
     public String[] getDateTime(String input) throws InvalidInputException, ParseException {
 	String[] dateTime = new String[2];
+	String oldInput = input;
 
 	input = input.toLowerCase();
 	DateParser dp = new DateParser();
@@ -56,6 +57,7 @@ public class DateParser {
 	String wordyDate = dp.getWordyDateFormat(input);
 	input = dp.getProperDateTime(input);
 	while (input != null) {
+	    oldInput = input;
 	    if (dateTime[0] == null) {
 		String dateFormat = dp.getDateFormat(input);
 		if (!dateFormat.isEmpty()) {
@@ -73,7 +75,6 @@ public class DateParser {
 			}
 		    }
 		    if (dateFormat.contains(HALFYEAR)) {
-			System.out.println("here");
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(inputDate);
 			givenYear = givenDate.substring(givenDate.length() - 2, givenDate.length());
@@ -103,6 +104,10 @@ public class DateParser {
 		}
 	    }
 	    input = dp.getProperDateTime(input);
+	    if(oldInput == input){
+		//looping indefinitely
+		input = input.substring(1);
+	    }
 	}
 	if (wordyDate != null && dateTime[0] != null)
 
