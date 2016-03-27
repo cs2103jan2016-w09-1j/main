@@ -248,7 +248,7 @@ public class Parser {
 					throw new InvalidInputException(ERROR_ADDFORMAT);
 				}
 				String dateTime = "";
-				for (int i = supposeToBeParseKeyIndex; i < inputArray.length; i++) {
+				for (int i = supposeToBeParseKeyIndex + 1; i < inputArray.length; i++) {
 					dateTime += inputArray[i] + " ";
 				}
 				String[] dateTimeArray = dateParser.getDateTime(dateTime);
