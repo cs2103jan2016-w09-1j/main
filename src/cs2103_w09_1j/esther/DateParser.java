@@ -86,6 +86,7 @@ public class DateParser {
 		    System.out.println(givenYear);
 		    int lastIndexOfDate = input.indexOf(givenDate.toLowerCase());
 		    input = input.substring(lastIndexOfDate + givenDate.length());
+		    input = input.trim();
 		    System.out.println(input);
 		}
 	    }
@@ -101,11 +102,12 @@ public class DateParser {
 		    }
 		    int lastIndexOfTime = input.toLowerCase().lastIndexOf(givenTime.toLowerCase());
 		    input = input.substring(lastIndexOfTime + givenTime.length());
+		    input = input.trim();
 		}
 	    }
 	    input = dp.getProperDateTime(input);
 	    if(oldInput == input){
-		//looping indefinitely
+		//looping indefinitely, so cut the string by 1
 		input = input.substring(1);
 	    }
 	}
@@ -204,7 +206,10 @@ public class DateParser {
 	for (int i = 0; i < timeFormatList.size(); i++) {
 	    try {
 		SimpleDateFormat timeFormat = new SimpleDateFormat(timeFormatList.get(i));
-		timeFormat.parse(input);
+		Date foundDate = timeFormat.parse(input);
+		System.out.println("Given input: "+input);
+		System.out.println("Using format: "+timeFormat.toPattern());
+		System.out.println("Obtained time: "+timeFormat.format(foundDate));
 		return timeFormatList.get(i);
 	    } catch (ParseException e) {
 		// TODO Auto-generated catch block
