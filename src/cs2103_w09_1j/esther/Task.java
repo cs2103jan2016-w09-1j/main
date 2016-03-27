@@ -39,9 +39,9 @@ import sun.util.resources.cldr.id.LocaleNames_id;
 
 public class Task implements Comparable<Task> {
 	public enum TaskField {
-		NAME("taskName"), ID("taskID"), PRIORITY("priority"), STARTDATE("startDate"), ENDDATE("endDate"),
-		STARTTIME("startTime"), ENDTIME("endTime"), SORT("order"), UPDATENAME("updateName"), SHOW("order"),
-		UNDO("undo"), HELP("help"), COMPLETED("completed");
+		NAME("taskName"), ID("taskID"), PRIORITY("priority"), STARTDATE("startDate"), ENDDATE("endDate"), STARTTIME(
+				"startTime"), ENDTIME("endTime"), SORT("order"), UPDATENAME(
+						"updateName"), SHOW("order"), UNDO("undo"), HELP("help"), COMPLETED("completed");
 
 		private String taskKeyName;
 		private static final Map<String, TaskField> lookup = new HashMap<String, TaskField>();
@@ -72,13 +72,14 @@ public class Task implements Comparable<Task> {
 			}
 		}
 	}
-	
+
 	private static final String SORT_BY_DATE_KEYWORD = "date";
 	private static final String SORT_BY_NAME_KEYWORD = "name";
 	private static final String SORT_BY_PRIORITY_KEYWORD = "priority";
 	private static final int DEFAULT_STARTING_ID = 0;
 
-	// TODO for Jeremy: attributes have been changed (added _startDate & _endDate).
+	// TODO for Jeremy: attributes have been changed (added _startDate &
+	// _endDate).
 	private String _name;
 	private Date _startDate;
 	private Date _endDate;
@@ -104,7 +105,8 @@ public class Task implements Comparable<Task> {
 	private final static String nameString = "([^\\|]+)";
 	private final static String prioString = "Priority: (\\d+)";
 	private final static String compString = "(" + completedStr + "|" + notCompletedStr + ")";
-	private final static String[] regexArray = { idnoString, dateString, nameString, prioString, compString };
+	private final static String[] regexArray = { idnoString, dateString, dateString, nameString, prioString,
+			compString };
 
 	/**
 	 * Constructs an empty Task object.
@@ -130,18 +132,26 @@ public class Task implements Comparable<Task> {
 		Date endDate = null;
 		String taskName = command.getSpecificParameter(TaskField.NAME.getTaskKeyName());
 		String startDateString = command.hasParameter(TaskField.STARTDATE.getTaskKeyName())
-								? command.getSpecificParameter(TaskField.STARTDATE.getTaskKeyName()) : null;
+				? command.getSpecificParameter(TaskField.STARTDATE.getTaskKeyName()) : null;
 		// TODO: support adding tasks with time
-		/*String startTimeString = command.hasParameter(TaskField.STARTTIME.getTaskKeyName())
-									? command.getSpecificParameter(TaskField.STARTTIME.getTaskKeyName()) : null;*/
+		/*
+		 * String startTimeString =
+		 * command.hasParameter(TaskField.STARTTIME.getTaskKeyName()) ?
+		 * command.getSpecificParameter(TaskField.STARTTIME.getTaskKeyName()) :
+		 * null;
+		 */
 		if (startDateString != null) {
 			startDate = _dateOnlyFormatter.parse(startDateString);
 		}
 		String endDateString = command.hasParameter(TaskField.ENDDATE.getTaskKeyName())
-								? command.getSpecificParameter(TaskField.ENDDATE.getTaskKeyName()) : null;
+				? command.getSpecificParameter(TaskField.ENDDATE.getTaskKeyName()) : null;
 		// TODO: support adding tasks with time
-		/*String endTimeString = command.hasParameter(TaskField.ENDTIME.getTaskKeyName())
-								? command.getSpecificParameter(TaskField.ENDTIME.getTaskKeyName()) : null; */
+		/*
+		 * String endTimeString =
+		 * command.hasParameter(TaskField.ENDTIME.getTaskKeyName()) ?
+		 * command.getSpecificParameter(TaskField.ENDTIME.getTaskKeyName()) :
+		 * null;
+		 */
 		if (endDateString != null) {
 			endDate = _dateOnlyFormatter.parse(endDateString);
 		}
@@ -165,16 +175,17 @@ public class Task implements Comparable<Task> {
 	 * @author Jeremy Hon
 	 * @throws ParseException
 	 */
-	// TODO for Jeremy: Task attributes have been changed. Need to revise this method.
+	// TODO for Jeremy: Task attributes have been changed. Need to revise this
+	// method.
 	public Task(String string) throws ParseException {
 		this();
 		String[] resultsArray = new String[NUM_FIELDS];
 		String[] matcherInput = string.split(delimiterPattern);
-		
-		if(matcherInput.length != NUM_FIELDS){
+
+		if (matcherInput.length != NUM_FIELDS) {
 			return;
 		}
-		
+
 		for (int i = 0; i < regexArray.length; i++) {
 			resultsArray[i] = findMatch(regexArray[i], matcherInput[i]);
 			if (resultsArray[i] == null) {
@@ -183,20 +194,22 @@ public class Task implements Comparable<Task> {
 			}
 		}
 
-		if(resultsArray[0] == ""){
+		if (resultsArray[0] == "") {
 			return;
 		}
 
 		int localID = Integer.parseInt(resultsArray[0]);
-		Date date = parseDate(resultsArray[1]);
-		String taskName = resultsArray[2];
-		int priority = Integer.parseInt(resultsArray[3]);
-		boolean complete = parseCompleted(resultsArray[4]);
+		Date sDate = parseDate(resultsArray[1]);
+		Date eDate = parseDate(resultsArray[2]);
+		String taskName = resultsArray[3];
+		int priority = Integer.parseInt(resultsArray[4]);
+		boolean complete = parseCompleted(resultsArray[5]);
 
 		this.setID(localID);
 		this.setName(taskName.trim());
-		// TODO for Jeremy: note setDate --> setStartDate() & setEndDate() 
-		this.setDate(date);
+		// TODO for Jeremy: note setDate --> setStartDate() & setEndDate()
+		this.setStartDate(sDate);
+		this.setEndDate(eDate);
 		this.setPriority(priority);
 		this.setCompleted(complete);
 		this.setIsValid(true);
@@ -230,7 +243,8 @@ public class Task implements Comparable<Task> {
 	public String toString() {
 		String taskString = "";
 		taskString += "ID: " + _id + " | ";
-		taskString += "[" + dateToString() + "] | ";
+		taskString += "[" + sDateToString() + "] | ";
+		taskString += "[" + eDateToString() + "] | ";
 		taskString += _name + " | ";
 		taskString += "Priority: " + _priority + " | ";
 		taskString += completedToString();
@@ -279,7 +293,7 @@ public class Task implements Comparable<Task> {
 	public void setStartDate(Date date) {
 		_startDate = date;
 	}
-	
+
 	/**
 	 * Gets the latest deadline of the Task.
 	 * 
@@ -307,17 +321,31 @@ public class Task implements Comparable<Task> {
 	 * @author Jeremy Hon
 	 */
 	// TODO for Jeremy: change in core attributes have affected this.
-	public String dateToString() {
-		if (_date == null) {
+	public String sDateToString() {
+		if (_startDate == null) {
 			return "";
 		} else {
-			return _dateOnlyFormatter.format(_date);
+			return _dateOnlyFormatter.format(_startDate);
 		}
 	}
-	
+
+	/**
+	 * 
+	 * @return
+	 * @author Jeremy Hon
+	 */
+	// TODO for Jeremy: change in core attributes have affected this.
+	public String eDateToString() {
+		if (_endDate == null) {
+			return "";
+		} else {
+			return _dateOnlyFormatter.format(_endDate);
+		}
+	}
+
 	// TODO for Jeremy: change in core attributes may have affected this.
 	public Date parseDate(String dateStr) throws ParseException {
-		if(dateStr == null || dateStr.length() == 0){
+		if (dateStr == null || dateStr.length() == 0) {
 			return null;
 		}
 		return _dateOnlyFormatter.parse(dateStr);
@@ -441,7 +469,7 @@ public class Task implements Comparable<Task> {
 			return notCompletedStr;
 		}
 	}
-	
+
 	public boolean parseCompleted(String completeStr) {
 		return completeStr.contains(completedStr);
 	}
@@ -486,32 +514,32 @@ public class Task implements Comparable<Task> {
 		String startTime = null;
 		String endDate = null;
 		String endTime = null;
-		
+
 		if (command.hasParameter(TaskField.NAME.getTaskKeyName())) {
 			this.setName(command.getSpecificParameter(TaskField.NAME.getTaskKeyName()));
 		}
-		
+
 		if (command.hasParameter(TaskField.UPDATENAME.getTaskKeyName())) {
 			this.setName(command.getSpecificParameter(TaskField.UPDATENAME.getTaskKeyName()));
 		}
-		
+
 		// DATE AND TIME HANDLING
 		if (command.hasParameter(TaskField.STARTDATE.getTaskKeyName())) {
 			startDate = command.getSpecificParameter(TaskField.STARTDATE.getTaskKeyName());
 		}
-		
+
 		if (command.hasParameter(TaskField.STARTTIME.getTaskKeyName())) {
 			startTime = command.getSpecificParameter(TaskField.STARTTIME.getTaskKeyName());
 		}
-		
+
 		if (command.hasParameter(TaskField.ENDDATE.getTaskKeyName())) {
 			endDate = command.getSpecificParameter(TaskField.ENDDATE.getTaskKeyName());
 		}
-		
+
 		if (command.hasParameter(TaskField.ENDTIME.getTaskKeyName())) {
 			endTime = command.getSpecificParameter(TaskField.ENDTIME.getTaskKeyName());
 		}
-		
+
 		if (startDate != null) {
 			if (startTime != null) {
 				this.setStartDate(_dateAndTimeFormatter.parse((startDate + " " + startTime)));
@@ -519,7 +547,7 @@ public class Task implements Comparable<Task> {
 				this.setStartDate(_dateAndTimeFormatter.parse(startDate));
 			}
 		}
-		
+
 		if (endDate != null) {
 			if (endTime != null) {
 				this.setEndDate(_dateAndTimeFormatter.parse((endDate + " " + endTime)));
@@ -527,15 +555,15 @@ public class Task implements Comparable<Task> {
 				this.setEndDate(_dateAndTimeFormatter.parse(endDate));
 			}
 		}
-		
+
 		if (command.hasParameter(TaskField.PRIORITY.getTaskKeyName())) {
 			this.setPriority(Integer.parseInt(command.getSpecificParameter(TaskField.PRIORITY.getTaskKeyName())));
 		}
-		
+
 		if (command.hasParameter(TaskField.ID.getTaskKeyName())) {
 			this.setID(Integer.parseInt(command.getSpecificParameter(TaskField.ID.getTaskKeyName())));
 		}
-		
+
 		if (command.hasParameter(TaskField.COMPLETED.getTaskKeyName())) {
 			this.setCompleted(Boolean.parseBoolean(command.getSpecificParameter(TaskField.COMPLETED.getTaskKeyName())));
 		}
@@ -557,10 +585,10 @@ public class Task implements Comparable<Task> {
 	@Override
 	public int compareTo(Task task) {
 		switch (_sortCriterion) {
-		case SORT_BY_DATE_KEYWORD :
+		case SORT_BY_DATE_KEYWORD:
 			return compareByDate(task);
 
-		case SORT_BY_NAME_KEYWORD :
+		case SORT_BY_NAME_KEYWORD:
 			return compareByName(task);
 
 		default:
