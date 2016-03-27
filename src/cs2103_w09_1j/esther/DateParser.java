@@ -11,15 +11,16 @@ import java.util.List;
 import java.util.Map.Entry;
 
 public class DateParser {
-	private final static ArrayList<String> dateFormatList = new ArrayList<String>(Arrays.asList("dd/MM/yyyy",
-			"dd.MM.yyyy", "dd-MM-yyyy", "dd MM yyyy", "ddMMyyyy", "dd MMM yyyy", "ddMMM yyyy", "dd MMM,yyyy",
-			 "MMM dd, yyyy", "dd/MM", "dd.MM", "dd MMM", "ddMMM", "MMM dd", "MMMdd"));
+	private final static ArrayList<String> dateFormatList = new ArrayList<String>(
+			Arrays.asList("dd/MM/yy", "dd.MM.yy", "dd-MM-yy", "dd MM yy", "ddMMyy", "dd MMM yy", "ddMMM yy",
+					"dd MMM,yy", "MMM dd, yy", "dd/MM", "dd.MM", "dd MMM", "ddMMM", "MMM dd", "MMMdd"));
 
 	private final static ArrayList<String> timeFormatList = new ArrayList<String>(
 			Arrays.asList("hh:mma", "hh:mm a", "hhmma", "hhmm a", "HH:mm", "HHmm", "hha", "hh a", "HH"));
 
 	private final static String WHITESPACE = " ";
 	private final static String FULLMONTH = "MMM";
+	private final static String HALFYEAR = "yy";
 	private final static String[] weekWords = { "this", "coming", };
 	private final static String[] nextWeekWords = { "next" };
 
@@ -39,7 +40,7 @@ public class DateParser {
 	//
 	public static void main(String[] args) throws ParseException, InvalidInputException {
 		DateParser dp = new DateParser();
-		String[] dt = dp.getDateTime("feb 23 3pm");
+		String[] dt = dp.getDateTime("23/7/16");
 		if (dt[0] != null)
 			System.out.println("Date " + dt[0]);
 		if (dt[1] != null)
@@ -64,14 +65,28 @@ public class DateParser {
 					Date inputDate = givenDateFormat.parse(input);
 					String givenDate = givenDateFormat.format(inputDate);
 					String givenMonth = null;
+					String givenYear = null;
+					System.out.println(dateFormat + " " + givenDate);
 					if (dateFormat.contains(FULLMONTH)) {
 						givenMonth = getMonth(givenDate);
 						if (input.contains(givenMonth.toLowerCase())) {
 							givenDate = givenDate.replace(givenMonth.substring(0, 3), givenMonth);
 						}
 					}
+					if (dateFormat.contains(HALFYEAR)) {
+						System.out.println("here");
+						Calendar cal = Calendar.getInstance();
+						cal.setTime(inputDate);
+						givenYear = givenDate.substring(givenDate.length() - 2, givenDate.length());
+						System.out.println("YEAR" + cal.get(Calendar.YEAR));
+						if (input.contains(String.valueOf(cal.get(Calendar.YEAR)))) {
+							givenDate = givenDate.substring(0, givenDate.length() - 2) + cal.get(Calendar.YEAR);
+						}
+					}
+					System.out.println(givenYear);
 					int lastIndexOfDate = input.indexOf(givenDate.toLowerCase());
 					input = input.substring(lastIndexOfDate + givenDate.length());
+					System.out.println(input);
 				}
 			}
 			if (dateTime[1] == null) {
