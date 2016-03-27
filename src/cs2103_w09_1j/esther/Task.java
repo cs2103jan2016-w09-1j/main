@@ -73,9 +73,10 @@ public class Task implements Comparable<Task> {
 	}
     }
 
-    private static final String SORT_BY_DATE_KEYWORD = "date";
-    private static final String SORT_BY_NAME_KEYWORD = "name";
+    private static final String SORT_BY_DATE_KEYWORD = "endDate";
+    private static final String SORT_BY_NAME_KEYWORD = "taskName";
     private static final String SORT_BY_PRIORITY_KEYWORD = "priority";
+    private static final String SORT_BY_ID_KEYWORD = "id";
     private static final int DEFAULT_STARTING_ID = 0;
 
     // TODO for Jeremy: attributes have been changed (added _startDate &
@@ -457,6 +458,10 @@ public class Task implements Comparable<Task> {
     public void setCompleted(boolean isCompleted) {
 	_isCompleted = isCompleted;
     }
+    
+    public boolean isFloatingTask() {
+    	return (_startDate == null && _endDate == null) ? true : false; 
+    }
 
     /**
      * @author Jeremy Hon
@@ -584,13 +589,20 @@ public class Task implements Comparable<Task> {
     @Override
     public int compareTo(Task task) {
 	switch (_sortCriterion) {
-	case SORT_BY_DATE_KEYWORD:
+	case SORT_BY_DATE_KEYWORD :
+		//System.out.println("Sorting by date.");
 	    return compareByDate(task);
 
-	case SORT_BY_NAME_KEYWORD:
+	case SORT_BY_NAME_KEYWORD :
+		//System.out.println("Sorting by name.");
 	    return compareByName(task);
+	    
+	case SORT_BY_ID_KEYWORD :
+		//System.out.println("Sorting by ID.");
+		return compareById(task);
 
-	default:
+	default :
+		//System.out.println("Sorting by priority.");
 	    return compareByPriority(task);
 	}
     }
@@ -663,6 +675,20 @@ public class Task implements Comparable<Task> {
 	} else {
 	    return Integer.compare(_priority, task.getPriority());
 	}
+    }
+    
+    /**
+     * The comparison method invoked when sorting criteria is by task ID.
+     * 
+     * @param task
+     *            the Task object to compare to
+     * @return 0 if the Task compared to is equal to itself; a value less than 0
+     *         if the Task compared to comes after itself; and a value more than
+     *         0 if the Task compared to comes before itself.
+     * @@author A0129660A
+     */
+    private int compareById(Task task) {
+    	return Integer.compare(_id, task.getId());
     }
 
 }
