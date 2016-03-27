@@ -18,6 +18,7 @@ public class ParserTest {
 	Command resultCommand;
 	Parser parser;
 	String taskName = "taskName";
+	String updateName = "updateName";
 	String taskID = "taskID";
 	String startDate = "startDate";
 	String endDate = "endDate";
@@ -267,6 +268,26 @@ public class ParserTest {
 		command.setCommand("update");
 		command.addFieldToMap(taskName, "meeting");
 		command.addFieldToMap(startTime, "05:00");
+		resultCommand = parser.acceptUserInput(input);
+		Assert.assertEquals(command.getParameters(), resultCommand.getParameters());
+	}
+	
+	@Test
+	public void testUpdateBasic4() throws ParseException, InvalidInputException {
+		input = "update meeting name to newMeeting";
+		command.setCommand("update");
+		command.addFieldToMap(taskName, "meeting");
+		command.addFieldToMap(updateName, "newMeeting");
+		resultCommand = parser.acceptUserInput(input);
+		Assert.assertEquals(command.getParameters(), resultCommand.getParameters());
+	}
+	
+	@Test
+	public void testUpdateBasic5() throws ParseException, InvalidInputException {
+		input = "update meeting endDate to 23/07/2016";
+		command.setCommand("update");
+		command.addFieldToMap(taskName, "meeting");
+		command.addFieldToMap(endDate, "23/07/2016");
 		resultCommand = parser.acceptUserInput(input);
 		Assert.assertEquals(command.getParameters(), resultCommand.getParameters());
 	}
