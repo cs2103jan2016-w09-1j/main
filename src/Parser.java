@@ -73,21 +73,8 @@ public class Parser {
 				lookup.put(_parseKeyName.getParseKeyName(), _parseKeyName);
 			}
 		}
-
 	}
-
-	public static void main(String[] args) throws ParseException, InvalidInputException {
-		Config config = new Config();
-		Parser parser = new Parser(config.getFieldNameAliases());
-		Command command = parser.acceptUserInput("update task1 priority to nine");
-		HashMap<String, String> map = command.getParameters();
-		for (Map.Entry<String, String> entry : map.entrySet()) {
-			String key = entry.getKey();
-			String value = entry.getValue();
-			System.out.println("Key " + key + "  Value " + value);
-		}
-	}
-
+	
 	public Parser(HashMap<String, String> fieldNameAliases) {
 		this.currentCommand = new Command();
 		this.dateParser = new DateParser();

@@ -11,9 +11,10 @@ import java.util.List;
 import java.util.Map.Entry;
 
 public class DateParser {
-	private final static ArrayList<String> dateFormatList = new ArrayList<String>(Arrays.asList("dd/MM/yyyy",
-			"dd.MM.yyyy", "dd-MM-yyyy", "dd MM yyyy", "ddMMyyyy", "dd MMM yyyy", "ddMMM yyyy", "dd MMM,yyyy",
-			 "MMM dd, yyyy", "dd/MM", "dd.MM", "dd MMM", "ddMMM", "MMM dd", "MMMdd"));
+	private final static ArrayList<String> dateFormatList = new ArrayList<String>(Arrays.asList("dd/MM/yy",
+			"dd/MM/yyyy", "dd.MM.yy", "dd.MM.yyyy", "dd-MM-yy", "dd-MM-yyyy", "dd MM yy", "dd MM yyyy", "ddMMyy",
+			"ddMMyyyy", "dd MMM yy", "dd MMM yyyy", "ddMMM yy", "ddMMM yyyy", "dd MMM,yy", "dd MMM,yyyy", "MMM dd, yy",
+			"MMM dd, yyyy", "dd/MM", "dd.MM", "dd MMM", "ddMMM", "MMM dd", "MMMdd"));
 
 	private final static ArrayList<String> timeFormatList = new ArrayList<String>(
 			Arrays.asList("hh:mma", "hh:mm a", "hhmma", "hhmm a", "HH:mm", "HHmm", "hha", "hh a", "HH"));
@@ -35,16 +36,6 @@ public class DateParser {
 	private final static SimpleDateFormat convertToTimeFormat = new SimpleDateFormat(defaultTimeFormat);
 
 	private final static String ERROR_DIFFERENTDATE = "The date you entered is not correct. Please check again.";
-
-	//
-	public static void main(String[] args) throws ParseException, InvalidInputException {
-		DateParser dp = new DateParser();
-		String[] dt = dp.getDateTime("feb 23 3pm");
-		if (dt[0] != null)
-			System.out.println("Date " + dt[0]);
-		if (dt[1] != null)
-			System.out.println("Time " + dt[1]);
-	}
 
 	public String[] getDateTime(String input) throws InvalidInputException, ParseException {
 		String[] dateTime = new String[2];
