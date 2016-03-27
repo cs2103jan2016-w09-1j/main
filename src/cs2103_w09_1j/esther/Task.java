@@ -94,7 +94,7 @@ public class Task implements Comparable<Task> {
     private final static SimpleDateFormat _dateOnlyFormatter = new SimpleDateFormat("dd/MM/yyyy");
     private final static SimpleDateFormat _dateAndTimeFormatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
     private final static Logger taskLogger = Logger.getLogger("taskLogger");
-    private final static int NUM_FIELDS = 5;
+    private final static int NUM_FIELDS = 6;
     private final static String completedStr = "Completed";
     private final static String notCompletedStr = "Incomplete";
 
@@ -207,7 +207,6 @@ public class Task implements Comparable<Task> {
 
 	this.setID(localID);
 	this.setName(taskName.trim());
-	// TODO for Jeremy: note setDate --> setStartDate() & setEndDate()
 	this.setStartDate(sDate);
 	this.setEndDate(eDate);
 	this.setPriority(priority);
