@@ -67,7 +67,7 @@ public class DateParser {
 		    String givenDate = givenDateFormat.format(inputDate);
 		    String givenMonth = null;
 		    String givenYear = null;
-		    System.out.println(dateFormat + " " + givenDate);
+		    //System.out.println(dateFormat + " " + givenDate);
 		    if (dateFormat.contains(FULLMONTH)) {
 			givenMonth = getMonth(givenDate);
 			if (input.contains(givenMonth.toLowerCase())) {
@@ -78,16 +78,16 @@ public class DateParser {
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(inputDate);
 			givenYear = givenDate.substring(givenDate.length() - 2, givenDate.length());
-			System.out.println("YEAR" + cal.get(Calendar.YEAR));
+			//System.out.println("YEAR" + cal.get(Calendar.YEAR));
 			if (input.contains(String.valueOf(cal.get(Calendar.YEAR)))) {
 			    givenDate = givenDate.substring(0, givenDate.length() - 2) + cal.get(Calendar.YEAR);
 			}
 		    }
-		    System.out.println(givenYear);
+		    //System.out.println(givenYear);
 		    int lastIndexOfDate = input.indexOf(givenDate.toLowerCase());
 		    input = input.substring(lastIndexOfDate + givenDate.length());
 		    input = input.trim();
-		    System.out.println(input);
+		    //System.out.println(input);
 		}
 	    }
 	    if (dateTime[1] == null) {
@@ -207,9 +207,6 @@ public class DateParser {
 	    try {
 		SimpleDateFormat timeFormat = new SimpleDateFormat(timeFormatList.get(i));
 		Date foundDate = timeFormat.parse(input);
-		System.out.println("Given input: "+input);
-		System.out.println("Using format: "+timeFormat.toPattern());
-		System.out.println("Obtained time: "+timeFormat.format(foundDate));
 		return timeFormatList.get(i);
 	    } catch (ParseException e) {
 		// TODO Auto-generated catch block
