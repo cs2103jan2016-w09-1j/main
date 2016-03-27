@@ -288,11 +288,13 @@ class Logic {
 	
 	/**
 	 * Initializes internal system variables in Logic.
+	 * @throws IOException 
+	 * @throws ParseException 
 	 * 
 	 * @@author A0129660A
 	 */
-	private void initializeLogicSystemVariables() {
-		_tasks = new ArrayList<Task>();
+	private void initializeLogicSystemVariables() throws ParseException, IOException {
+		_tasks = _storage.readSaveFile();
 		_undoStack = new Stack<State>();
 		//logger.logp(Level.CONFIG, "Logic", "updateInternalStorage",
 					//"Reading tasks into inner memory upon initialization.");
