@@ -55,7 +55,7 @@ public class ParserTest {
 	}
 
 	@Test
-	public void testAddBasic2() throws ParseException, InvalidInputException {
+	public void testAddBasic1b() throws ParseException, InvalidInputException {
 		input = "add Office Meeting";
 		command.setCommand("add");
 		command.addFieldToMap(taskName, "Office Meeting");
@@ -65,7 +65,7 @@ public class ParserTest {
 	}
 
 	@Test
-	public void testAddBasic3() throws ParseException, InvalidInputException {
+	public void testAddBasic2() throws ParseException, InvalidInputException {
 		input = "add Office Meeting on today";
 		command.setCommand("add");
 		command.addFieldToMap(taskName, "Office Meeting");
@@ -79,7 +79,7 @@ public class ParserTest {
 	}
 
 	@Test
-	public void testAddBasic4() throws ParseException, InvalidInputException {
+	public void testAddBasic3() throws ParseException, InvalidInputException {
 		input = "add Office Meeting on today 3pm";
 		command.setCommand("add");
 		command.addFieldToMap(taskName, "Office Meeting");
@@ -93,7 +93,7 @@ public class ParserTest {
 	}
 
 	@Test
-	public void testAddBasic5() throws ParseException, InvalidInputException {
+	public void testAddBasic3b() throws ParseException, InvalidInputException {
 		input = "add Office Meeting on 3pm today";
 		command.setCommand("add");
 		command.addFieldToMap(taskName, "Office Meeting");
@@ -105,9 +105,37 @@ public class ParserTest {
 		resultCommand = parser.acceptUserInput(input);
 		Assert.assertEquals(command.getParameters(), resultCommand.getParameters());
 	}
+	
+	@Test
+	public void testAddBasic4() throws ParseException, InvalidInputException {
+		input = "add Office Meeting on 1500 today";
+		command.setCommand("add");
+		command.addFieldToMap(taskName, "Office Meeting");
+		Date date = new Date();
+		SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+		String sDate = dateFormat.format(date);
+		command.addFieldToMap(endDate, sDate);
+		command.addFieldToMap(endTime, "15:00");
+		resultCommand = parser.acceptUserInput(input);
+		Assert.assertEquals(command.getParameters(), resultCommand.getParameters());
+	}
+	
+	@Test
+	public void testAddBasic4b() throws ParseException, InvalidInputException {
+		input = "add Office Meeting on today 1500";
+		command.setCommand("add");
+		command.addFieldToMap(taskName, "Office Meeting");
+		Date date = new Date();
+		SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+		String eDate = dateFormat.format(date);
+		command.addFieldToMap(endDate, eDate);
+		command.addFieldToMap(endTime, "15:00");
+		resultCommand = parser.acceptUserInput(input);
+		Assert.assertEquals(command.getParameters(), resultCommand.getParameters());
+	}
 
 	@Test
-	public void testAddBasic6() throws ParseException, InvalidInputException {
+	public void testAddBasic5() throws ParseException, InvalidInputException {
 		input = "add Office Meeting on 23/03/2016";
 		command.setCommand("add");
 		command.addFieldToMap(taskName, "Office Meeting");
@@ -115,6 +143,40 @@ public class ParserTest {
 		resultCommand = parser.acceptUserInput(input);
 		Assert.assertEquals(command.getParameters(), resultCommand.getParameters());
 
+	}
+	
+	@Test
+	public void testAddBasic5b() throws ParseException, InvalidInputException {
+		input = "add Office Meeting on 23/3/16";
+		command.setCommand("add");
+		command.addFieldToMap(taskName, "Office Meeting");
+		command.addFieldToMap(endDate, "23/03/2016");
+		resultCommand = parser.acceptUserInput(input);
+		Assert.assertEquals(command.getParameters(), resultCommand.getParameters());
+
+	}
+	
+	@Test
+	public void testAddBasic6() throws ParseException, InvalidInputException {
+		input = "add Office Meeting on 23/3/16 3pm";
+		command.setCommand("add");
+		command.addFieldToMap(taskName, "Office Meeting");
+		command.addFieldToMap(endDate, "23/03/2016");
+		command.addFieldToMap(endTime, "15:00");
+		resultCommand = parser.acceptUserInput(input);
+		Assert.assertEquals(command.getParameters(), resultCommand.getParameters());
+
+	}
+	
+	@Test
+	public void testAddBasic6b() throws ParseException, InvalidInputException {
+		input = "add Office Meeting on 23/3/16 1500";
+		command.setCommand("add");
+		command.addFieldToMap(taskName, "Office Meeting");
+		command.addFieldToMap(endDate, "23/03/2016");
+		command.addFieldToMap(endTime, "15:00");
+		resultCommand = parser.acceptUserInput(input);
+		Assert.assertEquals(command.getParameters(), resultCommand.getParameters());
 	}
 
 	@Test
@@ -368,7 +430,7 @@ public class ParserTest {
 	public void testSortBasic1() throws ParseException, InvalidInputException {
 		input = "sort by name";
 		command.setCommand("sort");
-		command.addFieldToMap("sort", taskName);
+		command.addFieldToMap("order", taskName);
 		resultCommand = parser.acceptUserInput(input);
 		Assert.assertEquals(command.getParameters(), resultCommand.getParameters());
 	}
