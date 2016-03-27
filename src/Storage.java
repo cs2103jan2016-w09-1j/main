@@ -21,6 +21,9 @@ public class Storage {
     private static final String BY_NEXTLINE = "\\n";
     private static final String configName = "estherconfig.txt";
     private static final Path configPath = Paths.get(configName);
+    /**
+     * STOP COMMENTING OUT MY LOGGER LINES. SEE STORAGE() AND SET TO WARNING OR SEVERE.
+     */
     private static final Logger storageLogger = Logger.getLogger("storageLogger");
 
     /**
