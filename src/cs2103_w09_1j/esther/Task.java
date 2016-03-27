@@ -543,7 +543,7 @@ public class Task implements Comparable<Task> {
 	    if (startTime != null) {
 		this.setStartDate(_dateAndTimeFormatter.parse((startDate + " " + startTime)));
 	    } else {
-		this.setStartDate(_dateAndTimeFormatter.parse(startDate));
+		this.setStartDate(_dateOnlyFormatter.parse(startDate));
 	    }
 	}
 
@@ -551,7 +551,7 @@ public class Task implements Comparable<Task> {
 	    if (endTime != null) {
 		this.setEndDate(_dateAndTimeFormatter.parse((endDate + " " + endTime)));
 	    } else {
-		this.setEndDate(_dateAndTimeFormatter.parse(endDate));
+		this.setEndDate(_dateOnlyFormatter.parse(endDate));
 	    }
 	}
 
