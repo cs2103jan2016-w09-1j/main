@@ -1,8 +1,8 @@
-import java.util.Calendar;
-import java.util.Date;
-import java.util.regex.Pattern;
+package cs2103_w09_1j.esther;
 
-import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DateParserAddon {
 
@@ -22,6 +22,47 @@ public class DateParserAddon {
 		result = findDayOfWeekWords(dateStr, newDay);
 		
 		return result;
+	}
+	
+	/**
+	 * Finds strings of 4 integers (XXXX) with neighboring whitespace in the input.
+	 * @param input
+	 * 	String to look for 4 integers
+	 * @return 
+	 * 	In slot[0], the found string
+	 * 	In slot[1], the remainder of the string after the found string is removed
+	 * @author Jeremy Hon
+	 */
+	String[] find24HTime(String input) {
+	    String[] result = new String[2];
+	    String regex = "\\d{4}";
+	    Matcher matcher = Pattern.compile(regex).matcher(input);
+	    
+	    //find all matches of 4 integers
+	    boolean lastLoopFoundMatch = true;
+	    boolean foundMatch;
+	    while(lastLoopFoundMatch){
+		foundMatch = matcher.find();
+		if(foundMatch){
+		    //assume valid 24H time can only have space characters next to it
+		    //or are at the ends of the string
+		    //identify valid 24H times
+		    if((matcher.start() == 0 || charAtIndexOfStringIsSpace(input, matcher.start()-1) 
+			    && (matcher.end() == input.length() || charAtIndexOfStringIsSpace(input, matcher.end()+1)))) {
+			//this is a valid 24H time
+			result[0] = matcher.group();
+			result[1] = input.substring(0, matcher.start()) + input.substring(matcher.end());
+			return result;
+		    }
+		    //otherwise this is an invalid 24H time, ignore
+		}
+		lastLoopFoundMatch = foundMatch;
+	    }
+	    return result;
+	}
+	
+	private boolean charAtIndexOfStringIsSpace(String string, int index){
+	    return string.charAt(index) == ' ';
 	}
 
 	/**
