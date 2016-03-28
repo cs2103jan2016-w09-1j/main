@@ -74,6 +74,7 @@ public class Task implements Comparable<Task> {
 	private static final String SORT_BY_PRIORITY_KEYWORD = "priority";
 	private static final String SORT_BY_ID_KEYWORD = "id";
 	private static final int DEFAULT_STARTING_ID = 0;
+	private static final int DEFAULT_TASK_PRIORITY = 5;
 
 	// TODO for Jeremy: attributes have been changed (added _startDate &
     // _endDate).
@@ -154,7 +155,7 @@ public class Task implements Comparable<Task> {
 
 		int priority = command.hasParameter(TaskField.PRIORITY.getTaskKeyName())
 				? Integer.parseInt(command.getSpecificParameter(TaskField.PRIORITY.getTaskKeyName()))
-				: 0;
+				: DEFAULT_TASK_PRIORITY;
 		this.setName(taskName);
 		this.setStartDate(startDate);
 		this.setEndDate(endDate);
@@ -345,10 +346,13 @@ public class Task implements Comparable<Task> {
 			throws ParseException {
 		Date date = null;
 		if (dateString != null && timeString != null) {
+			//System.out.println("Date and time parts are modified.");
 			date = _dateAndTimeFormatter.parse(dateString + " " + timeString);
 		} else if (dateString != null && timeString == null) {
+			//System.out.println("Date part is modified.");
 			date = _dateOnlyFormatter.parse(dateString);
 		} else if (dateString == null && timeString != null) {
+			//System.out.println("Time part is modified.");
 			date = _dateAndTimeFormatter.parse(_dateOnlyFormatter.format(today) + " " + timeString);
 		} 
 		return date;
@@ -530,7 +534,7 @@ public class Task implements Comparable<Task> {
      * @throws ParseException
      * @@author A0129660A
      */
-	public void updateTask(Command command) throws ParseException {
+	public boolean updateTask(Command command) throws ParseException {
 		String startDate = null;
 		String startTime = null;
 		String endDate = null;
@@ -545,11 +549,6 @@ public class Task implements Comparable<Task> {
 		}
 
 		// DATE AND TIME HANDLING
-		String oldStartDate = (_startDate == null) ? "Empty startDate" : _startDate.toString();
-		System.out.println(oldStartDate);
-		String oldEndDate = (_endDate == null) ? "Empty endDate" : _endDate.toString();
-		System.out.println(oldEndDate);
-
 		if (command.hasParameter(TaskField.STARTDATE.getTaskKeyName())) {
 			startDate = command.getSpecificParameter(TaskField.STARTDATE.getTaskKeyName());
 		}
@@ -566,21 +565,44 @@ public class Task implements Comparable<Task> {
 			endTime = command.getSpecificParameter(TaskField.ENDTIME.getTaskKeyName());
 		}
 
-		if (startDate != null) {
-			if (startTime != null) {
-				this.setStartDate(_dateAndTimeFormatter.parse((startDate + " " + startTime)));
-			} else {
-				this.setStartDate(_dateOnlyFormatter.parse(startDate));
-			}
+		String oldStartTime = (dateToString(_startDate).equals("")) ? null : dateToString(_startDate).substring(11);
+		String oldEndTime = (dateToString(_endDate).equals("")) ? null : dateToString(_endDate).substring(11);
+		Date oldStartDate = _startDate;
+		Date oldEndDate = _endDate;
+		Date newStartDate = null;
+		Date newEndDate = null;
+		
+		if (_startDate == null) {
+			newStartDate = parseDateTimeToString(new Date(), startDate, startTime);
+			this.setStartDate(newStartDate);
+		} else if (startTime == null) {
+			newStartDate = parseDateTimeToString(_startDate, startDate, oldStartTime);
+			this.setStartDate(newStartDate);
+		} else {
+			newStartDate = parseDateTimeToString(_startDate, startDate, startTime);
+			this.setStartDate(newStartDate);
 		}
-
-		if (endDate != null) {
-			if (endTime != null) {
-				this.setEndDate(_dateAndTimeFormatter.parse((endDate + " " + endTime)));
-			} else {
-				this.setEndDate(_dateOnlyFormatter.parse(endDate));
-			}
+		
+		if (_endDate == null) {
+			newEndDate = parseDateTimeToString(new Date(), endDate, endTime);
+			this.setEndDate(newEndDate);
+		} else if (endTime == null) {
+			newEndDate = parseDateTimeToString(_endDate, endDate, oldEndTime);
+			this.setEndDate(newEndDate);
+		} else {
+			newEndDate = parseDateTimeToString(_endDate, endDate, endTime); 
+			this.setEndDate(newEndDate);
 		}
+		
+		if (isAcceptableDateChange(newStartDate, newEndDate)) {
+			// do nothing
+		} else {
+			this.setStartDate(oldStartDate);
+			this.setEndDate(oldEndDate);
+			return false;
+		}
+		//System.out.println(dateToString(_startDate));
+		//System.out.println(dateToString(_endDate));
 
 		if (command.hasParameter(TaskField.PRIORITY.getTaskKeyName())) {
 			this.setPriority(Integer.parseInt(command.getSpecificParameter(TaskField.PRIORITY.getTaskKeyName())));
@@ -592,6 +614,18 @@ public class Task implements Comparable<Task> {
 
 		if (command.hasParameter(TaskField.COMPLETED.getTaskKeyName())) {
 			this.setCompleted(Boolean.parseBoolean(command.getSpecificParameter(TaskField.COMPLETED.getTaskKeyName())));
+		}
+		
+		return true;
+	}
+	
+	private boolean isAcceptableDateChange(Date startDate, Date endDate) {
+		if (startDate == null || endDate == null) {
+			return true;
+		} else if (startDate.compareTo(endDate) < 0) {
+			return true;
+		} else {
+			return false;
 		}
 	}
 

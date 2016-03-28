@@ -318,7 +318,7 @@ class Logic {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 	        @Override
 	        public void run() {
-	        	System.out.println("Saving current system configurations.");
+	        	//System.out.println("Saving current system configurations.");
 	            try {
 	            	//logger.logp(Level.INFO, "Logic", "addTask(Command command)",
 	            				  //"Updating Config file in Logic and Storage.");
@@ -513,7 +513,7 @@ class Logic {
 	 */
 	private String showTask(Command command) {
 		updateUndoStack(command, null);
-		System.out.println(_undoStack.size());
+		//System.out.println(_undoStack.size());
 		sortAndUpdateFile(command);
 		String result = getInternalStorageInString(); 
 		Status._outcome = Status.Outcome.SUCCESS;
@@ -534,7 +534,7 @@ class Logic {
 	 */
 	private String sortFile(Command command) {
 		updateUndoStack(command, null);
-		System.out.println(_undoStack.size());
+		//System.out.println(_undoStack.size());
 		sortAndUpdateFile(command);
 		return getOperationStatus(command);
 	}
@@ -584,7 +584,7 @@ class Logic {
 			Status._errorCode = Status.ErrorCode.UNDO;
 		} else {
 			State previousState = _undoStack.pop();
-			System.out.println(previousState.getCommand());
+			//System.out.println(previousState.getCommand());
 			CommandKey commandType = CommandKey.get(previousState.getCommand());
 			//logger.logp(Level.INFO, "Logic", "undo()", "Undoing a previous operation.", commandType);
 			switch (commandType) {
@@ -657,7 +657,7 @@ class Logic {
 			}
 			updateTextFile();
 			updateUndoStack(command, addedTask);
-			System.out.println(_undoStack.size());
+			//System.out.println(_undoStack.size());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (ParseException pe) {
 			//logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
@@ -685,7 +685,7 @@ class Logic {
 		int index = -1;
 		boolean hasDuplicate = false;
 		String taskName = command.getSpecificParameter(TaskField.NAME.getTaskKeyName());
-		System.out.println("Task name to update: " + taskName);
+		//System.out.println("Task name to update: " + taskName);
 		String taskID = command.hasParameter(TaskField.ID.getTaskKeyName())
 						? command.getSpecificParameter(TaskField.ID.getTaskKeyName())
 						: String.valueOf(NOT_FOUND_INDEX);
@@ -693,7 +693,7 @@ class Logic {
 		String[] params = {taskName, command.getSpecificParameter(TaskField.ID.getTaskKeyName())};
 		//logger.logp(Level.INFO, "Logic", "removeTask(Command command)",	"Removing a task.", params);
 		for (int i = 0; i < _tasks.size(); i++) {
-			System.out.println("Current task accessed is " + _tasks.get(i).getName());
+			//System.out.println("Current task accessed is " + _tasks.get(i).getName());
 			if (_tasks.get(i).getName().equals(taskName) ||
 				_tasks.get(i).getId() == Integer.parseInt(taskID)) {
 				if (index != NOT_FOUND_INDEX) {
@@ -723,7 +723,7 @@ class Logic {
 				_tasks.remove(removed);
 				updateTextFile();
 				updateUndoStack(command, removed);
-				System.out.println(_undoStack.size());
+				//System.out.println(_undoStack.size());
 				Status._outcome = Status.Outcome.SUCCESS;
 			} else {
 				//logger.logp(Level.WARNING, "Logic", "removeTask(Command command)",
@@ -754,13 +754,18 @@ class Logic {
 				//String old = toUpdate.getName();
 				toUpdate = _tasks.get(taskIndex);
 				Task copyOfOldTask = toUpdate.clone();
-				toUpdate.updateTask(command);
-				_tasks.set(taskIndex, toUpdate);
-				updateTextFile();
-				updateUndoStack(command, copyOfOldTask);
-				System.out.println(_undoStack.size());
-				//System.out.println("Old name: " + old + " New name: " + _tasks.get(updateIndex).getName());
-				Status._outcome = Status.Outcome.SUCCESS;
+				boolean isUpdated = toUpdate.updateTask(command);
+				if (isUpdated) {
+					_tasks.set(taskIndex, toUpdate);
+					updateTextFile();
+					updateUndoStack(command, copyOfOldTask);
+					//System.out.println(_undoStack.size());
+					//System.out.println("Old name: " + old + " New name: " + _tasks.get(updateIndex).getName());
+					Status._outcome = Status.Outcome.SUCCESS;
+				} else {
+					Status._outcome = Status.Outcome.ERROR;
+					Status._errorCode = Status.ErrorCode.UPDATE_START_END_VIOLATE;
+				}
 			} else {
 				//logger.logp(Level.WARNING, "Logic", "updateTask(Command command)",
 							//"Update task: Task not found. Possible user-side error or no name/ID matching.");
@@ -802,7 +807,7 @@ class Logic {
 					_tasks.set(taskIndex, toUpdate);
 					updateTextFile();
 					updateUndoStack(command, copyOfOldTask);
-					System.out.println(_undoStack.size());
+					//System.out.println(_undoStack.size());
 					Status._outcome = Status.Outcome.SUCCESS;
 				}
 			} else {

@@ -6,7 +6,7 @@ public class Status {
 
 	public enum ErrorCode {
 		SYSTEM, INVALID_COMMAND, ADD_INVALID_FORMAT, ADD_MISSING_NAME, DELETE_NOT_FOUND, DELETE_DUPLICATES_PRESENT,
-		UPDATE_NOT_FOUND, UPDATE_DUPLICATES_PRESENT, UPDATE_INVALID_FIELD, COMPLETED_NOT_FOUND,
+		UPDATE_NOT_FOUND, UPDATE_DUPLICATES_PRESENT, UPDATE_INVALID_FIELD, UPDATE_START_END_VIOLATE, COMPLETED_NOT_FOUND,
 		COMPLETED_DUPLICATES_PRESENT, SORT_INVALID_CRITERION, UNDO, UNKNOWN_STATE
 	}
 
@@ -32,6 +32,7 @@ public class Status {
 														 //"[ERROR] Task with supplied name or ID not found.\n";
 	static final String MESSAGE_ERROR_UPDATE_DUPLICATES_PRESENT = "There are multiple tasks sharing the same name '%1$s'. Please update by ID instead.\n";
 	static final String MESSAGE_ERROR_UPDATE_INVALID_FIELD = "Unable to update task: The field you have specified does not exist.\n";
+	static final String MESSAGE_ERROR_UPDATE_START_END_VIOLATE = "Unable to update task: Start date/time is not before end date/time.\n";
 	static final String MESSAGE_SUCCESS_COMPLETED = "%1$s is marked as completed.\n";
 	static final String MESSAGE_ERROR_COMPLETED_NOT_FOUND = "Unable to complete task: Please supply a proper task name or task ID.\n";
 														    //"[ERROR] Failed to mark %1$s as completed.\n";
@@ -244,6 +245,10 @@ public class Status {
 			
 			case UPDATE_INVALID_FIELD :
 				message = MESSAGE_ERROR_UPDATE_INVALID_FIELD;
+				break;
+				
+			case UPDATE_START_END_VIOLATE :
+				message = MESSAGE_ERROR_UPDATE_START_END_VIOLATE;
 				break;
 			
 			default :
