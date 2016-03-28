@@ -210,10 +210,10 @@ public class Parser {
 				}
 				String startDateTime = "";
 				String endDateTime = "";
-				for (int i = supposeToBeParseKeyIndex; i < toParseKeyIndex; i++) {
+				for (int i = supposeToBeParseKeyIndex + 1; i < toParseKeyIndex; i++) {
 					startDateTime += inputArray[i] + " ";
 				}
-				for (int i = toParseKeyIndex; i < inputArray.length; i++) {
+				for (int i = toParseKeyIndex + 1; i < inputArray.length; i++) {
 					endDateTime += inputArray[i] + " ";
 				}
 				String[] startDateTimeArray = dateParser.getDateTime(startDateTime);
