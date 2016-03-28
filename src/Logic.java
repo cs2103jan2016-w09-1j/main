@@ -165,9 +165,9 @@ class Logic {
 				statusMessage = sortFile(command);
 				break;
 				
-			/*case SEARCH : // TODO for Parser: add enum field + value 
+			case SEARCH : 
 				statusMessage = searchFile(command);
-				break;*/
+				break;
 				
 			case UNDO :
 				statusMessage = undo(command);
@@ -513,6 +513,7 @@ class Logic {
 	 */
 	private String showTask(Command command) {
 		updateUndoStack(command, null);
+		System.out.println(_undoStack.size());
 		sortAndUpdateFile(command);
 		String result = getInternalStorageInString(); 
 		Status._outcome = Status.Outcome.SUCCESS;
@@ -533,6 +534,7 @@ class Logic {
 	 */
 	private String sortFile(Command command) {
 		updateUndoStack(command, null);
+		System.out.println(_undoStack.size());
 		sortAndUpdateFile(command);
 		return getOperationStatus(command);
 	}
@@ -556,7 +558,9 @@ class Logic {
 				  	  //"Searching tasks in file.", searchKey);
 		//ArrayList<Task> results = new ArrayList<Task>();
 		for (Task entry: _tasks) {
-			if (entry.getName().contains(command.getSpecificParameter("taskName"))) {
+			String taskNameCopy = entry.getName();
+			String taskNameLowerCase = taskNameCopy.toLowerCase();
+			if (taskNameLowerCase.contains(command.getSpecificParameter("taskName").trim().toLowerCase())) {
 				results += (entry.toString() + "\n");
 				//results.add(entry);
 			}
@@ -573,8 +577,14 @@ class Logic {
 	 * @@author A0129660A
 	 */
 	private String undo(Command command) {
-		try {
+		if (_undoStack.size() <= 1) {
+			//logger.logp(Level.INFO, "Logic", "undo()", "User cannot undo any further.");
+			//System.out.println("Undo not successful.");
+			Status._outcome = Status.Outcome.ERROR;
+			Status._errorCode = Status.ErrorCode.UNDO;
+		} else {
 			State previousState = _undoStack.pop();
+			System.out.println(previousState.getCommand());
 			CommandKey commandType = CommandKey.get(previousState.getCommand());
 			//logger.logp(Level.INFO, "Logic", "undo()", "Undoing a previous operation.", commandType);
 			switch (commandType) {
@@ -602,10 +612,10 @@ class Logic {
 					undoSort(previousState.getState());
 					break;
 					
-				/*case SEARCH :
+				case SEARCH :
 				 	// TODO for Parser: add enum field + value
 					// undo a search does not make logical sense
-					break;*/
+					break;
 					
 				case HELP :
 					break;
@@ -616,11 +626,6 @@ class Logic {
 					Status._errorCode = Status.ErrorCode.SYSTEM;
 					return getOperationStatus(command);
 			}
-		} catch (EmptyStackException e) {
-			//logger.logp(Level.INFO, "Logic", "undo()", "User cannot undo any further.");
-			//System.out.println("Undo not successful.");
-			Status._outcome = Status.Outcome.ERROR;
-			Status._errorCode = Status.ErrorCode.UNDO;
 		}
 		return getOperationStatus(command);
 	}
@@ -652,6 +657,7 @@ class Logic {
 			}
 			updateTextFile();
 			updateUndoStack(command, addedTask);
+			System.out.println(_undoStack.size());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (ParseException pe) {
 			//logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
@@ -717,6 +723,7 @@ class Logic {
 				_tasks.remove(removed);
 				updateTextFile();
 				updateUndoStack(command, removed);
+				System.out.println(_undoStack.size());
 				Status._outcome = Status.Outcome.SUCCESS;
 			} else {
 				//logger.logp(Level.WARNING, "Logic", "removeTask(Command command)",
@@ -751,6 +758,7 @@ class Logic {
 				_tasks.set(taskIndex, toUpdate);
 				updateTextFile();
 				updateUndoStack(command, copyOfOldTask);
+				System.out.println(_undoStack.size());
 				//System.out.println("Old name: " + old + " New name: " + _tasks.get(updateIndex).getName());
 				Status._outcome = Status.Outcome.SUCCESS;
 			} else {
@@ -794,6 +802,7 @@ class Logic {
 					_tasks.set(taskIndex, toUpdate);
 					updateTextFile();
 					updateUndoStack(command, copyOfOldTask);
+					System.out.println(_undoStack.size());
 					Status._outcome = Status.Outcome.SUCCESS;
 				}
 			} else {
@@ -881,9 +890,9 @@ class Logic {
 				previous.storeInnerMemoryState(preSortTaskList);
 				break;
 				
-			/*case SEARCH : // TODO for Parser: add enum field + value
+			case SEARCH : // TODO for Parser: add enum field + value
 				previous = new State(EMPTY_STATE);
-				break;*/
+				break;
 
 			case UNDO :
 				previous = new State(EMPTY_STATE);

@@ -157,7 +157,7 @@ public class Task implements Comparable<Task> {
 	    endDate = _dateOnlyFormatter.parse(endDateString);
 	}
 	int priority = command.hasParameter(TaskField.PRIORITY.getTaskKeyName())
-		? Integer.parseInt(command.getSpecificParameter(TaskField.PRIORITY.getTaskKeyName())) : 0;
+		? Integer.parseInt(command.getSpecificParameter(TaskField.PRIORITY.getTaskKeyName())) : 5;
 	this.setName(taskName);
 	this.setStartDate(startDate);
 	this.setEndDate(endDate);
@@ -528,6 +528,11 @@ public class Task implements Comparable<Task> {
 	}
 
 	// DATE AND TIME HANDLING
+	String oldStartDate = (_startDate == null) ? "Empty startDate" : _startDate.toString();
+	System.out.println(oldStartDate);
+	String oldEndDate = (_endDate == null) ? "Empty endDate" : _endDate.toString();
+	System.out.println(oldEndDate);
+	
 	if (command.hasParameter(TaskField.STARTDATE.getTaskKeyName())) {
 	    startDate = command.getSpecificParameter(TaskField.STARTDATE.getTaskKeyName());
 	}

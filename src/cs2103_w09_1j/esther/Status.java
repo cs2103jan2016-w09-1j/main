@@ -123,7 +123,7 @@ public class Status {
 			break;
 
 		case UNDO :
-			message = MESSAGE_ERROR_UNDO;
+			message = MESSAGE_SUCCESS_UNDO;
 			break;
 
 		case HELP :
