@@ -36,7 +36,7 @@ public class Storage {
      * @throws IOException
      */
     public Storage() throws ParseException, IOException {
-	storageLogger.setLevel(Level.INFO);
+	storageLogger.setLevel(Level.WARNING);
 	storageLogger.info("Initializing Storage");
 	currentConfig = readConfigFile();
 	processConfig();
