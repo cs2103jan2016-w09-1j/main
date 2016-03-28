@@ -19,8 +19,8 @@ import cs2103_w09_1j.esther.Task;
 public class EstherTest {
 	String pathString = "esther.txt";
 	Path saveLoc = Paths.get(pathString);
-	String[] dateFormats = { " ", "dd/MM/yy", "dd/MM/yyyy" };
-	String[] timeFormats = { " ", "HHmm", "hha", "HH:mm" };
+	String[] dateFormats = { "", "dd/MM/yy", "dd/MM/yyyy" };
+	String[] timeFormats = { "", "HHmm", "hha", "HH:mm" };
 	ArrayList<String> todayFormats;
 	ArrayList<String> todayOneHourFormats;
 
@@ -52,19 +52,23 @@ public class EstherTest {
 		ArrayList<String> dates = new ArrayList<>(); 
 		for (int i = 0; i < dateFormats.length; i++) {
 			for (int j = 0; j < timeFormats.length; j++) {
-				// skip the first loop as both date and time are empty
-				if (i == 0 && j == 0) {
-					continue;
-				}
 				dateFormat = dateFormats[i];
 				timeFormat = timeFormats[j];
-				for (int k = 0; k < 2; k++) {
-					if (k == 0) {
-						dateTimeFormat = (dateFormat + " " + timeFormat).trim();
-					} else {
-						dateTimeFormat = (timeFormat + " " + dateFormat).trim();
+				if(dateFormat.length() != 0 && timeFormat.length() != 0){
+					for (int k = 0; k < 2; k++) {
+							if (k == 0) {
+								dateTimeFormat = (dateFormat + " " + timeFormat).trim();
+							} else {
+								dateTimeFormat = (timeFormat + " " + dateFormat).trim();
+							}
+						dateTimeFormattedString = new SimpleDateFormat(dateTimeFormat).format(today);
+						dates.add(dateTimeFormattedString);
 					}
-					dateTimeFormattedString = new SimpleDateFormat(dateTimeFormat).format(today);
+				} else if(dateFormat.length() == 0 && timeFormat.length() != 0) {
+					dateTimeFormattedString = new SimpleDateFormat(timeFormat).format(today);
+					dates.add(dateTimeFormattedString);
+				} else if(timeFormat.length() == 0 && dateFormat.length() != 0) {
+					dateTimeFormattedString = new SimpleDateFormat(dateFormat).format(today);
 					dates.add(dateTimeFormattedString);
 				}
 			}
