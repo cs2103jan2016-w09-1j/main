@@ -657,7 +657,7 @@ class Logic {
 			}
 			updateTextFile();
 			updateUndoStack(command, addedTask);
-			System.out.println(_undoStack.size());
+			//System.out.println(_undoStack.size());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (ParseException pe) {
 			//logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",

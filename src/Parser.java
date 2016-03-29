@@ -204,7 +204,7 @@ public class Parser {
 				// Case 6: add something from date/time to date/time
 				int toParseKeyIndex = getNextParseKeyIndex(inputArray, supposeToBeParseKeyIndex + 1);
 				if (toParseKeyIndex == -1) {
-					System.out.println(toParseKeyIndex);
+					//System.out.println(toParseKeyIndex);
 					throw new InvalidInputException(ERROR_ADDFORMAT);
 				}
 				String startDateTime = "";
@@ -230,7 +230,7 @@ public class Parser {
 			else {
 				int otherParseKeyIndex = getNextParseKeyIndex(inputArray, supposeToBeParseKeyIndex + 1);
 				if (otherParseKeyIndex != -1) {
-					System.out.println(otherParseKeyIndex);
+					//System.out.println(otherParseKeyIndex);
 					throw new InvalidInputException(ERROR_ADDFORMAT);
 				}
 				String dateTime = "";
