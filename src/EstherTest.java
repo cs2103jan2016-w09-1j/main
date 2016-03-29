@@ -174,7 +174,7 @@ public class EstherTest {
 	@Test
 	public void updateDateByNameTest3() {
 		logic.executeCommand("add updTask from 1/3/2017 to 3/3/2017");
-		assertTrue(logic.executeCommand("update updTask date to 29/3/2016 1500").contains("success"));
+		assertTrue(logic.executeCommand("update updTask date to 29/3/2017 1500").contains("success"));
 	}
 
 	@Test
@@ -190,7 +190,7 @@ public class EstherTest {
 	public void completeTest() {
 		logic.executeCommand("add task");
 		String result = logic.executeCommand("complete task");
-		assertTrue(result.contains("success"));
+		assertTrue(result.contains("is marked as completed"));
 	}
 
 	@After
