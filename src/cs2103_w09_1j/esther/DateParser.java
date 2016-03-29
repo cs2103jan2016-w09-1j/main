@@ -58,6 +58,12 @@ public class DateParser {
 		// Check for wordy date first
 		String wordyDate = dp.getWordyDateFormat(input);
 		input = dp.getProperDateTime(input);
+		
+		String[] twentyFourTime = find24HTime(input);
+		if(twentyFourTime[0] != null) {
+			dateTime[1] = twentyFourTime[0];
+			input = twentyFourTime[1];
+		} 
 		while (input != null) {
 			oldInput = input;
 			if (dateTime[0] == null) {
@@ -255,7 +261,7 @@ public class DateParser {
 		return null;
 	}
 	
-	private String[] find24HTime(String input) {
+	protected String[] find24HTime(String input) {
 	    String[] result = new String[2];
 	    String regex = "\\d{4}";
 	    Matcher matcher = Pattern.compile(regex).matcher(input);
@@ -270,9 +276,9 @@ public class DateParser {
 		    //or are at the ends of the string
 		    //identify valid 24H times
 		    if((matcher.start() == 0 || charAtIndexOfStringIsSpace(input, matcher.start()-1) 
-			    && (matcher.end() == input.length() || charAtIndexOfStringIsSpace(input, matcher.end()+1)))) {
+			    && (matcher.end() >= input.length() - 1 || charAtIndexOfStringIsSpace(input, matcher.end()+1)))) {
 			//this is a valid 24H time
-			result[0] = matcher.group();
+			result[0] = matcher.group().substring(0, 2) + ":" + matcher.group().substring(2);
 			result[1] = input.substring(0, matcher.start()) + input.substring(matcher.end());
 			return result;
 		    }
