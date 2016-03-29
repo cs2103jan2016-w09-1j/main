@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 import org.junit.After;
@@ -17,12 +18,18 @@ import org.junit.Test;
 import cs2103_w09_1j.esther.Task;
 
 public class EstherTest {
-	String pathString = "esther.txt";
-	Path saveLoc = Paths.get(pathString);
-	String[] dateFormats = { "", "dd/MM/yy", "dd/MM/yyyy" };
-	String[] timeFormats = { "", "HHmm", "hha", "HH:mm" };
-	ArrayList<String> todayFormats;
-	ArrayList<String> todayOneHourFormats;
+
+	private String pathString = "esther.txt";
+	private Path saveLoc = Paths.get(pathString);
+	private String[] dateFormats = { "", "dd/MM/yy", "dd/MM/yyyy" };
+	private String[] timeFormats = { "", "HHmm", "HH:mm", "hha" };
+	private ArrayList<DateTimeTester> todayTestFormats;
+	private ArrayList<DateTimeTester> todayOneHourTestFormats;
+	private SimpleDateFormat defaultDateFormat = new SimpleDateFormat(dateFormats[1] + " " + timeFormats[1]);
+	private Date now = new Date();
+	private Date oneHrFromNow = new Date(new Date().getTime() + (60 * 60 * 1000));
+	private DateTimeTester defaultTester = new DateTimeTester(now, dateFormats[1], timeFormats[1]);
+	private DateTimeTester default1HTester = new DateTimeTester(oneHrFromNow, dateFormats[1], timeFormats[1]);
 
 	private final boolean DEBUG = false;
 
@@ -32,8 +39,8 @@ public class EstherTest {
 	public void init() throws ParseException, IOException {
 		logic = new Logic();
 		cleanUp();
-		todayFormats = generateDateTimes(new Date());
-		todayOneHourFormats = generateDateTimes(new Date(new Date().getTime() + (60 * 60 * 1000)));
+		todayTestFormats = generateDateTimes(now);
+		todayOneHourTestFormats = generateDateTimes(oneHrFromNow);
 	}
 
 	@Test
@@ -43,20 +50,36 @@ public class EstherTest {
 
 	@Test
 	public void addTestOn() {
-		assertTrue(logic.executeCommand("add task on 13/07/2016 1500").contains("success"));
+		assertTrue(logic.executeCommand("add task on " + defaultTester.getString1()).contains("success"));
+		assertTrue(verifyTaskEndDate(defaultTester));
 	}
 
 	@Test
 	public void addTestOnDetailed() {
-		for (String dTString : todayFormats) {
-			String addCommand = ("add task on " + dTString);
-			String result = logic.executeCommand(addCommand);
-			if (!result.contains("success")) {
-				System.out.println("Add test failed");
-				System.out.println(addCommand);
-				System.out.println(result);
-				fail();
-
+		String addCommand;
+		for (DateTimeTester dateTimeTester : todayTestFormats) {
+			for(int i = 0; i<2; i++){
+				//tester obj has 1 or 2 strings
+				if(i == 1){
+					//has 2 strings
+					if(dateTimeTester.isHasReverse()){
+						addCommand = "add task on " + dateTimeTester.getString2();
+					} else {
+						continue;
+					}
+				} else {
+					//has 1 string anyway
+					addCommand = "add task on " + dateTimeTester.getString2();
+				}
+				String result = logic.executeCommand(addCommand);
+				if (!result.contains("success")) {
+					System.out.println("Add test failed");
+					System.out.println(addCommand);
+					System.out.println(result);
+					fail();
+				} else {
+					assertTrue(verifyTaskEndDate(dateTimeTester));
+				}
 			}
 		}
 		assertTrue(true);
@@ -64,27 +87,31 @@ public class EstherTest {
 
 	@Test
 	public void addTestFromTo() {
-		assertTrue(logic.executeCommand("add task from 13/07/2016 1500 to 13/07/2016 1600").contains("success"));
+		assertTrue(logic.executeCommand("add task from "+defaultTester.getString1()+" to "+default1HTester.getString1()).contains("success"));
+		assertTrue(verifyTaskStartDate(defaultTester));
+		assertTrue(verifyTaskEndDate(default1HTester));
 	}
 
 	@Test
 	public void addTestFromToDetailed() {
 		int index = 0;
-		for (String dTString : todayFormats) {
-			for (String dTString2 : todayOneHourFormats) {
+		for (DateTimeTester tester : todayTestFormats) {
+			for (DateTimeTester tester1H : todayOneHourTestFormats) {
 				index++;
-				String addCommand = ("add task from " + dTString + " to " + dTString2);
+				String addCommand = ("add task from " + tester.getString1() + " to " + tester1H.getString1());
 				String result = logic.executeCommand(addCommand);
 				if (!result.contains("success")) {
-					System.out.println("Add test failed");
+					System.out.println("Add test failed on iteration "+index);
 					System.out.println(addCommand);
 					System.out.println(result);
 					fail();
+				} else {
+					assertTrue(verifyTaskStartDate(tester));
+					assertTrue(verifyTaskEndDate(tester1H));
 				}
 			}
 		}
-		assertTrue(true);
-		System.out.println(index);
+		// System.out.println(index);
 	}
 
 	@Test
@@ -104,7 +131,7 @@ public class EstherTest {
 	public void deleteIDTest() {
 		// equivalence partition for delete based on id
 		Task.setGlobalId(0);
-		assertTrue(logic.executeCommand("add deltask on 03/07/2016").contains("success"));
+		assertTrue(logic.executeCommand("add deltask").contains("success"));
 		assertTrue(logic.executeCommand("delete 0").contains("success"));
 	}
 
@@ -136,21 +163,18 @@ public class EstherTest {
 	public void updateDateByNameTest1() {
 		logic.executeCommand("add updTask");
 		assertTrue(logic.executeCommand("update updTask date to 29/3/2016").contains("success"));
-		;
 	}
 
 	@Test
 	public void updateDateByNameTest2() {
 		logic.executeCommand("add updTask on 28/3/2017");
 		assertTrue(logic.executeCommand("update updTask date to 29/3/2016 1500").contains("success"));
-		;
 	}
 
 	@Test
 	public void updateDateByNameTest3() {
 		logic.executeCommand("add updTask from 1/3/2017 to 3/3/2017");
 		assertTrue(logic.executeCommand("update updTask date to 29/3/2016 1500").contains("success"));
-		;
 	}
 
 	@Test
@@ -166,7 +190,7 @@ public class EstherTest {
 	public void completeTest() {
 		logic.executeCommand("add task");
 		String result = logic.executeCommand("complete task");
-		System.out.println(result);
+		assertTrue(result.contains("success"));
 	}
 
 	@After
@@ -188,6 +212,47 @@ public class EstherTest {
 		deleteFile();
 	}
 
+	private Date getNowWithoutSeconds() {
+		Date now = setSecondsToZero(new Date());
+		return now;
+	}
+
+	private Date setSecondsToZero(Date date) {
+		return new Date(date.getTime() / 60000 * 60000);
+	}
+
+	private Date setMinutesToZero(Date date) {
+		return new Date(date.getTime() / (60 * 60000) * (60 * 60000));
+	}
+
+	private Date setHoursToZero(Date date) {
+		return new Date(date.getTime() / (60 * 60 * 60000) * (60 * 60 * 60000));
+	}
+	
+	private boolean verifyTaskStartDate(DateTimeTester dateTimeTester){
+		Date date = getLastElement(logic.getInternalStorage()).getStartDate();
+		return verifyDate(dateTimeTester, date);
+	}
+	
+	private boolean verifyTaskEndDate(DateTimeTester dateTimeTester){
+		Date date = getLastElement(logic.getInternalStorage()).getEndDate();
+		return verifyDate(dateTimeTester, date);
+	}
+
+	private boolean verifyDate(DateTimeTester dateTimeTester, Date date) {
+		if(!date.equals(dateTimeTester.getDate())){
+			System.out.println(dateTimeTester.getDate().toString());
+			System.out.println(date.toString());
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	private <E> E getLastElement(ArrayList<E> list) {
+		return list.get(list.size() - 1);
+	}
+
 	private void deleteFile() {
 		try {
 			if (Files.exists(Paths.get("esther.txt"))) {
@@ -198,33 +263,21 @@ public class EstherTest {
 		}
 	}
 
-	private ArrayList<String> generateDateTimes(Date date) {
+	private ArrayList<DateTimeTester> generateDateTimes(Date date) {
 		String dateFormat, timeFormat, dateTimeFormat, dateTimeFormattedString;
 		Date today = date;
-		ArrayList<String> dates = new ArrayList<>();
+		DateTimeTester testerObj;
+		ArrayList<DateTimeTester> testerObjs = new ArrayList<>();
 		for (int i = 0; i < dateFormats.length; i++) {
 			for (int j = 0; j < timeFormats.length; j++) {
 				dateFormat = dateFormats[i];
 				timeFormat = timeFormats[j];
 				if (dateFormat.length() != 0 && timeFormat.length() != 0) {
-					for (int k = 0; k < 2; k++) {
-						if (k == 0) {
-							dateTimeFormat = (dateFormat + " " + timeFormat).trim();
-						} else {
-							dateTimeFormat = (timeFormat + " " + dateFormat).trim();
-						}
-						dateTimeFormattedString = new SimpleDateFormat(dateTimeFormat).format(today);
-						dates.add(dateTimeFormattedString);
-					}
-				} else if (dateFormat.length() == 0 && timeFormat.length() != 0) {
-					dateTimeFormattedString = new SimpleDateFormat(timeFormat).format(today);
-					dates.add(dateTimeFormattedString);
-				} else if (timeFormat.length() == 0 && dateFormat.length() != 0) {
-					dateTimeFormattedString = new SimpleDateFormat(dateFormat).format(today);
-					dates.add(dateTimeFormattedString);
+					testerObj = new DateTimeTester(date, dateFormat, timeFormat);
+					testerObjs.add(testerObj);
 				}
 			}
 		}
-		return dates;
+		return testerObjs;
 	}
 }
