@@ -261,6 +261,12 @@ public class DateParser {
 		return null;
 	}
 	
+	/**
+	 * 
+	 * @param input
+	 * @return
+	 * @@A0127572A
+	 */
 	protected String[] find24HTime(String input) {
 	    String[] result = new String[2];
 	    String regex = "\\d{4}";
@@ -289,6 +295,13 @@ public class DateParser {
 	    return result;
 	}
 	
+	/**
+	 * 
+	 * @param string
+	 * @param index
+	 * @return
+	 * @@A0127572A
+	 */
 	private boolean charAtIndexOfStringIsSpace(String string, int index){
 	    return string.charAt(index) == ' ';
 	}
