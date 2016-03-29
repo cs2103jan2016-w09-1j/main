@@ -128,6 +128,24 @@ public class EstherTest {
 	assertTrue(logic.executeCommand("add updTask on 03/07/2016").contains("success"));
 	assertTrue(logic.executeCommand("update updTask priority to 1").contains("success"));
     }
+    
+    @Test
+    public void updateDateByNameTest1() {
+	logic.executeCommand("add updTask");
+	assertTrue(logic.executeCommand("update updTask date to 29/3/2016").contains("success"));;
+    }
+    
+    @Test
+    public void updateDateByNameTest2() {
+	logic.executeCommand("add updTask on 28/3/2017");
+	assertTrue(logic.executeCommand("update updTask date to 29/3/2016 1500").contains("success"));;
+    }
+    
+    @Test
+    public void updateDateByNameTest3() {
+	logic.executeCommand("add updTask from 1/3/2017 to 3/3/2017");
+	assertTrue(logic.executeCommand("update updTask date to 29/3/2016 1500").contains("success"));;
+    }
 
     @Test
     public void updateByIDTest() {
@@ -136,6 +154,13 @@ public class EstherTest {
 	Task.setGlobalId(0);
 	assertTrue(logic.executeCommand("add updTask on 03/07/2016").contains("success"));
 	assertTrue(logic.executeCommand("update 0 name to updatedTask").contains("success"));
+    }
+    
+    @Test
+    public void completeTest() {
+	logic.executeCommand("add task");
+	String result = logic.executeCommand("complete task");
+	System.out.println(result);
     }
 
     @After
