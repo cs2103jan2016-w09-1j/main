@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EmptyStackException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Stack;
 import java.util.logging.*;
 import cs2103_w09_1j.esther.Command;
@@ -44,11 +45,13 @@ class Logic {
 	
 	private static final int NOT_FOUND_INDEX = -1;
 	private static final String EMPTY_STATE = "Empty";
-	private static final String DEFAULT_SORT_ORDER = "date";
+	private static final String DEFAULT_TASKS_SORT_ORDER = "date";
+	private static final String DEFAULT_FLOATING_TASKS_SORT_ORDER = "id";
 	
 	private Parser _parser;
 	private Storage _storage;
 	private ArrayList<Task> _tasks;
+	private ArrayList<Task> _floatingTasksHolder;
 	private Stack<State> _undoStack;
 	private Config _config;
 	//private static Logger //logger = Logger.getLogger("Logic");
@@ -131,6 +134,7 @@ class Logic {
 	 */
 	// TODO: implement search functionality
 	protected String executeCommand(Command command) {
+		assert command != null;
 		String commandName = command.getCommand();
 		CommandKey commandType = CommandKey.get(commandName);
 		//logger.logp(Level.INFO, "Logic", "executeCommand(Command command)",
@@ -161,9 +165,9 @@ class Logic {
 				statusMessage = sortFile(command);
 				break;
 				
-			/*case SEARCH : // TODO for Parser: add enum field + value 
+			case SEARCH : 
 				statusMessage = searchFile(command);
-				break;*/
+				break;
 				
 			case UNDO :
 				statusMessage = undo(command);
@@ -209,7 +213,10 @@ class Logic {
 	 * @@author A0129660A
 	 */
 	protected ArrayList<Task> getInternalStorage() {
-		return _tasks;
+		ArrayList<Task> display = new ArrayList<Task>();
+		display.addAll(_tasks);
+		display.addAll(_floatingTasksHolder);
+		return display;
 	}
 	
 	/**
@@ -294,11 +301,10 @@ class Logic {
 	 * @@author A0129660A
 	 */
 	private void initializeLogicSystemVariables() throws ParseException, IOException {
-		_tasks = _storage.readSaveFile();
+		updateInternalStorage();
 		_undoStack = new Stack<State>();
 		//logger.logp(Level.CONFIG, "Logic", "updateInternalStorage",
 					//"Reading tasks into inner memory upon initialization.");
-		updateInternalStorage();
 		//System.out.println("Inner variables initialized.");
 	}
 	
@@ -340,7 +346,8 @@ class Logic {
 		try {
 			_tasks = _storage.readSaveFile();
 			assert _tasks != null;
-			Collections.sort(_tasks);
+			_floatingTasksHolder = new ArrayList<Task>();
+			filterFloatingTasks(DEFAULT_TASKS_SORT_ORDER, false);
 		} catch (Exception e) {
 			// TODO: error handling
 			//logger.logp(Level.SEVERE, "Storage", "readSaveFile()",
@@ -388,7 +395,35 @@ class Logic {
 	 */
 	private void updateUndoStack(Command command, Task task) {
 		_undoStack.push(storePreviousState(command, task));
-	} 
+	}
+	
+	/**
+	 * Separates floating tasks from tasks with deadlines for proper sorting.
+	 * 
+	 * @@author A0129660A
+	 */
+	private void filterFloatingTasks(String sortOrder, boolean toSort) {
+		_floatingTasksHolder = new ArrayList<Task>();
+		Iterator<Task> iter = _tasks.iterator();
+		while (iter.hasNext()) {
+			Task currentTask = iter.next();
+			//System.out.println(currentTask.isFloatingTask());
+			if (currentTask.isFloatingTask()) {
+				//System.out.println("Floating task present.");
+				_floatingTasksHolder.add(currentTask);
+				iter.remove();
+			}
+		}
+		
+		if (toSort) {
+			Task.setSortCriterion(sortOrder);
+			Collections.sort(_tasks);
+			Task.setSortCriterion(DEFAULT_FLOATING_TASKS_SORT_ORDER);
+			Collections.sort(_floatingTasksHolder);
+		}
+		_tasks.addAll(_floatingTasksHolder);
+		Task.setSortCriterion(DEFAULT_TASKS_SORT_ORDER);
+	}
 
 	
 	// ================================ SYSTEM METHODS FOR LOGIC ================================= //
@@ -478,6 +513,7 @@ class Logic {
 	 */
 	private String showTask(Command command) {
 		updateUndoStack(command, null);
+		System.out.println(_undoStack.size());
 		sortAndUpdateFile(command);
 		String result = getInternalStorageInString(); 
 		Status._outcome = Status.Outcome.SUCCESS;
@@ -498,6 +534,7 @@ class Logic {
 	 */
 	private String sortFile(Command command) {
 		updateUndoStack(command, null);
+		System.out.println(_undoStack.size());
 		sortAndUpdateFile(command);
 		return getOperationStatus(command);
 	}
@@ -521,7 +558,9 @@ class Logic {
 				  	  //"Searching tasks in file.", searchKey);
 		//ArrayList<Task> results = new ArrayList<Task>();
 		for (Task entry: _tasks) {
-			if (entry.getName().contains(command.getSpecificParameter("taskName"))) {
+			String taskNameCopy = entry.getName();
+			String taskNameLowerCase = taskNameCopy.toLowerCase();
+			if (taskNameLowerCase.contains(command.getSpecificParameter("taskName").trim().toLowerCase())) {
 				results += (entry.toString() + "\n");
 				//results.add(entry);
 			}
@@ -538,8 +577,14 @@ class Logic {
 	 * @@author A0129660A
 	 */
 	private String undo(Command command) {
-		try {
+		if (_undoStack.size() <= 1) {
+			//logger.logp(Level.INFO, "Logic", "undo()", "User cannot undo any further.");
+			//System.out.println("Undo not successful.");
+			Status._outcome = Status.Outcome.ERROR;
+			Status._errorCode = Status.ErrorCode.UNDO;
+		} else {
 			State previousState = _undoStack.pop();
+			System.out.println(previousState.getCommand());
 			CommandKey commandType = CommandKey.get(previousState.getCommand());
 			//logger.logp(Level.INFO, "Logic", "undo()", "Undoing a previous operation.", commandType);
 			switch (commandType) {
@@ -567,10 +612,10 @@ class Logic {
 					undoSort(previousState.getState());
 					break;
 					
-				/*case SEARCH :
+				case SEARCH :
 				 	// TODO for Parser: add enum field + value
 					// undo a search does not make logical sense
-					break;*/
+					break;
 					
 				case HELP :
 					break;
@@ -581,11 +626,6 @@ class Logic {
 					Status._errorCode = Status.ErrorCode.SYSTEM;
 					return getOperationStatus(command);
 			}
-		} catch (EmptyStackException e) {
-			//logger.logp(Level.INFO, "Logic", "undo()", "User cannot undo any further.");
-			//System.out.println("Undo not successful.");
-			Status._outcome = Status.Outcome.ERROR;
-			Status._errorCode = Status.ErrorCode.UNDO;
 		}
 		return getOperationStatus(command);
 	}
@@ -612,8 +652,12 @@ class Logic {
 		try {
 			addedTask = new Task(command);
 			_tasks.add(addedTask);
+			if (!addedTask.isFloatingTask()) {
+				filterFloatingTasks(null, false);
+			}
 			updateTextFile();
 			updateUndoStack(command, addedTask);
+			System.out.println(_undoStack.size());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (ParseException pe) {
 			//logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
@@ -641,6 +685,7 @@ class Logic {
 		int index = -1;
 		boolean hasDuplicate = false;
 		String taskName = command.getSpecificParameter(TaskField.NAME.getTaskKeyName());
+		System.out.println("Task name to update: " + taskName);
 		String taskID = command.hasParameter(TaskField.ID.getTaskKeyName())
 						? command.getSpecificParameter(TaskField.ID.getTaskKeyName())
 						: String.valueOf(NOT_FOUND_INDEX);
@@ -648,6 +693,7 @@ class Logic {
 		String[] params = {taskName, command.getSpecificParameter(TaskField.ID.getTaskKeyName())};
 		//logger.logp(Level.INFO, "Logic", "removeTask(Command command)",	"Removing a task.", params);
 		for (int i = 0; i < _tasks.size(); i++) {
+			System.out.println("Current task accessed is " + _tasks.get(i).getName());
 			if (_tasks.get(i).getName().equals(taskName) ||
 				_tasks.get(i).getId() == Integer.parseInt(taskID)) {
 				if (index != NOT_FOUND_INDEX) {
@@ -659,6 +705,7 @@ class Logic {
 		if (hasDuplicate) {
 			index = NOT_FOUND_INDEX;
 		}
+		System.out.println(index);
 		return index;
 	}
 	
@@ -676,6 +723,7 @@ class Logic {
 				_tasks.remove(removed);
 				updateTextFile();
 				updateUndoStack(command, removed);
+				System.out.println(_undoStack.size());
 				Status._outcome = Status.Outcome.SUCCESS;
 			} else {
 				//logger.logp(Level.WARNING, "Logic", "removeTask(Command command)",
@@ -710,6 +758,7 @@ class Logic {
 				_tasks.set(taskIndex, toUpdate);
 				updateTextFile();
 				updateUndoStack(command, copyOfOldTask);
+				System.out.println(_undoStack.size());
 				//System.out.println("Old name: " + old + " New name: " + _tasks.get(updateIndex).getName());
 				Status._outcome = Status.Outcome.SUCCESS;
 			} else {
@@ -753,6 +802,7 @@ class Logic {
 					_tasks.set(taskIndex, toUpdate);
 					updateTextFile();
 					updateUndoStack(command, copyOfOldTask);
+					System.out.println(_undoStack.size());
 					Status._outcome = Status.Outcome.SUCCESS;
 				}
 			} else {
@@ -771,15 +821,14 @@ class Logic {
 	
 	private void sortAndUpdateFile(Command command) {
 		String sortOrder = command.getSpecificParameter(TaskField.SORT.getTaskKeyName());
+		System.out.println(sortOrder);
 		try {
 			//logger.logp(Level.INFO, "Logic", "sortFile(Command command)",
 						//"Sorting all tasks by user-specified order.", sortOrder);
-			if (sortOrder != null) {
-				Task.setSortCriterion(sortOrder);
-			} else {
-				Task.setSortCriterion(DEFAULT_SORT_ORDER);
+			if (sortOrder == null) {
+				sortOrder = DEFAULT_TASKS_SORT_ORDER;
 			}
-			Collections.sort(_tasks);
+			filterFloatingTasks(sortOrder, true);
 			updateTextFile();
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
@@ -841,9 +890,9 @@ class Logic {
 				previous.storeInnerMemoryState(preSortTaskList);
 				break;
 				
-			/*case SEARCH : // TODO for Parser: add enum field + value
+			case SEARCH : // TODO for Parser: add enum field + value
 				previous = new State(EMPTY_STATE);
-				break;*/
+				break;
 
 			case UNDO :
 				previous = new State(EMPTY_STATE);

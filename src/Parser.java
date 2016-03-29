@@ -297,7 +297,10 @@ public class Parser {
 		TaskField aliaseField = TaskField.get(taskFieldName);
 		if (aliaseField == null) {
 			throw new InvalidInputException(ERROR_UPDATEFORMAT);
+		} else if (aliaseField == TaskField.NAME){
+			aliaseField = TaskField.UPDATENAME;
 		}
+		
 		String newValue = "";
 		for (int i = toParseKeyIndex + 1; i < inputArray.length; i++) {
 			newValue += inputArray[i] + " ";
