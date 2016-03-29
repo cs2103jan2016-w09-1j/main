@@ -17,6 +17,10 @@ import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+/*
+ * @author: Guo Mingxuan
+ * @@A0130749A
+ */
 
 public class UIController implements Initializable {
 
