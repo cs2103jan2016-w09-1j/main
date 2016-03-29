@@ -140,7 +140,7 @@ public class EstherTest {
 		// equivalence partition for updating different fields based on name
 		// reference
 		assertTrue(logic.executeCommand("add updTask on 03/07/2016").contains("success"));
-		assertTrue(logic.executeCommand("update updTask taskName to updatedTask").contains("success"));
+		assertTrue(logic.executeCommand("update updTask name to updatedTask").contains("success"));
 	}
 
 	@Test

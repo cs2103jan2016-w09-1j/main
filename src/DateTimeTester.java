@@ -52,7 +52,8 @@ class DateTimeTester {
 			calendar.set(Calendar.MINUTE, 0);
 		}
 		if(!isHasTime()){
-			calendar.set(Calendar.HOUR, 0);
+			calendar.set(Calendar.HOUR, 23);
+			calendar.set(Calendar.MINUTE, 59);
 		}
 		
 		return calendar.getTime();
