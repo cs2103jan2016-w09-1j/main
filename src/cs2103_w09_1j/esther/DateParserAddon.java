@@ -51,7 +51,7 @@ public class DateParserAddon {
 			    && (matcher.end() == input.length() || charAtIndexOfStringIsSpace(input, matcher.end()+1)))) {
 			//this is a valid 24H time
 			result[0] = matcher.group();
-			result[1] = input.substring(0, matcher.start()) + input.substring(matcher.end());
+			result[1] = input.substring(0, matcher.start()) + input.substring(matcher.end()).trim();
 			return result;
 		    }
 		    //otherwise this is an invalid 24H time, ignore
