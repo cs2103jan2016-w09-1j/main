@@ -966,7 +966,7 @@ class Logic {
 	
 	private void sortAndUpdateFile(Command command) {
 		String sortOrder = command.getSpecificParameter(TaskField.SORT.getTaskKeyName());
-		System.out.println(sortOrder);
+		//System.out.println(sortOrder);
 		try {
 			//logger.logp(Level.INFO, "Logic", "sortFile(Command command)",
 						//"Sorting all tasks by user-specified order.", sortOrder);

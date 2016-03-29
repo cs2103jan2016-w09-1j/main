@@ -354,8 +354,7 @@ public class Task implements Comparable<Task> {
 			//System.out.println("Date and time parts are modified.");
 			date = _dateAndTimeFormatter.parse(dateString + " " + timeString);
 		} else if (dateString != null && timeString == null) {
-			//System.out.println("Date part is modified.");
-			date = _dateOnlyFormatter.parse(dateString);
+			date = _dateAndTimeFormatter.parse(dateString + " 23:59");
 		} else if (dateString == null && timeString != null) {
 			//System.out.println("Time part is modified.");
 			date = _dateAndTimeFormatter.parse(_dateOnlyFormatter.format(today) + " " + timeString);

@@ -9,6 +9,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DateParser {
 	private final static ArrayList<String> dateFormatList = new ArrayList<String>(
@@ -56,6 +58,12 @@ public class DateParser {
 		// Check for wordy date first
 		String wordyDate = dp.getWordyDateFormat(input);
 		input = dp.getProperDateTime(input);
+		
+		String[] twentyFourTime = find24HTime(input);
+		if(twentyFourTime[0] != null) {
+			dateTime[1] = twentyFourTime[0];
+			input = twentyFourTime[1];
+		} 
 		while (input != null) {
 			oldInput = input;
 			if (dateTime[0] == null) {
@@ -251,6 +259,38 @@ public class DateParser {
 			}
 		}
 		return null;
+	}
+	
+	protected String[] find24HTime(String input) {
+	    String[] result = new String[2];
+	    String regex = "\\d{4}";
+	    Matcher matcher = Pattern.compile(regex).matcher(input);
+	    
+	    //find all matches of 4 integers
+	    boolean lastLoopFoundMatch = true;
+	    boolean foundMatch;
+	    while(lastLoopFoundMatch){
+		foundMatch = matcher.find();
+		if(foundMatch){
+		    //assume valid 24H time can only have space characters next to it
+		    //or are at the ends of the string
+		    //identify valid 24H times
+		    if((matcher.start() == 0 || charAtIndexOfStringIsSpace(input, matcher.start()-1) 
+			    && (matcher.end() >= input.length() - 1 || charAtIndexOfStringIsSpace(input, matcher.end()+1)))) {
+			//this is a valid 24H time
+			result[0] = matcher.group().substring(0, 2) + ":" + matcher.group().substring(2);
+			result[1] = input.substring(0, matcher.start()) + input.substring(matcher.end());
+			return result;
+		    }
+		    //otherwise this is an invalid 24H time, ignore
+		}
+		lastLoopFoundMatch = foundMatch;
+	    }
+	    return result;
+	}
+	
+	private boolean charAtIndexOfStringIsSpace(String string, int index){
+	    return string.charAt(index) == ' ';
 	}
 
 	private static HashMap<String, Integer> createDayMap() {
