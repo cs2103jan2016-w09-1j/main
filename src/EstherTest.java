@@ -6,9 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 
 import org.junit.After;
@@ -17,6 +15,12 @@ import org.junit.Test;
 
 import cs2103_w09_1j.esther.Task;
 
+/**
+ * 
+ * @author Jeremy Hon
+ * @@A0127572A
+ *
+ */
 public class EstherTest {
 
 	private String pathString = "esther.txt";
@@ -25,7 +29,6 @@ public class EstherTest {
 	private String[] timeFormats = { "", "HHmm", "HH:mm", "hha" };
 	private ArrayList<DateTimeTester> todayTestFormats;
 	private ArrayList<DateTimeTester> todayOneHourTestFormats;
-	private SimpleDateFormat defaultDateFormat = new SimpleDateFormat(dateFormats[1] + " " + timeFormats[1]);
 	private Date now = new Date();
 	private Date oneHrFromNow = new Date(new Date().getTime() + (60 * 60 * 1000));
 	private DateTimeTester defaultTester = new DateTimeTester(now, dateFormats[1], timeFormats[1]);
@@ -113,26 +116,44 @@ public class EstherTest {
 		}
 		// System.out.println(index);
 	}
+	
+	@Test
+	public void addWithKeyword() {
+		assertTrue(logic.executeCommand("add \"task from to on \"").contains("success"));
+	}
+	
+	@Test
+	public void addDuplicate() {
+	    for(int i = 0; i < 2; i++){
+		tryCommand("add task");
+	    }
+	}
 
 	@Test
 	public void deleteNameTest() {
 		// equivalence partition for delete based on name
-		assertTrue(logic.executeCommand("add deltask on 03/07/2016").contains("success"));
+	    	int tasks = logic.getInternalStorage().size();
+		assertTrue(logic.executeCommand("add deltask").contains("success"));
 		assertTrue(logic.executeCommand("delete deltask").contains("success"));
-	}
-
-	@Test
-	public void deleteNameTestDetailed() {
-		String result = logic.executeCommand("add \"deltask on\"");
-		assertTrue(logic.executeCommand("delete deltask on").contains("success"));
+		assertEquals(tasks, logic.getInternalStorage().size());
 	}
 
 	@Test
 	public void deleteIDTest() {
 		// equivalence partition for delete based on id
 		Task.setGlobalId(0);
+	    	int tasks = logic.getInternalStorage().size();
 		assertTrue(logic.executeCommand("add deltask").contains("success"));
 		assertTrue(logic.executeCommand("delete 0").contains("success"));
+		assertEquals(tasks, logic.getInternalStorage().size());
+	}
+	
+	@Test
+	public void deleteDuplicate() {
+	    for(int i = 0; i < 2; i++){
+		tryCommand("add task");
+	    }
+	    failCommand("delete task");
 	}
 
 	@Test
@@ -141,6 +162,14 @@ public class EstherTest {
 		// reference
 		assertTrue(logic.executeCommand("add updTask on 03/07/2016").contains("success"));
 		assertTrue(logic.executeCommand("update updTask name to updatedTask").contains("success"));
+	}
+	
+	@Test
+	public void updateDupNameByNameTest() {
+	    for(int i = 0; i < 2; i++){
+		tryCommand("add task");
+	    }
+	    failCommand("update task name to updatedTask");
 	}
 
 	@Test
@@ -160,21 +189,25 @@ public class EstherTest {
 	}
 
 	@Test
-	public void updateDateByNameTest1() {
-		logic.executeCommand("add updTask");
-		assertTrue(logic.executeCommand("update updTask date to 29/3/2016").contains("success"));
+	public void updateFloatToDeadline() {
+		tryCommand("add task");
+		tryCommand("update task date to "+defaultTester.getString1());
 	}
 
 	@Test
-	public void updateDateByNameTest2() {
-		logic.executeCommand("add updTask on 28/3/2017");
-		assertTrue(logic.executeCommand("update updTask date to 29/3/2016 1500").contains("success"));
+	public void updateFloatToEvent() {
+		tryCommand("add task");
+		tryCommand("update task endtime to 3pm");
+		tryCommand("update task date to 29/3/2016");
+		tryCommand("update task starttime to 2pm");
+		tryCommand("update task sDate to 29/3/2016");
 	}
 
 	@Test
-	public void updateDateByNameTest3() {
-		logic.executeCommand("add updTask from 1/3/2017 to 3/3/2017");
-		assertTrue(logic.executeCommand("update updTask date to 29/3/2017 1500").contains("success"));
+	public void updateDeadlineToEvent() {
+	    tryCommand("add task on "+defaultTester.getString1());
+	    tryCommand("update task starttime to 2pm");
+	    tryCommand("update task startdate to 29/3/2016");
 	}
 
 	@Test
@@ -190,7 +223,7 @@ public class EstherTest {
 	public void completeTest() {
 		logic.executeCommand("add task");
 		String result = logic.executeCommand("complete task");
-		assertTrue(result.contains("is marked as completed"));
+		assertTrue(result.contains("success"));
 	}
 
 	@After
@@ -210,6 +243,26 @@ public class EstherTest {
 			}
 		}
 		deleteFile();
+	}
+	
+	private void tryCommand(String command) {
+	    String result = logic.executeCommand(command);
+	    boolean assertResult = result.contains("success");
+	    if(!assertResult){
+		System.out.println("\""+command+"\" failed.");
+		System.out.println(result);
+	    }
+	    assertTrue(assertResult);
+	}
+	
+	private void failCommand(String command) {
+	    String result = logic.executeCommand(command);
+	    boolean assertResult = result.contains("success");
+	    if(assertResult){
+		System.out.println("\""+command+"\" succeeded where it should have failed.");
+		System.out.println(result);
+	    }
+	    assertFalse(assertResult);
 	}
 
 	private Date getNowWithoutSeconds() {
