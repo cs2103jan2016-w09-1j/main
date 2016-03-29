@@ -16,6 +16,11 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/*
+ * @author: Guo Mingxuan
+ * @@A0130749A
+ */
+
 public class UserInterface extends Application {
 	
 	private static final Logger logger = Logger.getLogger(UserInterface.class.getName());
