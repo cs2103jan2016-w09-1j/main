@@ -32,7 +32,7 @@ public class Status {
 														 //"[ERROR] Task with supplied name or ID not found.\n";
 	static final String MESSAGE_ERROR_UPDATE_DUPLICATES_PRESENT = "There are multiple tasks sharing the same name '%1$s'. Please update by ID instead.\n";
 	static final String MESSAGE_ERROR_UPDATE_INVALID_FIELD = "Unable to update task: The field you have specified does not exist.\n";
-	static final String MESSAGE_SUCCESS_COMPLETED = "%1$s is marked as completed.\n";
+	static final String MESSAGE_SUCCESS_COMPLETED = "%1$s is successfully marked as completed.\n";
 	static final String MESSAGE_ERROR_COMPLETED_NOT_FOUND = "Unable to complete task: Please supply a proper task name or task ID.\n";
 														    //"[ERROR] Failed to mark %1$s as completed.\n";
 	static final String MESSAGE_ERROR_COMPLETED_DUPLICATES_PRESENT = "There are multiple tasks sharing the same name '%1$s'. Please complete by ID instead.\n";
