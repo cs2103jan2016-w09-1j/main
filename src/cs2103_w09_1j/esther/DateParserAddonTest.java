@@ -10,7 +10,7 @@ import java.util.Calendar;
 import org.junit.Test;
 
 public class DateParserAddonTest {
-	DateParserAddon dateParserAddon = new DateParserAddon();
+	DateParser dateParser = new DateParser();
 	String defaultDateFormatPattern = "EEE MMM dd HH:mm:ss zzz yyyy";
 	SimpleDateFormat defaultDateFormat = new SimpleDateFormat(defaultDateFormatPattern);
 	Calendar today = Calendar.getInstance();
@@ -18,8 +18,8 @@ public class DateParserAddonTest {
 	
 	@Test
 	public void generalTest(){
-	    String test = "23/7/2016 0200";
-	    String[] result = dateParserAddon.find24HTime(test);
+	    String test = "23/7/2016 2000 ";
+	    String[] result = dateParser.find24HTime(test);
 	    System.out.println(Arrays.toString(result));
 	}
 	
