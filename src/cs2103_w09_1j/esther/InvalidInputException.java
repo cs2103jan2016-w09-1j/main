@@ -12,4 +12,12 @@ public class InvalidInputException extends Exception {
 		super("Input is invalid. You may have missed out important details.");
 	}
 	
+	/**
+	 * For parser
+	 * @author HuiShan
+	 */
+	public InvalidInputException(String errorMessage){
+		super(errorMessage);
+	}
+	
 }
