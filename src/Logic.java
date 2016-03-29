@@ -318,7 +318,7 @@ class Logic {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 	        @Override
 	        public void run() {
-	        	System.out.println("Saving current system configurations.");
+	        	//System.out.println("Saving current system configurations.");
 	            try {
 	            	//logger.logp(Level.INFO, "Logic", "addTask(Command command)",
 	            				  //"Updating Config file in Logic and Storage.");
@@ -685,7 +685,7 @@ class Logic {
 		int index = -1;
 		boolean hasDuplicate = false;
 		String taskName = command.getSpecificParameter(TaskField.NAME.getTaskKeyName());
-		System.out.println("Task name to update: " + taskName);
+		//System.out.println("Task name to update: " + taskName);
 		String taskID = command.hasParameter(TaskField.ID.getTaskKeyName())
 						? command.getSpecificParameter(TaskField.ID.getTaskKeyName())
 						: String.valueOf(NOT_FOUND_INDEX);
@@ -693,7 +693,7 @@ class Logic {
 		String[] params = {taskName, command.getSpecificParameter(TaskField.ID.getTaskKeyName())};
 		//logger.logp(Level.INFO, "Logic", "removeTask(Command command)",	"Removing a task.", params);
 		for (int i = 0; i < _tasks.size(); i++) {
-			System.out.println("Current task accessed is " + _tasks.get(i).getName());
+			//System.out.println("Current task accessed is " + _tasks.get(i).getName());
 			if (_tasks.get(i).getName().equals(taskName) ||
 				_tasks.get(i).getId() == Integer.parseInt(taskID)) {
 				if (index != NOT_FOUND_INDEX) {
@@ -705,7 +705,7 @@ class Logic {
 		if (hasDuplicate) {
 			index = NOT_FOUND_INDEX;
 		}
-		System.out.println(index);
+		//System.out.println(index);
 		return index;
 	}
 	
@@ -723,7 +723,7 @@ class Logic {
 				_tasks.remove(removed);
 				updateTextFile();
 				updateUndoStack(command, removed);
-				System.out.println(_undoStack.size());
+				//System.out.println(_undoStack.size());
 				Status._outcome = Status.Outcome.SUCCESS;
 			} else {
 				//logger.logp(Level.WARNING, "Logic", "removeTask(Command command)",
@@ -758,7 +758,7 @@ class Logic {
 				_tasks.set(taskIndex, toUpdate);
 				updateTextFile();
 				updateUndoStack(command, copyOfOldTask);
-				System.out.println(_undoStack.size());
+				//System.out.println(_undoStack.size());
 				//System.out.println("Old name: " + old + " New name: " + _tasks.get(updateIndex).getName());
 				Status._outcome = Status.Outcome.SUCCESS;
 			} else {
@@ -802,7 +802,7 @@ class Logic {
 					_tasks.set(taskIndex, toUpdate);
 					updateTextFile();
 					updateUndoStack(command, copyOfOldTask);
-					System.out.println(_undoStack.size());
+					//System.out.println(_undoStack.size());
 					Status._outcome = Status.Outcome.SUCCESS;
 				}
 			} else {
@@ -821,7 +821,7 @@ class Logic {
 	
 	private void sortAndUpdateFile(Command command) {
 		String sortOrder = command.getSpecificParameter(TaskField.SORT.getTaskKeyName());
-		System.out.println(sortOrder);
+		//System.out.println(sortOrder);
 		try {
 			//logger.logp(Level.INFO, "Logic", "sortFile(Command command)",
 						//"Sorting all tasks by user-specified order.", sortOrder);
