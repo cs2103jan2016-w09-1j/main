@@ -347,7 +347,7 @@ public class Task implements Comparable<Task> {
 		if (dateString != null && timeString != null) {
 			date = _dateAndTimeFormatter.parse(dateString + " " + timeString);
 		} else if (dateString != null && timeString == null) {
-			date = _dateOnlyFormatter.parse(dateString);
+			date = _dateAndTimeFormatter.parse(dateString + " 23:59");
 		} else if (dateString == null && timeString != null) {
 			date = _dateAndTimeFormatter.parse(_dateOnlyFormatter.format(today) + " " + timeString);
 		} 
