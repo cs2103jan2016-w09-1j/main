@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -44,14 +45,31 @@ import cs2103_w09_1j.esther.InvalidInputException;
 class Logic {
 	
 	private static final int NOT_FOUND_INDEX = -1;
+	private static final int DUPLICATE_TASK_INDEX = -2;
+	
+	// TODO: finalize buffer implementation
+	/*
+	 * Note: this implementation will affect ALL logic operations.
+	 * */
+	private static final int OVERDUE_TASK_INDEX = 0;
+	private static final int TODAY_TASK_INDEX = 1;
+	private static final int TOMORROW_TASK_INDEX = 2;
+	private static final int THIS_WEEK_TASK_INDEX = 3;
+	private static final int FLOATING_TASK_INDEX = 4;
+	private static final int COMPLETED_TASK_INDEX = 5;
+	private static final int NUM_TASK_BUFFERS = 6;
+	private static final int INITIAL_CAPACITY = 1000;
+	
 	private static final String EMPTY_STATE = "Empty";
-	private static final String DEFAULT_TASKS_SORT_ORDER = "date";
+	private static final String DEFAULT_TASKS_SORT_ORDER = Task.TaskField.ENDDATE.getTaskKeyName();
 	private static final String DEFAULT_FLOATING_TASKS_SORT_ORDER = "id";
 	
 	private Parser _parser;
 	private Storage _storage;
 	private ArrayList<Task> _tasks;
 	private ArrayList<Task> _floatingTasksHolder;
+	private ArrayList<Task> _eventsHolder;
+	private ArrayList<ArrayList<Task>> _displayBuffers;
 	private Stack<State> _undoStack;
 	private Config _config;
 	//private static Logger //logger = Logger.getLogger("Logic");
@@ -213,10 +231,12 @@ class Logic {
 	 * @@author A0129660A
 	 */
 	protected ArrayList<Task> getInternalStorage() {
-		ArrayList<Task> display = new ArrayList<Task>();
-		display.addAll(_tasks);
-		display.addAll(_floatingTasksHolder);
-		return display;
+		/*
+		for (int i = 0; i < NUM_TASK_BUFFERS; i++) {
+			display.addAll(_displayBuffers.get(i));
+		}
+		*/
+		return _tasks;
 	}
 	
 	/**
@@ -229,9 +249,20 @@ class Logic {
 	 * @@author A0129660A
 	 */
 	public String getInternalStorageInString() {
-		String listToDisplay = "";
+		String listToDisplay = "Tasks:\n";
+		boolean toShowAsEvent = false;
+		boolean toShowAsFloatingTask = false;
 		for (int i = 0; i < _tasks.size(); i++) {
+			if (_tasks.get(i).isEvent() && !toShowAsEvent) {
+				toShowAsEvent = true;
+				listToDisplay += "\nEvents:\n";
+			}
+			if (_tasks.get(i).isFloatingTask() && !toShowAsFloatingTask) {
+				toShowAsFloatingTask = true;
+				listToDisplay += "\nTasks without deadlines:\n";
+			}
 			listToDisplay += _tasks.get(i).toString() + "\n";
+			
 		}
 		return listToDisplay;
 	}
@@ -301,11 +332,24 @@ class Logic {
 	 * @@author A0129660A
 	 */
 	private void initializeLogicSystemVariables() throws ParseException, IOException {
+		initializeBuffers();
 		updateInternalStorage();
 		_undoStack = new Stack<State>();
 		//logger.logp(Level.CONFIG, "Logic", "updateInternalStorage",
 					//"Reading tasks into inner memory upon initialization.");
 		//System.out.println("Inner variables initialized.");
+	}
+	
+	/**
+	 * Sets up all inner buffers needed for UI to show custom task views.
+	 * 
+	 * @@author A0129660A
+	 */
+	private void initializeBuffers() {
+		_displayBuffers = new ArrayList<ArrayList<Task>>(NUM_TASK_BUFFERS);
+		for (int i = 0; i < NUM_TASK_BUFFERS; i++) {
+			_displayBuffers.add(new ArrayList<Task>(INITIAL_CAPACITY));
+		}
 	}
 	
 	/**
@@ -346,8 +390,9 @@ class Logic {
 		try {
 			_tasks = _storage.readSaveFile();
 			assert _tasks != null;
-			_floatingTasksHolder = new ArrayList<Task>();
-			filterFloatingTasks(DEFAULT_TASKS_SORT_ORDER, false);
+			_floatingTasksHolder = new ArrayList<Task>(INITIAL_CAPACITY);
+			_eventsHolder = new ArrayList<Task>(INITIAL_CAPACITY);
+			filterEventsAndFloatingTasks(DEFAULT_TASKS_SORT_ORDER, false);
 		} catch (Exception e) {
 			// TODO: error handling
 			//logger.logp(Level.SEVERE, "Storage", "readSaveFile()",
@@ -402,7 +447,23 @@ class Logic {
 	 * 
 	 * @@author A0129660A
 	 */
-	private void filterFloatingTasks(String sortOrder, boolean toSort) {
+	private void filterEventsAndFloatingTasks(String sortOrder, boolean toSort) {
+		initializeBuffers();
+		/*Date today = new Date();
+		today.setHours(23);
+		today.setMinutes(59);
+		System.out.println(today);
+		Date tomorrow = (Date) today.clone();
+		tomorrow.setDate(today.getDate() + 1);
+		System.out.println(tomorrow);
+		Date afterTomorrow = (Date) tomorrow.clone();
+		afterTomorrow.setDate(tomorrow.getDate() + 1);
+		System.out.println(afterTomorrow);
+		Date thisWeek = (Date) today.clone();
+		thisWeek.setDate(today.getDate() + 7);
+		System.out.println(thisWeek);
+		*/
+		_eventsHolder = new ArrayList<Task>();
 		_floatingTasksHolder = new ArrayList<Task>();
 		Iterator<Task> iter = _tasks.iterator();
 		while (iter.hasNext()) {
@@ -410,17 +471,88 @@ class Logic {
 			//System.out.println(currentTask.isFloatingTask());
 			if (currentTask.isFloatingTask()) {
 				//System.out.println("Floating task present.");
+				//_displayBuffers.get(FLOATING_TASK_INDEX).add(currentTask);
 				_floatingTasksHolder.add(currentTask);
 				iter.remove();
+			} else if (currentTask.isEvent()) {
+				_eventsHolder.add(currentTask);
+				iter.remove();
+			} else {
+				
 			}
+			
+			/* else if (currentTask.isCompleted()) {
+				_displayBuffers.get(COMPLETED_TASK_INDEX).add(currentTask);
+				iter.remove();
+			} else if (currentTask.isEvent()) {
+				if (currentTask.getStartDate().compareTo(today) < 0) {
+					_displayBuffers.get(OVERDUE_TASK_INDEX).add(currentTask);
+					iter.remove();
+				} else if (currentTask.getStartDate().compareTo(today) >= 0 &&
+						   currentTask.getStartDate().compareTo(tomorrow) < 0) {
+					_displayBuffers.get(TODAY_TASK_INDEX).add(currentTask);
+					iter.remove();
+				} else if (currentTask.getStartDate().compareTo(tomorrow) >= 0 &&
+						   currentTask.getStartDate().compareTo(afterTomorrow) < 0) {
+					_displayBuffers.get(TOMORROW_TASK_INDEX).add(currentTask);
+					iter.remove();
+				} else if (currentTask.getStartDate().compareTo(afterTomorrow) >= 0 &&
+						   currentTask.getStartDate().compareTo(thisWeek) < 0) {
+					_displayBuffers.get(THIS_WEEK_TASK_INDEX).add(currentTask);
+					iter.remove();
+				} else {
+					
+				}
+			} else {
+				if (currentTask.getEndDate().compareTo(today) < 0) {
+					_displayBuffers.get(OVERDUE_TASK_INDEX).add(currentTask);
+					iter.remove();
+				} else if (currentTask.getEndDate().compareTo(today) >= 0 &&
+						   currentTask.getEndDate().compareTo(tomorrow) < 0) {
+					_displayBuffers.get(TODAY_TASK_INDEX).add(currentTask);
+					iter.remove();
+				} else if (currentTask.getEndDate().compareTo(tomorrow) >= 0 &&
+						   currentTask.getEndDate().compareTo(afterTomorrow) < 0) {
+					_displayBuffers.get(TOMORROW_TASK_INDEX).add(currentTask);
+					iter.remove();
+				} else if (currentTask.getEndDate().compareTo(afterTomorrow) >= 0 &&
+						   currentTask.getEndDate().compareTo(thisWeek) < 0) {
+					_displayBuffers.get(THIS_WEEK_TASK_INDEX).add(currentTask);
+					iter.remove();
+				} else {
+					
+				}
+			}*/
 		}
 		
 		if (toSort) {
 			Task.setSortCriterion(sortOrder);
-			Collections.sort(_tasks);
-			Task.setSortCriterion(DEFAULT_FLOATING_TASKS_SORT_ORDER);
+			/*
+			ArrayList<Task> sortedTasksList = new ArrayList<Task>(INITIAL_CAPACITY);
+			sortedTasksList.addAll(_displayBuffers.get(OVERDUE_TASK_INDEX));
+			sortedTasksList.addAll(_displayBuffers.get(TODAY_TASK_INDEX));
+			sortedTasksList.addAll(_displayBuffers.get(TOMORROW_TASK_INDEX));
+			sortedTasksList.addAll(_displayBuffers.get(THIS_WEEK_TASK_INDEX));
+			sortedTasksList.addAll(_tasks);*/
+			if (sortOrder.equals(Task.SORT_BY_START_DATE_KEYWORD)) {
+				Task.setSortCriterion(Task.SORT_BY_END_DATE_KEYWORD);
+				Collections.sort(_tasks);
+				Task.setSortCriterion(sortOrder);
+			} else {
+				Collections.sort(_tasks);
+			}
+			Collections.sort(_eventsHolder);
+			
+			if (sortOrder.equals(Task.SORT_BY_NAME_KEYWORD)) {
+				Task.setSortCriterion(Task.SORT_FLOATING_BY_NAME_KEYWORD);
+			} else if (sortOrder.equals(Task.SORT_BY_PRIORITY_KEYWORD)) {
+				Task.setSortCriterion(Task.SORT_FLOATING_BY_PRIORITY_KEYWORD);
+			} else {
+				Task.setSortCriterion(DEFAULT_FLOATING_TASKS_SORT_ORDER);
+			}
 			Collections.sort(_floatingTasksHolder);
 		}
+		_tasks.addAll(_eventsHolder);
 		_tasks.addAll(_floatingTasksHolder);
 		Task.setSortCriterion(DEFAULT_TASKS_SORT_ORDER);
 	}
@@ -513,7 +645,7 @@ class Logic {
 	 */
 	private String showTask(Command command) {
 		updateUndoStack(command, null);
-		System.out.println(_undoStack.size());
+		//System.out.println(_undoStack.size());
 		sortAndUpdateFile(command);
 		String result = getInternalStorageInString(); 
 		Status._outcome = Status.Outcome.SUCCESS;
@@ -534,7 +666,7 @@ class Logic {
 	 */
 	private String sortFile(Command command) {
 		updateUndoStack(command, null);
-		System.out.println(_undoStack.size());
+		//System.out.println(_undoStack.size());
 		sortAndUpdateFile(command);
 		return getOperationStatus(command);
 	}
@@ -560,7 +692,7 @@ class Logic {
 		for (Task entry: _tasks) {
 			String taskNameCopy = entry.getName();
 			String taskNameLowerCase = taskNameCopy.toLowerCase();
-			if (taskNameLowerCase.contains(command.getSpecificParameter("taskName").trim().toLowerCase())) {
+			if (taskNameLowerCase.contains(command.getSpecificParameter(Task.TaskField.NAME.getTaskKeyName()).trim().toLowerCase())) {
 				results += (entry.toString() + "\n");
 				//results.add(entry);
 			}
@@ -584,7 +716,7 @@ class Logic {
 			Status._errorCode = Status.ErrorCode.UNDO;
 		} else {
 			State previousState = _undoStack.pop();
-			System.out.println(previousState.getCommand());
+			//System.out.println(previousState.getCommand());
 			CommandKey commandType = CommandKey.get(previousState.getCommand());
 			//logger.logp(Level.INFO, "Logic", "undo()", "Undoing a previous operation.", commandType);
 			switch (commandType) {
@@ -652,9 +784,7 @@ class Logic {
 		try {
 			addedTask = new Task(command);
 			_tasks.add(addedTask);
-			if (!addedTask.isFloatingTask()) {
-				filterFloatingTasks(null, false);
-			}
+			filterEventsAndFloatingTasks(null, false);
 			updateTextFile();
 			updateUndoStack(command, addedTask);
 			//System.out.println(_undoStack.size());
@@ -703,7 +833,7 @@ class Logic {
 			}
 		}
 		if (hasDuplicate) {
-			index = NOT_FOUND_INDEX;
+			index = DUPLICATE_TASK_INDEX;
 		}
 		//System.out.println(index);
 		return index;
@@ -718,13 +848,16 @@ class Logic {
 		Task removed = null;
 		int taskIndex = getTaskIndex(command);
 		try {
-			if (taskIndex != NOT_FOUND_INDEX) {
+			if (taskIndex != NOT_FOUND_INDEX && taskIndex != DUPLICATE_TASK_INDEX) {
 				removed = _tasks.get(taskIndex);
 				_tasks.remove(removed);
 				updateTextFile();
 				updateUndoStack(command, removed);
 				//System.out.println(_undoStack.size());
 				Status._outcome = Status.Outcome.SUCCESS;
+			} else if (taskIndex == DUPLICATE_TASK_INDEX) {
+				Status._outcome = Status.Outcome.ERROR;
+				Status._errorCode = Status.ErrorCode.DELETE_DUPLICATES_PRESENT;
 			} else {
 				//logger.logp(Level.WARNING, "Logic", "removeTask(Command command)",
 							//"Delete task: Task not found. Possible user-side error or no name/ID matching.");
@@ -748,19 +881,27 @@ class Logic {
 	private void updateTaskInFile(Command command) {
 		Task toUpdate = null;
 		int taskIndex = getTaskIndex(command);
+		System.out.println(taskIndex);
 		
 		try {
-			if (taskIndex != NOT_FOUND_INDEX) {
+			if (taskIndex != NOT_FOUND_INDEX && taskIndex != DUPLICATE_TASK_INDEX) {
 				//String old = toUpdate.getName();
 				toUpdate = _tasks.get(taskIndex);
 				Task copyOfOldTask = toUpdate.clone();
-				toUpdate.updateTask(command);
-				_tasks.set(taskIndex, toUpdate);
-				updateTextFile();
-				updateUndoStack(command, copyOfOldTask);
-				//System.out.println(_undoStack.size());
-				//System.out.println("Old name: " + old + " New name: " + _tasks.get(updateIndex).getName());
-				Status._outcome = Status.Outcome.SUCCESS;
+				boolean isUpdated = toUpdate.updateTask(command);
+				if (isUpdated) {
+					_tasks.set(taskIndex, toUpdate);
+					updateTextFile();
+					updateUndoStack(command, copyOfOldTask);
+					//System.out.println(_undoStack.size());
+					//System.out.println("Old name: " + old + " New name: " + _tasks.get(updateIndex).getName());
+					Status._outcome = Status.Outcome.SUCCESS;
+				} else {
+					Status._outcome = Status.Outcome.ERROR;
+				}
+			} else if (taskIndex == DUPLICATE_TASK_INDEX) {
+				Status._outcome = Status.Outcome.ERROR;
+				Status._errorCode = Status.ErrorCode.UPDATE_DUPLICATES_PRESENT;
 			} else {
 				//logger.logp(Level.WARNING, "Logic", "updateTask(Command command)",
 							//"Update task: Task not found. Possible user-side error or no name/ID matching.");
@@ -791,10 +932,11 @@ class Logic {
 		int taskIndex = getTaskIndex(command);
 
 		try {
-			if (taskIndex != NOT_FOUND_INDEX) {
+			if (taskIndex != NOT_FOUND_INDEX && taskIndex != DUPLICATE_TASK_INDEX) {
 				toUpdate = _tasks.get(taskIndex);
 				if (toUpdate.isCompleted()) {
 					Status._outcome = Status.Outcome.ERROR;
+					Status._errorCode = Status.ErrorCode.COMPLETED_ALREADY_COMPLETED;
 				}
 				else {
 					Task copyOfOldTask = toUpdate.clone();
@@ -805,6 +947,9 @@ class Logic {
 					//System.out.println(_undoStack.size());
 					Status._outcome = Status.Outcome.SUCCESS;
 				}
+			} else if (taskIndex == DUPLICATE_TASK_INDEX) {
+				Status._outcome = Status.Outcome.ERROR;
+				Status._errorCode = Status.ErrorCode.COMPLETED_DUPLICATES_PRESENT;
 			} else {
 				//logger.logp(Level.WARNING, "Logic", "completeTask(Command command)",
 							//"Complete task: Task not found. Possible user-side error or no name/ID matching.");
@@ -828,7 +973,7 @@ class Logic {
 			if (sortOrder == null) {
 				sortOrder = DEFAULT_TASKS_SORT_ORDER;
 			}
-			filterFloatingTasks(sortOrder, true);
+			filterEventsAndFloatingTasks(sortOrder, true);
 			updateTextFile();
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
