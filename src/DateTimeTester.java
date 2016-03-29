@@ -2,6 +2,12 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+/**
+ * 
+ * @author Jeremy Hon
+ * @@A0127572A
+ *
+ */
 class DateTimeTester {
 	private String formattedDateTime1, formattedDateTime2, datePattern, timePattern;
 	private Date creationInstant;

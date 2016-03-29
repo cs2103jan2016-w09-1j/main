@@ -3,7 +3,12 @@ package cs2103_w09_1j.esther;
 import java.util.Calendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+/**
+ * 
+ * @author Jeremy Hon
+ * @@A0127572A
+ *
+ */
 public class DateParserAddon {
 
 	private final String WHITESPACE = " ";

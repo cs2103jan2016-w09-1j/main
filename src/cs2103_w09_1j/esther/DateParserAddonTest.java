@@ -9,6 +9,12 @@ import java.util.Calendar;
 
 import org.junit.Test;
 
+/**
+ * 
+ * @author Jeremy Hon
+ * @@A0127572A
+ *
+ */
 public class DateParserAddonTest {
 	DateParser dateParser = new DateParser();
 	String defaultDateFormatPattern = "EEE MMM dd HH:mm:ss zzz yyyy";

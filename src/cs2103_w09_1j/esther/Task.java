@@ -79,8 +79,6 @@ public class Task implements Comparable<Task> {
 	private static final int DEFAULT_TASK_PRIORITY = 5;
 	private static final int HIGHEST_TASK_PRIORITY = 1;
 
-	// TODO for Jeremy: attributes have been changed (added _startDate &
-    // _endDate).
     private String _name;
     private Date _startDate;
     private Date _endDate;
@@ -99,7 +97,6 @@ public class Task implements Comparable<Task> {
     private final static String completedStr = "Completed";
     private final static String notCompletedStr = "Incomplete";
 
-	// TODO for Jeremy: Might affect your regex-es.
 	private final static String delimiterPattern = "\\|";
 	private final static String idnoString = "ID\\: (\\d+)";
 	private final static String dateString = "\\[([^\\]]+)\\] ";
@@ -170,15 +167,11 @@ public class Task implements Comparable<Task> {
 	}
 
 	/**
-	 * Builds a task from a String with specific format
-	 * "ID: {id}| [{dd/MM/yyyy}] {name}| Priority: {prio}| Completed: {com}"
 	 * 
 	 * @param string
-	 * @author Jeremy Hon
+	 * @@A0127572A
 	 * @throws ParseException
 	 */
-	// TODO for Jeremy: Task attributes have been changed. Need to revise this
-	// method.
 	public Task(String string) throws ParseException {
 		this();
 		String[] resultsArray = new String[NUM_FIELDS];
@@ -225,8 +218,8 @@ public class Task implements Comparable<Task> {
 	 * @param regex
 	 * @param input
 	 * @return
+	 * @@A0127572A
 	 */
-	// TODO for Jeremy: regex changes may affect this too.
 	public static String findMatch(String regex, String input) {
 		Matcher matcher = Pattern.compile(regex).matcher(input);
 		if (matcher.find()) {
@@ -236,14 +229,11 @@ public class Task implements Comparable<Task> {
 		}
 	}
 
-	/**
-	 * Returns a human-readable String representation of a Task.
-	 * 
-	 * @return a String representation of the Task
-	 * @author Jeremy Hon
-	 */
-	// TODO for Jeremy: core attribute changes will affect this.
 	@Override
+	/**
+	 * 
+	 * @@A0127572A
+	 */
 	public String toString() {
 		String taskString = "";
 		taskString += "ID: " + _id + " | ";
@@ -318,25 +308,31 @@ public class Task implements Comparable<Task> {
 	public void setEndDate(Date date) {
 		_endDate = date;
 	}
-
+	
 	/**
 	 * 
 	 * @return
-	 * @author Jeremy Hon
+	 * @@A0127572A
 	 */
 	public String sDateToString() {
 		return dateToString(_startDate);
 	}
-
+	
 	/**
 	 * 
 	 * @return
-	 * @author Jeremy Hon
+	 * @@A0127572A
 	 */
 	public String eDateToString() {
 		return dateToString(_endDate);
 	}
 
+	/**
+	 * 
+	 * @param date
+	 * @return
+	 * @@A0127572A
+	 */
 	private String dateToString(Date date) {
 		if (date == null) {
 			return "";
@@ -345,6 +341,15 @@ public class Task implements Comparable<Task> {
 		}
 	}
 
+	/**
+	 * 
+	 * @param today
+	 * @param dateString
+	 * @param timeString
+	 * @return
+	 * @throws ParseException
+	 * @@A0127572A
+	 */
 	private Date parseDateTimeToString(Date today, String dateString, String timeString)
 			throws ParseException {
 		Date date = null;
@@ -359,13 +364,13 @@ public class Task implements Comparable<Task> {
 		} 
 		return date;
 	}
-
+	
 	/**
 	 * 
-	 * @@author Jeremy Hon
 	 * @param dateStr
 	 * @return
 	 * @throws ParseException
+	 * @@A0127572A
 	 */
 	public Date parseDate(String dateStr) throws ParseException {
 		if (dateStr == null || dateStr.length() == 0) {
@@ -501,9 +506,11 @@ public class Task implements Comparable<Task> {
 	public boolean isEvent() {
 		return (_startDate != null && _endDate != null) ? true : false;
 	}
-
+	
 	/**
-	 * @author Jeremy Hon
+	 * 
+	 * @return
+	 * @@A0127572A
 	 */
 	public String completedToString() {
 		if (isCompleted()) {
@@ -513,14 +520,30 @@ public class Task implements Comparable<Task> {
 		}
 	}
 
+	/**
+	 * 
+	 * @param completeStr
+	 * @return
+	 * @@A0127572A
+	 */
 	public boolean parseCompleted(String completeStr) {
 		return completeStr.contains(completedStr);
 	}
 
+	/**
+	 * 
+	 * @return
+	 * @@A0127572A
+	 */
 	public boolean isValid() {
 		return _isValid;
 	}
 
+	/**
+	 * 
+	 * @param _isValid
+	 * @@A0127572A
+	 */
 	public void setIsValid(boolean _isValid) {
 		this._isValid = _isValid;
 	}

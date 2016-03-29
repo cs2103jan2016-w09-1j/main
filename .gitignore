@@ -3,3 +3,4 @@
 *.project
 esther.txt
 estherconfig.txt
+.settings/org.eclipse.jdt.ui.prefs

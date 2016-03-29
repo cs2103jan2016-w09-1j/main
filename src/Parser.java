@@ -276,7 +276,7 @@ public class Parser {
 			for (int i = 0; i < toParseKeyIndex - 1; i++) {
 				taskName += inputArray[i] + WHITESPACE;
 			}
-			taskName = taskName.substring(0, taskName.length() - 1);
+			taskName = taskName.trim();
 		}
 
 		int getNameOrID = isNameOrID(taskName);
@@ -288,7 +288,7 @@ public class Parser {
 			throw new InvalidInputException(ERROR_UNKNOWN);
 		}
 
-		String taskFieldName = fieldNameAliases.get(inputArray[toParseKeyIndex - 1]);
+		String taskFieldName = fieldNameAliases.get(inputArray[toParseKeyIndex - 1].toLowerCase());
 		if (taskFieldName == null) {
 			throw new InvalidInputException(ERROR_UPDATEFORMAT);
 		}
