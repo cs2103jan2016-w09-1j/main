@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 /**
  * 
  * @author Jeremy Hon
- * @@A0127572A
+ * @@author A0127572A
  *
  */
 public class Config {

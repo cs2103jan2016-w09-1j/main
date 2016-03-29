@@ -26,6 +26,7 @@ public class Command {
 	private String commandKeyName;
 	private static final Map<String, CommandKey> lookup = new HashMap<String, CommandKey>();
 
+	// @@author A0126000H
 	private CommandKey(String _commandKeyName) {
 	    this.commandKeyName = _commandKeyName;
 	}
@@ -37,6 +38,7 @@ public class Command {
 	    }
 	}
 
+	// @@author A0126000H
 	public String getCommandKeyName() {
 	    return commandKeyName;
 	}
@@ -47,6 +49,7 @@ public class Command {
 	 * @param commandValue
 	 *            The input given by the user.
 	 * @return The command based on the input.
+	 * @@author A0126000H
 	 */
 	public static CommandKey get(String commandKeyValue) {
 	    return lookup.get(commandKeyValue);
@@ -54,6 +57,7 @@ public class Command {
 
     }
 
+    // @@author A0126000H
     public Command() {
 	this._commandName = "";
 	this._parameters = new HashMap<String, String>();
@@ -67,7 +71,7 @@ public class Command {
      *            the operation desired by the user
      * @param parameters
      *            the arguments supplied by the user
-     * @author Tay Guo Qiang
+     * @@author A0130749A
      */
     public Command(String command, HashMap<String, String> parameters) {
 	setCommand(command);
@@ -80,7 +84,7 @@ public class Command {
      * Logic will use this to determine the command to execute on the task.
      * 
      * @return the command to execute
-     * @author Tay Guo Qiang
+     * @@author A0130749A
      */
     public String getCommand() {
 	return _commandName;
@@ -91,7 +95,7 @@ public class Command {
      * 
      * @param command
      *            the command to execute
-     * @author Tay Guo Qiang
+     * @@author A0130749A
      */
     public void setCommand(String command) {
 	_commandName = command;
@@ -101,7 +105,7 @@ public class Command {
      * Getter method for user-supplied parameters.
      * 
      * @return the representation of user-supplied parameters
-     * @author Tay Guo Qiang
+     * @@author A0130749A
      */
     public HashMap<String, String> getParameters() {
 	return _parameters;
@@ -113,7 +117,7 @@ public class Command {
      * @param parameter
      *            the parameter being requested
      * @return the String value associated with the parameter
-     * @author Tay Guo Qiang
+     * @@author A0130749A
      */
     public String getSpecificParameter(String parameter) {
 	String value;
@@ -173,7 +177,7 @@ public class Command {
      *            the parameter being requested
      * @return true if parameter key does not map to null value; false
      *         otherwise.
-     * @author Tay Guo Qiang
+     * @@author A0130749A
      */
     public boolean hasParameter(String parameter) {
 	return _parameters.containsKey(parameter);
@@ -184,17 +188,19 @@ public class Command {
      * 
      * @param parameters
      *            the representation of user-supplied parameters
-     * @author Tay Guo Qiang
+     * @@author A0130749A
      */
     public void setParameters(HashMap<String, String> parameters) {
 	_parameters = parameters;
     }
 
+    // @@author A0126000H
     public void clear() {
 	this._commandName = "";
 	this._parameters.clear();
     }
 
+    // @@author A0126000H
     public String addFieldToMap(String fieldName, String fieldValue) {
 	return this._parameters.put(fieldName, fieldValue);
     }

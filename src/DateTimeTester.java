@@ -5,7 +5,7 @@ import java.util.Date;
 /**
  * 
  * @author Jeremy Hon
- * @@A0127572A
+ * @@author A0127572A
  *
  */
 class DateTimeTester {

@@ -12,7 +12,7 @@ import org.junit.Test;
 /**
  * 
  * @author Jeremy Hon
- * @@A0127572A
+ * @@author A0127572A
  *
  */
 public class DateParserAddonTest {

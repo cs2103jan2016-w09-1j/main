@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 
 /*
  * @author: Guo Mingxuan
- * @@A0130749A
+ * @@author A0130749A
  */
 
 public class UserInterface extends Application {

@@ -19,7 +19,7 @@ import javafx.stage.Stage;
 
 /*
  * @author: Guo Mingxuan
- * @@A0130749A
+ * @@author A0130749A
  */
 
 public class UIController implements Initializable {
