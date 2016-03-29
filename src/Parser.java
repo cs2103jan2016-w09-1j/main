@@ -6,7 +6,6 @@ import java.util.Map;
 
 import cs2103_w09_1j.esther.Command;
 import cs2103_w09_1j.esther.Command.CommandKey;
-import cs2103_w09_1j.esther.Config;
 import cs2103_w09_1j.esther.DateParser;
 import cs2103_w09_1j.esther.InvalidInputException;
 import cs2103_w09_1j.esther.Task.TaskField;
@@ -508,9 +507,10 @@ public class Parser {
 
 		Date startDate = sdf.parse(startDateTimeArray[0]);
 		Date endDate = sdf.parse(endDateTimeArray[0]);
+		//check if start date is after end date
 		if (startDate.compareTo(endDate) > 0) {
 			throw new InvalidInputException(ERROR_DATETIMEFORMAT);
-		} else {
+		} else if(startDateTimeArray[1] != null && endDateTimeArray[1] != null){
 			if (startDateTimeArray[1].compareTo(endDateTimeArray[1]) > 0) {
 				throw new InvalidInputException(ERROR_DATETIMEFORMAT);
 			}
