@@ -6,8 +6,9 @@ public class Status {
 
 	public enum ErrorCode {
 		SYSTEM, INVALID_COMMAND, ADD_INVALID_FORMAT, ADD_MISSING_NAME, DELETE_NOT_FOUND, DELETE_DUPLICATES_PRESENT,
-		UPDATE_NOT_FOUND, UPDATE_DUPLICATES_PRESENT, UPDATE_INVALID_FIELD, UPDATE_START_END_VIOLATE, COMPLETED_NOT_FOUND,
-		COMPLETED_DUPLICATES_PRESENT, SORT_INVALID_CRITERION, UNDO, UNKNOWN_STATE
+		UPDATE_NOT_FOUND, UPDATE_DUPLICATES_PRESENT, UPDATE_INVALID_FIELD, UPDATE_START_END_VIOLATE,
+		UPDATE_INVALID_PRIORITY, COMPLETED_NOT_FOUND, COMPLETED_DUPLICATES_PRESENT, COMPLETED_ALREADY_COMPLETED,
+		SORT_INVALID_CRITERION, UNDO, UNKNOWN_STATE
 	}
 
 	public enum Outcome {
@@ -33,10 +34,12 @@ public class Status {
 	static final String MESSAGE_ERROR_UPDATE_DUPLICATES_PRESENT = "There are multiple tasks sharing the same name '%1$s'. Please update by ID instead.\n";
 	static final String MESSAGE_ERROR_UPDATE_INVALID_FIELD = "Unable to update task: The field you have specified does not exist.\n";
 	static final String MESSAGE_ERROR_UPDATE_START_END_VIOLATE = "Unable to update task: Start date/time is not before end date/time.\n";
+	static final String MESSAGE_ERROR_UPDATE_INVALID_PRIORITY = "Unable to update task: Priority is not within 1 to 5.\n";
 	static final String MESSAGE_SUCCESS_COMPLETED = "%1$s is marked as completed.\n";
 	static final String MESSAGE_ERROR_COMPLETED_NOT_FOUND = "Unable to complete task: Please supply a proper task name or task ID.\n";
 														    //"[ERROR] Failed to mark %1$s as completed.\n";
 	static final String MESSAGE_ERROR_COMPLETED_DUPLICATES_PRESENT = "There are multiple tasks sharing the same name '%1$s'. Please complete by ID instead.\n";
+	static final String MESSAGE_ERROR_COMPLETED_ALREADY_COMPLETED = "%1$s is already completed.\n";
 	static final String MESSAGE_SUCCESS_SORT = "File is successfully sorted.\n";
 	static final String MESSAGE_ERROR_SORT_INVALID_CRITERION = "Unable to sort file: Please specify a recognized criterion to sort the file by.\n";
 	
@@ -250,6 +253,10 @@ public class Status {
 			case UPDATE_START_END_VIOLATE :
 				message = MESSAGE_ERROR_UPDATE_START_END_VIOLATE;
 				break;
+				
+			case UPDATE_INVALID_PRIORITY :
+				message = MESSAGE_ERROR_UPDATE_INVALID_PRIORITY;
+				break;
 			
 			default :
 				message = MESSAGE_ERROR_UNKNOWN_STATE;
@@ -269,6 +276,14 @@ public class Status {
 				
 			case COMPLETED_DUPLICATES_PRESENT :
 				message = String.format(MESSAGE_ERROR_COMPLETED_DUPLICATES_PRESENT, taskName);
+				break;
+				
+			case COMPLETED_ALREADY_COMPLETED :
+				if (taskName != null) {
+					message = String.format(MESSAGE_ERROR_COMPLETED_ALREADY_COMPLETED, taskName);
+				} else {
+					message = String.format(MESSAGE_ERROR_COMPLETED_ALREADY_COMPLETED, taskID);
+				}
 				break;
 			
 			default :
