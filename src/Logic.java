@@ -90,7 +90,7 @@ class Logic {
 	/**
 	 * Constructs a Logic component instance.
 	 * 
-	 * @@author A0129660A
+	 * 
 	 */
 	public Logic() throws ParseException, IOException {
 		//initializeLogger();
@@ -108,7 +108,7 @@ class Logic {
 	 * @see    Logic#executeCommand(Command)
 	 * @param  userInput the input that the user entered
 	 * @return a message indicating the status of the operation carried out
-	 * @@author A0129660A
+	 * 
 	 */
 	// TODO: finalize implementation
 	// Note that Parser will throw exception in future, conditional should be modified
@@ -148,7 +148,7 @@ class Logic {
 	 * 
 	 * @param  command	the Command object containing all required information
 	 * @return a message indicating the status of the operation carried out
-	 * @@author A0129660A
+	 * 
 	 */
 	// TODO: implement search functionality
 	protected String executeCommand(Command command) {
@@ -228,7 +228,7 @@ class Logic {
 	 * 
 	 * @return the internal memory representation of the
 	 * 		   contents stored in the text file.
-	 * @@author A0129660A
+	 * 
 	 */
 	protected ArrayList<Task> getInternalStorage() {
 		/*
@@ -246,7 +246,7 @@ class Logic {
 	 * @return the internal memory representation of the
 	 * 		   contents stored in the text file, in String
 	 * 		   form.
-	 * @@author A0129660A
+	 * 
 	 */
 	public String getInternalStorageInString() {
 		String listToDisplay = "Tasks:\n";
@@ -270,7 +270,7 @@ class Logic {
 	/**
 	 * Initializes a system logger. Used for testing purposes only.
 	 * 
-	 * @@author A0129660A
+	 * 
 	 */
 	private void initializeLogger() {
 		try {
@@ -297,7 +297,7 @@ class Logic {
 	 * 
 	 * @throws ParseException
 	 * @throws IOException
-	 * @@author A0129660A
+	 * 
 	 */
 	private void initializeStorageAndConfig() throws ParseException, IOException {
 		_storage = new Storage();
@@ -314,7 +314,7 @@ class Logic {
 	/**
 	 * Initializes Parser system in Logic.
 	 * 
-	 * @@author A0129660A
+	 * 
 	 */
 	private void initializeParser() {
 		//logger.logp(Level.CONFIG, "Parser", "Parser()", "Initializing Parser.");
@@ -329,7 +329,7 @@ class Logic {
 	 * @throws IOException 
 	 * @throws ParseException 
 	 * 
-	 * @@author A0129660A
+	 * 
 	 */
 	private void initializeLogicSystemVariables() throws ParseException, IOException {
 		initializeBuffers();
@@ -343,7 +343,7 @@ class Logic {
 	/**
 	 * Sets up all inner buffers needed for UI to show custom task views.
 	 * 
-	 * @@author A0129660A
+	 * 
 	 */
 	private void initializeBuffers() {
 		_displayBuffers = new ArrayList<ArrayList<Task>>(NUM_TASK_BUFFERS);
@@ -356,7 +356,7 @@ class Logic {
 	 * Attaches a shutdown-event handler to perform necessary system updates
 	 * when ESTHER is shut down.
 	 * 
-	 * @@author A0129660A
+	 * 
 	 */
 	private void attachShutdownHandler() {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -381,7 +381,7 @@ class Logic {
 	 * Updates the internal memory of the Logic to account
 	 * for any changes done to the text file.
 	 * 
-	 * @@author A0129660A
+	 * 
 	 */
 	// TODO: finalize implementation, error handling
 	// current implementation is to terminate program, for now
@@ -405,7 +405,7 @@ class Logic {
 	 * Empties the text file of any contents.
 	 * Only used for internal testing.
 	 * 
-	 * @@author A0129660A
+	 * 
 	 */
 	public void flushInternalStorage() {
 		/* 
@@ -425,7 +425,7 @@ class Logic {
 	 * Update Logic's list of tasks into text file.
 	 * 
 	 * @throws IOException
-	 * @@author A0129660A
+	 * 
 	 */
 	private void updateTextFile() throws IOException {
 		_storage.writeSaveFile(_tasks);
@@ -436,7 +436,7 @@ class Logic {
 	 * 
 	 * @param command a Command object representing the user operation being carried out
 	 * @param task a Task object representing the task that was operated on
-	 * @@author A0129660A
+	 * 
 	 */
 	private void updateUndoStack(Command command, Task task) {
 		_undoStack.push(storePreviousState(command, task));
@@ -445,7 +445,7 @@ class Logic {
 	/**
 	 * Separates floating tasks from tasks with deadlines for proper sorting.
 	 * 
-	 * @@author A0129660A
+	 * 
 	 */
 	private void filterEventsAndFloatingTasks(String sortOrder, boolean toSort) {
 		initializeBuffers();
@@ -587,7 +587,7 @@ class Logic {
 	 * 
 	 * @param task	a Task object representation of the user's input
 	 * @return		a message indicating the status of the add-task operation
-	 * @@author A0129660A
+	 * 
 	 */
 	private String addTask(Command command) {		
 		//logger.logp(Level.INFO, "Logic", "addTask(Command command)",
@@ -601,7 +601,7 @@ class Logic {
 	 * 
 	 * @param task	a Task object representation of the user's input
 	 * @return		a message indicating the status of the delete-task operation
-	 * @@author A0129660A
+	 * 
 	 */
 	private String removeTask(Command command) {
 		removeTaskAndUpdateFile(command);
@@ -613,7 +613,7 @@ class Logic {
 	 * 
 	 * @param task a Task object representation of the user's input
 	 * @return 	   a message indicating the status of the update-task operation
-	 * @@author A0129660A
+	 * 
 	 */
 	private String updateTask(Command command) {
 		//logger.log(Level.INFO, "Updating a task.");
@@ -626,7 +626,7 @@ class Logic {
 	 * 
 	 * @param task	a Task object representation of the user's input
 	 * @return		a message indicating the status of the set-task-completed operation
-	 * @@author A0129660A
+	 * 
 	 */
 	private String completeTask(Command command) {
 		//logger.logp(Level.INFO, "Logic", "completeTask(Command command)", "Completing a task.", params);
@@ -641,7 +641,7 @@ class Logic {
 	 * only certain tasks to the user.
 	 * 
 	 * @return a list of all tasks to show to the user.
-	 * @@author A0129660A
+	 * 
 	 */
 	private String showTask(Command command) {
 		updateUndoStack(command, null);
@@ -662,7 +662,7 @@ class Logic {
 	 * 
 	 * @see 	Task#compareTo(Task)
 	 * @return	a message indicating the status of the sort operation
-	 * @@author A0129660A
+	 * 
 	 */
 	private String sortFile(Command command) {
 		updateUndoStack(command, null);
@@ -680,7 +680,7 @@ class Logic {
 	 * 
 	 * @param  task	a Task object representation of a keyword to lookup
 	 * @return a list of Task objects that match the search criteria
-	 * @@author A0129660A
+	 * 
 	 */
 	// TODO: implement (for later stages)
 	private String/*ArrayList<Task>*/ searchFile(Command command) {
@@ -706,7 +706,7 @@ class Logic {
 	 * 
 	 * @param command a Command objecting representing the user operation to be carried out
 	 * @return a message indicating status of the undo operation
-	 * @@author A0129660A
+	 * 
 	 */
 	private String undo(Command command) {
 		if (_undoStack.size() <= 1) {
@@ -809,7 +809,7 @@ class Logic {
 	 * @param command the Command object representing the user operation being carried out
 	 * @return the index of a task, if a single task can be located; -1 if no task can be found
 	 * 		   or if there are duplicate tasks
-	 * @@author A0129660A
+	 * 
 	 */
 	private int getTaskIndex(Command command) {
 		int index = -1;
@@ -876,7 +876,7 @@ class Logic {
 	 * Updates a task in both Logic's internal storage as well as from the text file. 
 	 * 
 	 * @param command a Command object representing the user operation being carried out
-	 * @@author A0129660A
+	 * 
 	 */
 	private void updateTaskInFile(Command command) {
 		Task toUpdate = null;
@@ -925,7 +925,7 @@ class Logic {
 	 * Completes a task in both Logic's internal storage as well as the text file.
 	 * 
 	 * @param command a Command object representing the user operation being carried out
-	 * @@author A0129660A
+	 * 
 	 */
 	private void completeTaskInFile(Command command) {
 		Task toUpdate = null;
@@ -990,7 +990,7 @@ class Logic {
 	 * @param  task	a Task object representation of the user's input
 	 * @return a Task object that has an opposite command to be
 	 * 		   performed on it, where applicable.
-	 * @@author A0129660A
+	 * 
 	 */
 	private State storePreviousState(Command command, Task original) {
 		//logger.logp(Level.INFO, "Logic", "storePreviousState(Command command, Task original)",
@@ -1190,7 +1190,7 @@ class Logic {
 	 * 
 	 * @param command a Command object representing the user operation being carried out
 	 * @return the status message of the user operation being carried out
-	 * @@author A0129660A
+	 * 
 	 */
 	private String getOperationStatus(Command command) {
 		if (isUndoCommand(command)) {
@@ -1207,7 +1207,7 @@ class Logic {
 	 * 
 	 * @param command a Command representing the user operation to be carried out
 	 * @return true if the Command represents an undo command, false otherwise
-	 * @@author A0129660A
+	 * 
 	 */
 	private boolean isUndoCommand(Command command) {
 		return command.getCommand().equals("undo");

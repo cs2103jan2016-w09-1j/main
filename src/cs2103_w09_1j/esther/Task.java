@@ -13,9 +13,7 @@ package cs2103_w09_1j.esther;
  * CHANGES MADE: Added to TaskField, STARTDATE, ENDDATE, STARTTIME, ENDTIME, 
  * 				 Removed date to cater start and end date.
  * 
- * @author Tay Guo Qiang
- *         (add your name to list of authors if you made
- *         changes to this class definition)
+ * 
  */
 
 // import java.util.Calendar;
@@ -484,10 +482,22 @@ public class Task implements Comparable<Task> {
 		_isCompleted = isCompleted;
 	}
 
+	/**
+	 * Checks if a task is a floating task (i.e. a task without date and time).
+	 * 
+	 * @return true if the task is a floating task; false otherwise
+	 * @@author A0129660A
+	 */
 	public boolean isFloatingTask() {
 		return (_startDate == null && _endDate == null) ? true : false;
 	}
 	
+	/**
+	 * Checks if a task is an event (i.e. a task with start and end dates and times).
+	 * 
+	 * @return true if the task is an event; false otherwise
+	 * @@author A0129660A
+	 */
 	public boolean isEvent() {
 		return (_startDate != null && _endDate != null) ? true : false;
 	}
@@ -634,6 +644,28 @@ public class Task implements Comparable<Task> {
 		return true;
 	}
 	
+	/**
+	 * Checks if the date-time properties of the task satisfies the formal definition of a task,
+	 * event or floating task.
+	 * 
+	 * To maintain consistency in the logical processing of a Task object, we define the date-time
+	 * property of a task as below:
+	 * <br>
+	 * <br>
+	 * 1. A typical task ALWAYS has a deadline (i.e. end date-time).
+	 * <br>
+	 * 2. An event ALWAYS has start and end date-times.
+	 * <br>
+	 * 3. A floating task will have NO date-times.
+	 * <br>
+	 * <br>
+	 * 
+	 * @param startDate the starting date-time of the task
+	 * @param endDate the ending date-time of the task
+	 * @return true if the date change preserves a task's formal definition as a task, event or floating task;
+	 * 		   false otherwise.
+	 * @@author A0129660A
+	 */
 	private boolean isAcceptableDateChange(Date startDate, Date endDate) {
 		if (startDate != null && endDate == null) {
 			return false;
