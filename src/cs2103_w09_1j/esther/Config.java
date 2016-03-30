@@ -8,6 +8,12 @@ import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * 
+ * @author Jeremy Hon
+ * @@author A0127572A
+ *
+ */
 public class Config {
 
     private int referenceID;
@@ -16,28 +22,24 @@ public class Config {
 
     private static final int defaultReferenceID = 0;
     private static final Path defaultSavePath = Paths.get("esther.txt");
-    private static final String[][] defaultFieldNameAliases = { { "taskName", "taskName" },
-								{ "tName", "taskName" },
+    private static final String[][] defaultFieldNameAliases = { { "taskname", "taskName" },
+								{ "tname", "taskName" },
 								{ "name", "taskName" },
 								{ "nm", "taskName" },
 								{ "n", "taskName" },
-								{ "startDate", "startDate" },
 								{ "startdate", "startDate" },
-								{ "sd", "startDate" },
 								{ "startd", "startDate" },
+								{ "sdate", "startDate" },
+								{ "sd", "startDate" },
 								{ "d", "endDate"},
 								{ "dt", "endDate"},
 								{ "date", "endDate"},
-								{ "Date", "endDate"},
-								{ "endDate", "endDate" },
-								{ "endd", "endDate" },
 								{ "enddate", "endDate" },
+								{ "endd", "endDate" },
 								{ "ed", "endDate" },
-								{ "startTime", "startTime" },
 								{ "starttime", "startTime" },
 								{ "startt", "startTime" },
 								{ "st", "startTime" },
-								{ "endTime", "endTime" },
 								{ "endtime", "endTime" },
 								{ "endt", "endTime" },
 								{ "et", "endTime" },

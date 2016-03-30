@@ -1,3 +1,7 @@
+/**
+ * @@author A0126000H
+ */
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;

@@ -1,3 +1,7 @@
+/**
+ * @@author A0126000H
+ */
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -6,7 +10,6 @@ import java.util.Map;
 
 import cs2103_w09_1j.esther.Command;
 import cs2103_w09_1j.esther.Command.CommandKey;
-import cs2103_w09_1j.esther.Config;
 import cs2103_w09_1j.esther.DateParser;
 import cs2103_w09_1j.esther.InvalidInputException;
 import cs2103_w09_1j.esther.Task.TaskField;
@@ -205,7 +208,7 @@ public class Parser {
 				// Case 6: add something from date/time to date/time
 				int toParseKeyIndex = getNextParseKeyIndex(inputArray, supposeToBeParseKeyIndex + 1);
 				if (toParseKeyIndex == -1) {
-					System.out.println(toParseKeyIndex);
+					//System.out.println(toParseKeyIndex);
 					throw new InvalidInputException(ERROR_ADDFORMAT);
 				}
 				String startDateTime = "";
@@ -231,7 +234,7 @@ public class Parser {
 			else {
 				int otherParseKeyIndex = getNextParseKeyIndex(inputArray, supposeToBeParseKeyIndex + 1);
 				if (otherParseKeyIndex != -1) {
-					System.out.println(otherParseKeyIndex);
+					//System.out.println(otherParseKeyIndex);
 					throw new InvalidInputException(ERROR_ADDFORMAT);
 				}
 				String dateTime = "";
@@ -277,7 +280,7 @@ public class Parser {
 			for (int i = 0; i < toParseKeyIndex - 1; i++) {
 				taskName += inputArray[i] + WHITESPACE;
 			}
-			taskName = taskName.substring(0, taskName.length() - 1);
+			taskName = taskName.trim();
 		}
 
 		int getNameOrID = isNameOrID(taskName);
@@ -289,7 +292,7 @@ public class Parser {
 			throw new InvalidInputException(ERROR_UNKNOWN);
 		}
 
-		String taskFieldName = fieldNameAliases.get(inputArray[toParseKeyIndex - 1]);
+		String taskFieldName = fieldNameAliases.get(inputArray[toParseKeyIndex - 1].toLowerCase());
 		if (taskFieldName == null) {
 			throw new InvalidInputException(ERROR_UPDATEFORMAT);
 		}
@@ -508,9 +511,10 @@ public class Parser {
 
 		Date startDate = sdf.parse(startDateTimeArray[0]);
 		Date endDate = sdf.parse(endDateTimeArray[0]);
+		//check if start date is after end date
 		if (startDate.compareTo(endDate) > 0) {
 			throw new InvalidInputException(ERROR_DATETIMEFORMAT);
-		} else {
+		} else if(startDateTimeArray[1] != null && endDateTimeArray[1] != null){
 			if (startDateTimeArray[1].compareTo(endDateTimeArray[1]) > 0) {
 				throw new InvalidInputException(ERROR_DATETIMEFORMAT);
 			}

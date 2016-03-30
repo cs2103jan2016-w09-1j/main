@@ -13,6 +13,12 @@ import java.util.logging.Logger;
 import cs2103_w09_1j.esther.Config;
 import cs2103_w09_1j.esther.Task;
 
+/**
+ * 
+ * @author Jeremy Hon
+ * @@author A0127572A
+ *
+ */
 public class Storage {
     private Path savePath;
     private ArrayList<Task> tasksBuffer = new ArrayList<Task>();
