@@ -1,3 +1,6 @@
+/**
+ * @@author
+ */
 import javafx.fxml.FXML;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -13,19 +16,10 @@ public class secondController {
 	}
 
 	@FXML
-	private Text searchResult;
+	private Text result;
 
-	public void setSearchResult(String searchResult) {
-		this.searchResult.setText(searchResult);
+	public void setResult(String searchResult) {
+		this.result.setText(searchResult);
 	}
-
-	/*@FXML
-	void ESCAPE(KeyEvent event) {
-		System.out.println("Escape key is pressed");
-		Stage stage = (Stage) searchResult.getScene().getWindow();
-		stage.hide();
-		System.out.println("Window closed");
-
-	}*/
 
 }

@@ -16,6 +16,11 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/*
+ * @author: Guo Mingxuan
+ * @@author A0130749A
+ */
+
 public class UserInterface extends Application {
 	
 	private static final Logger logger = Logger.getLogger(UserInterface.class.getName());
@@ -50,7 +55,7 @@ public class UserInterface extends Application {
 	                dialogVbox.getChildren().addAll(Qn, option);
 	                dialogVbox.setMargin(Qn, new Insets(10,5,10,10));
 	                dialogVbox.setMargin(option, new Insets(10,5,10,10));
-	                Scene dialogScene = new Scene(dialogVbox, 300, 200);
+	                Scene dialogScene = new Scene(dialogVbox, 300, 100);
 	                dialogScene.setOnKeyPressed(new EventHandler<KeyEvent>() {
 
 						@Override
@@ -74,8 +79,6 @@ public class UserInterface extends Application {
 		primaryStage.setScene(scene);
 		
 		primaryStage.setTitle("ESTHER");
-		
-		primaryStage.setResizable(false);
 		
 		primaryStage.show();
 		
