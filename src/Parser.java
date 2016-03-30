@@ -59,19 +59,19 @@ public class Parser {
 	public static final String ERROR_NOSUCHCOMMAND = "No such command. Please type help to check the available commands.";
 	public static final String ERROR_ADDFORMAT = "Wrong format. Format for add command: add [taskname] [from] [date] [time] [to] [date] [time]";
 	public static final String ERROR_UPDATEFORMAT = ERROR_WRONGFORMAT
-			+ "\n Format for update command: update [taskname/taskID] [fieldname] to [newvalue].";
+			+ "Format for update command: update [taskname/taskID] [fieldname] to [newvalue].";
 	public static final String ERROR_DELETEFORMAT = ERROR_WRONGFORMAT
-			+ "\nFormat for delete command: delete [taskname/taskid]";
+			+ "Format for delete command: delete [taskname/taskid]";
 	public static final String ERROR_SEARCHFORMAT = ERROR_WRONGFORMAT
-			+ "\nFormat for search command: search [searchword]";
+			+ "Format for search command: search [searchword]";
 	public static final String ERROR_SHOWFORMAT = ERROR_WRONGFORMAT
-			+ "\nFormat for show command : show [on/by/from] [name/id/priority]";
+			+ "Format for show command : show [on/by/from] [name/id/priority]";
 	public static final String ERROR_SORTFORMAT = ERROR_WRONGFORMAT
-			+ "\nFormat for sort command: sort by [name/id/startDate/endDate]";
+			+ "Format for sort command: sort by [name/id/startDate/endDate]";
 	public static final String ERROR_COMPLETEFORMAT = ERROR_WRONGFORMAT
-			+ "\nFormat for complete command: complete [taskName/taskID]";
+			+ "Format for complete command: complete [taskName/taskID]";
 	public static final String ERROR_DATETIMEFORMAT = ERROR_WRONGFORMAT
-			+ "\nYour date or time is invalid. Please check again.";
+			+ "Your date or time is invalid. Please check again.";
 	public static final String ERROR_PRIORITYFORMAT = "Priority is only allowed in integer format.";
 	public static final String ERROR_UNKNOWN = "Unknown error.";
 
