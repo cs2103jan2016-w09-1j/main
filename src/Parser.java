@@ -1,3 +1,7 @@
+/**
+ * @@author A0126000H
+ */
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -6,7 +10,6 @@ import java.util.Map;
 
 import cs2103_w09_1j.esther.Command;
 import cs2103_w09_1j.esther.Command.CommandKey;
-import cs2103_w09_1j.esther.Config;
 import cs2103_w09_1j.esther.DateParser;
 import cs2103_w09_1j.esther.InvalidInputException;
 import cs2103_w09_1j.esther.Task.TaskField;
@@ -73,21 +76,8 @@ public class Parser {
 				lookup.put(_parseKeyName.getParseKeyName(), _parseKeyName);
 			}
 		}
-
 	}
-
-	public static void main(String[] args) throws ParseException, InvalidInputException {
-		Config config = new Config();
-		Parser parser = new Parser(config.getFieldNameAliases());
-		Command command = parser.acceptUserInput("update task1 priority to nine");
-		HashMap<String, String> map = command.getParameters();
-		for (Map.Entry<String, String> entry : map.entrySet()) {
-			String key = entry.getKey();
-			String value = entry.getValue();
-			System.out.println("Key " + key + "  Value " + value);
-		}
-	}
-
+	
 	public Parser(HashMap<String, String> fieldNameAliases) {
 		this.currentCommand = new Command();
 		this.dateParser = new DateParser();
@@ -218,15 +208,15 @@ public class Parser {
 				// Case 6: add something from date/time to date/time
 				int toParseKeyIndex = getNextParseKeyIndex(inputArray, supposeToBeParseKeyIndex + 1);
 				if (toParseKeyIndex == -1) {
-					System.out.println(toParseKeyIndex);
+					//System.out.println(toParseKeyIndex);
 					throw new InvalidInputException(ERROR_ADDFORMAT);
 				}
 				String startDateTime = "";
 				String endDateTime = "";
-				for (int i = supposeToBeParseKeyIndex; i < toParseKeyIndex; i++) {
+				for (int i = supposeToBeParseKeyIndex + 1; i < toParseKeyIndex; i++) {
 					startDateTime += inputArray[i] + " ";
 				}
-				for (int i = toParseKeyIndex; i < inputArray.length; i++) {
+				for (int i = toParseKeyIndex + 1; i < inputArray.length; i++) {
 					endDateTime += inputArray[i] + " ";
 				}
 				String[] startDateTimeArray = dateParser.getDateTime(startDateTime);
@@ -244,11 +234,11 @@ public class Parser {
 			else {
 				int otherParseKeyIndex = getNextParseKeyIndex(inputArray, supposeToBeParseKeyIndex + 1);
 				if (otherParseKeyIndex != -1) {
-					System.out.println(otherParseKeyIndex);
+					//System.out.println(otherParseKeyIndex);
 					throw new InvalidInputException(ERROR_ADDFORMAT);
 				}
 				String dateTime = "";
-				for (int i = supposeToBeParseKeyIndex; i < inputArray.length; i++) {
+				for (int i = supposeToBeParseKeyIndex + 1; i < inputArray.length; i++) {
 					dateTime += inputArray[i] + " ";
 				}
 				String[] dateTimeArray = dateParser.getDateTime(dateTime);
@@ -290,7 +280,7 @@ public class Parser {
 			for (int i = 0; i < toParseKeyIndex - 1; i++) {
 				taskName += inputArray[i] + WHITESPACE;
 			}
-			taskName = taskName.substring(0, taskName.length() - 1);
+			taskName = taskName.trim();
 		}
 
 		int getNameOrID = isNameOrID(taskName);
@@ -302,7 +292,7 @@ public class Parser {
 			throw new InvalidInputException(ERROR_UNKNOWN);
 		}
 
-		String taskFieldName = fieldNameAliases.get(inputArray[toParseKeyIndex - 1]);
+		String taskFieldName = fieldNameAliases.get(inputArray[toParseKeyIndex - 1].toLowerCase());
 		if (taskFieldName == null) {
 			throw new InvalidInputException(ERROR_UPDATEFORMAT);
 		}
@@ -310,7 +300,10 @@ public class Parser {
 		TaskField aliaseField = TaskField.get(taskFieldName);
 		if (aliaseField == null) {
 			throw new InvalidInputException(ERROR_UPDATEFORMAT);
+		} else if (aliaseField == TaskField.NAME){
+			aliaseField = TaskField.UPDATENAME;
 		}
+		
 		String newValue = "";
 		for (int i = toParseKeyIndex + 1; i < inputArray.length; i++) {
 			newValue += inputArray[i] + " ";
@@ -518,9 +511,10 @@ public class Parser {
 
 		Date startDate = sdf.parse(startDateTimeArray[0]);
 		Date endDate = sdf.parse(endDateTimeArray[0]);
+		//check if start date is after end date
 		if (startDate.compareTo(endDate) > 0) {
 			throw new InvalidInputException(ERROR_DATETIMEFORMAT);
-		} else {
+		} else if(startDateTimeArray[1] != null && endDateTimeArray[1] != null){
 			if (startDateTimeArray[1].compareTo(endDateTimeArray[1]) > 0) {
 				throw new InvalidInputException(ERROR_DATETIMEFORMAT);
 			}

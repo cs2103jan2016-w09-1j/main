@@ -59,7 +59,7 @@
  * 1. Need to write test cases for show and sort
  * operations.
  * 
- * @@author Tay Guo Qiang
+ * @@author A0129660A
  */
 
 import static org.junit.Assert.*;
@@ -67,6 +67,9 @@ import static org.junit.Assert.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -74,7 +77,7 @@ import cs2103_w09_1j.esther.Command;
 import cs2103_w09_1j.esther.Task;
 
 public class LogicTest {
-	Logic logic = new Logic();
+	Logic logic;
 	Command addCommand;				// task1
 	Command addCommand2;			// task2
 	Command addCommand3;			// task3
@@ -95,35 +98,37 @@ public class LogicTest {
 	Command undoCommand;			// undo
 	
 	@Before
-	public void init() {
+	public void init() throws ParseException, IOException {
+		logic = new Logic();
+		
 		// undo command
 		undoCommand = new Command("undo", null);
 		
 		// add task1 command
 		HashMap<String, String> argsAdd1 = new HashMap<String, String>();
 		argsAdd1.put("taskName", "task1");
-		argsAdd1.put("date", "01/03/2016");
+		argsAdd1.put("endDate", "01/03/2016");
 		argsAdd1.put("priority", "2");
 		addCommand = new Command("add", argsAdd1);
 		
 		// add task2 command
 		HashMap<String, String> argsAdd2 = new HashMap<String, String>();
 		argsAdd2.put("taskName", "task2");
-		argsAdd2.put("date", "11/03/2016");
+		argsAdd2.put("endDate", "11/03/2016");
 		argsAdd2.put("priority", "1");
 		addCommand2 = new Command("add", argsAdd2);
 		
 		// add task3 command
 		HashMap<String, String> argsAdd3 = new HashMap<String, String>();
 		argsAdd3.put("taskName", "task3");
-		argsAdd3.put("date", "10/02/2016");
+		argsAdd3.put("endDate", "10/02/2016");
 		argsAdd3.put("priority", "1");
 		addCommand3 = new Command("add", argsAdd3);
 		
 		// add task4 command
 		HashMap<String, String> argsAdd4 = new HashMap<String, String>();
 		argsAdd4.put("taskName", "task4");
-		argsAdd4.put("date", "11/03/2016");
+		argsAdd4.put("endDate", "11/03/2016");
 		argsAdd4.put("priority", "3");
 		addCommand4 = new Command("add", argsAdd4);
 		
@@ -135,7 +140,7 @@ public class LogicTest {
 		// add invalid task command
 		HashMap<String, String> argsError = new HashMap<String, String>();
 		argsError.put("taskName", "task2");
-		argsError.put("date", "some date");
+		argsError.put("endDate", "some date");
 		argsError.put("priority", "1");
 		errorAddCommand = new Command("add", argsError);
 		
@@ -143,12 +148,12 @@ public class LogicTest {
 		HashMap<String, String> argsComplete = new HashMap<String, String>();
 		argsComplete.put("taskName", "task1");
 		argsComplete.put("completed", "true");
-		setCompletedCommand = new Command("completed", argsComplete);
+		setCompletedCommand = new Command("complete", argsComplete);
 		
 		// update task1 to task3 command
 		HashMap<String, String> argsUpdate = new HashMap<String, String>();
 		argsUpdate.put("taskName", "task1");
-		argsUpdate.put("updatedTaskName", "task3");
+		argsUpdate.put("updateName", "task3");
 		updateCommand = new Command("update", argsUpdate);
 		
 		// sort, show command by priority
@@ -159,13 +164,13 @@ public class LogicTest {
 		
 		// sort, show command by date
 		HashMap<String, String> argsSortDate = new HashMap<String, String>();
-		argsSortDate.put("order", "date");
+		argsSortDate.put("order", "endDate");
 		sortCommandDate = new Command("sort", argsSortDate);
 		showCommandDate = new Command("show", argsSortDate);
 		
 		// sort, show command by name
 		HashMap<String, String> argsSortName = new HashMap<String, String>();
-		argsSortName.put("order", "name");
+		argsSortName.put("order", "taskName");
 		sortCommandName = new Command("sort", argsSortName);
 		showCommandName = new Command("show", argsSortName);
 	}
@@ -495,7 +500,7 @@ public class LogicTest {
 	public void undo_Failed_Add_Task_Nothing_Happen() {
 		logic.executeCommand(errorAddCommand);
 		String alert = logic.executeCommand(undoCommand);
-		assertEquals("Undo should have failed.", "[ERROR] Cannot undo any further.\n", alert);
+		assertEquals("Undo should have failed.", "Cannot undo any further.\n", alert);
 	}
 	
 	@Test
@@ -521,7 +526,7 @@ public class LogicTest {
 	public void undo_Failed_Delete_Task_Nothing_Happen() {
 		logic.executeCommand(deleteCommand);
 		String alert = logic.executeCommand(undoCommand);
-		assertEquals("Undo should have failed.", "[ERROR] Cannot undo any further.\n", alert);
+		assertEquals("Undo should have failed.", "Cannot undo any further.\n", alert);
 	}
 	
 	@Test
@@ -547,7 +552,7 @@ public class LogicTest {
 	public void undo_Failed_Update_Task_Nothing_Happen() {
 		logic.executeCommand(updateCommand);
 		String alert = logic.executeCommand(undoCommand);
-		assertEquals("Undo should have failed.", "[ERROR] Cannot undo any further.\n", alert);
+		assertEquals("Undo should have failed.", "Cannot undo any further.\n", alert);
 	}
 	
 	@Test
@@ -573,7 +578,7 @@ public class LogicTest {
 	public void undo_Failed_Complete_Task_Nothing_Happen() {
 		logic.executeCommand(setCompletedCommand);
 		String alert = logic.executeCommand(undoCommand);
-		assertEquals("Undo should have failed.", "[ERROR] Cannot undo any further.\n", alert);
+		assertEquals("Undo should have failed.", "Cannot undo any further.\n", alert);
 	}
 	
 	@Test
@@ -752,24 +757,27 @@ public class LogicTest {
 	public void construct_Delete_Command_Id() {
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		HashMap<String, String> args = new HashMap<String, String>();
-		args.put("taskId", String.valueOf(internalStorage.get(0).getId()));
+		args.put("taskID", String.valueOf(internalStorage.get(0).getId()));
+		//System.out.println("ID of task to delete: " + internalStorage.get(0).getId());
 		deleteCommandId = new Command("delete", args);
 	}
 	
 	public void construct_Update_Command_Id() {
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		HashMap<String, String> args = new HashMap<String, String>();
-		args.put("taskId", String.valueOf(internalStorage.get(0).getId()));
-		args.put("updatedTaskName", "task3");
+		args.put("taskID", String.valueOf(internalStorage.get(0).getId()));
+		args.put("updateName", "task3");
+		//System.out.println("ID of task to update: " + internalStorage.get(0).getId());
 		updateCommandId = new Command("update", args);
 	}
 	
 	public void construct_Set_Completed_Command_Id() {
 		ArrayList<Task> internalStorage = logic.getInternalStorage();
 		HashMap<String, String> args = new HashMap<String, String>();
-		args.put("taskId", String.valueOf(internalStorage.get(0).getId()));
+		args.put("taskID", String.valueOf(internalStorage.get(0).getId()));
 		args.put("completed", "true");
-		setCompletedCommandId = new Command("completed", args);
+		//System.out.println("ID of task to complete: " + internalStorage.get(0).getId());
+		setCompletedCommandId = new Command("complete", args);
 	}
 	
 	

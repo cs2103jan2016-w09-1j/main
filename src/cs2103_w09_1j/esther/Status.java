@@ -1,35 +1,65 @@
 package cs2103_w09_1j.esther;
 
+/**
+ * ========= [ STATUS CLASS DEFINITIONS ] =========
+ * This class contains the representation of the
+ * Status class that will be used by the Logic
+ * component of the program. This class is used to
+ * convey messages to the user about the status of
+ * the user operations being carried out.
+ * 
+ * @@author A0130749A
+ */
 
-class Status {
+import cs2103_w09_1j.esther.Command.CommandKey;
 
-	/*enum msg {
-		SUCCESS_ADD, ERROR_ADD, SUCCESS_DELETE, ERROR_DELETE,
-		SUCCESS_UPDATE, ERROR_UPDATE, ERROR_UPDATE_NOT_FOUND,
-		SUCCESS_SET_COMPLETED, ERROR_SET_COMPLETED, SUCCESS_UNDO,
-		ERROR_UNDO, UNKNOWN_STATE, SUCCESS_HELP
-	}*/
+public class Status {
 
-	enum msg {
-		SUCCESS ,ERROR 
+	public enum ErrorCode {
+		SYSTEM, INVALID_COMMAND, ADD_INVALID_FORMAT, ADD_MISSING_NAME, DELETE_NOT_FOUND, DELETE_DUPLICATES_PRESENT,
+		UPDATE_NOT_FOUND, UPDATE_DUPLICATES_PRESENT, UPDATE_INVALID_FIELD, UPDATE_START_END_VIOLATE,
+		UPDATE_INVALID_PRIORITY, COMPLETED_NOT_FOUND, COMPLETED_DUPLICATES_PRESENT, COMPLETED_ALREADY_COMPLETED,
+		SORT_INVALID_CRITERION, UNDO, UNKNOWN_STATE
 	}
 
-	static msg _msg;
+	public enum Outcome {
+		SUCCESS, ERROR
+	}
 
+	public static Outcome _outcome;
+	public static ErrorCode _errorCode;
+
+	static final String MESSAGE_ERROR_SYSTEM = "A system error has occured in ESTHER. Please restart this application.\n";
+	static final String MESSAGE_ERROR_INVALID_COMMAND = "Command is not recognized. Type 'help' to see the list of commands that can be used in ESTHER.\n";
 	static final String MESSAGE_SUCCESS_ADD = "%1$s is successfully added to file.\n";
-	static final String MESSAGE_ERROR_ADD = "[ERROR] Failed to add %1$s to file.\n";
+	static final String MESSAGE_ERROR_ADD_INVALID_FORMAT = "Unable to add task: Please check that your input is of the correct format.\n"; 
+															//"[ERROR] Failed to add %1$s to file.\n";
+	static final String MESSAGE_ERROR_ADD_MISSING_NAME = "Unable to add task: Task name is required.\n";
 	static final String MESSAGE_SUCCESS_DELETE = "%1$s is successfully deleted from file.\n";
-	static final String MESSAGE_ERROR_DELETE = "[ERROR] Failed to delete %1$s from file.\n";
+	static final String MESSAGE_ERROR_DELETE_NOT_FOUND = "Unable to delete task: Please supply a proper task name or task ID.\n";
+														 //"[ERROR] Failed to delete %1$s from file.\n";
+	static final String MESSAGE_ERROR_DELETE_DUPLICATES_PRESENT = "There are multiple tasks sharing the same name '%1$s'. Please delete by ID instead.\n";
 	static final String MESSAGE_SUCCESS_UPDATE = "%1$s is successfully updated.\n";
-	static final String MESSAGE_ERROR_UPDATE_NOT_FOUND = "[ERROR] Task with supplied name or ID not found.\n";
-	static final String MESSAGE_ERROR_UPDATE = "[ERROR] Failed to update %1$s.\n";
-	static final String MESSAGE_SUCCESS_SET_COMPLETED = "%1$s is marked as completed.\n";
-	static final String MESSAGE_ERROR_SET_COMPLETED = "[ERROR] Failed to mark %1$s as completed.\n";
+	static final String MESSAGE_ERROR_UPDATE_NOT_FOUND = "Unable to update task: Please supply a proper task name or task ID.\n";
+														 //"[ERROR] Task with supplied name or ID not found.\n";
+	static final String MESSAGE_ERROR_UPDATE_DUPLICATES_PRESENT = "There are multiple tasks sharing the same name '%1$s'. Please update by ID instead.\n";
+	static final String MESSAGE_ERROR_UPDATE_INVALID_FIELD = "Unable to update task: The field you have specified does not exist.\n";
+	static final String MESSAGE_ERROR_UPDATE_START_END_VIOLATE = "Unable to update task: Start date/time is not before end date/time.\n";
+	static final String MESSAGE_ERROR_UPDATE_INVALID_PRIORITY = "Unable to update task: Priority is not within 1 to 5.\n";
+
+	static final String MESSAGE_SUCCESS_COMPLETED = "%1$s is successfully marked as completed.\n";
+	static final String MESSAGE_ERROR_COMPLETED_NOT_FOUND = "Unable to complete task: Please supply a proper task name or task ID.\n";
+														    //"[ERROR] Failed to mark %1$s as completed.\n";
+	static final String MESSAGE_ERROR_COMPLETED_DUPLICATES_PRESENT = "There are multiple tasks sharing the same name '%1$s'. Please complete by ID instead.\n";
+	static final String MESSAGE_ERROR_COMPLETED_ALREADY_COMPLETED = "%1$s is already completed.\n";
+	static final String MESSAGE_SUCCESS_SORT = "File is successfully sorted.\n";
+	static final String MESSAGE_ERROR_SORT_INVALID_CRITERION = "Unable to sort file: Please specify a recognized criterion to sort the file by.\n";
+	
 	static final String MESSAGE_SUCCESS_UNDO = "Undo is successful.\n";
-	static final String MESSAGE_ERROR_UNDO = "[ERROR] Cannot undo any further.\n";
-	static final String MESSAGE_UNKNOWN_STATE = "[ERROR] Command not recognized.\n";
+	static final String MESSAGE_ERROR_UNDO = "Cannot undo any further.\n";
+	static final String MESSAGE_ERROR_UNKNOWN_STATE = "ESTHER has encountered an unknown error. Please restart this application.\n";
 	static final String MESSAGE_HELP = "List of commands are:\n1. add\n2. delete\n3. update\n"
-			+ "4.completed\n5.undo\n\n" + "Note that for these commands, "
+			+ "4. completed\n5. undo\n\n" + "Note that for these commands, "
 			+ "_value_ indicates that these fields are compulsory and need "
 			+ "to be substituted with the relevant values.\n"
 			+ "[optional] indicates optional fields to input.\n\n"
@@ -54,31 +84,33 @@ class Status {
 			+ "Using the 'undo' command:\n"
 			+ "General usage: undo\n" + "Undo one step back to previous state.\n";
 
-	static String getMessage(String taskName, String taskID, String commandType) {
+	public static String getMessage(String taskName, String taskID, String commandType) {
 		String message;
 
-		switch(_msg) {
+		switch(_outcome) {
 		case SUCCESS :
-			successCall(taskName, taskID, commandType);
-		case ERROR :
-			errorCall(taskName, taskID, commandType);
-		default :
-			message = MESSAGE_UNKNOWN_STATE;
+			message = successCall(taskName, taskID, commandType);
 			break;
-
+		case ERROR :
+			message = errorCall(taskName, taskID, commandType);
+			break;
+		default :
+			message = MESSAGE_ERROR_UNKNOWN_STATE;
+			break;
 		}
 		return message;
 	}
 
 	private static String successCall(String taskName, String taskID, String commandType) {
 		String message = null;
+		CommandKey command = CommandKey.get(commandType);
 
-		switch(commandType) {
-		case "add" :
+		switch(command) {
+		case ADD :
 			message = String.format(MESSAGE_SUCCESS_ADD, taskName);
 			break;
 
-		case "delete" :
+		case DELETE :
 			if (taskName != null) {
 				message = String.format(MESSAGE_SUCCESS_DELETE, taskName);
 			} else {
@@ -86,7 +118,7 @@ class Status {
 			}
 			break;
 
-		case "update" :
+		case UPDATE :
 			if (taskName != null) {
 				message = String.format(MESSAGE_SUCCESS_UPDATE, taskName);
 			} else {
@@ -94,19 +126,28 @@ class Status {
 			}
 			break;
 
-		case "completed" :
+		case COMPLETE :
 			if (taskName != null) {
-				message = String.format(MESSAGE_SUCCESS_SET_COMPLETED, taskName);
+				message = String.format(MESSAGE_SUCCESS_COMPLETED, taskName);
 			} else {
-				message = String.format(MESSAGE_SUCCESS_SET_COMPLETED, taskID);
+				message = String.format(MESSAGE_SUCCESS_COMPLETED, taskID);
 			}
 			break;
-
-		case "undo" :
-			message = MESSAGE_ERROR_UNDO;
+			
+		case SORT :
+			message = MESSAGE_SUCCESS_SORT;
 			break;
 
-		case "help" :
+		case UNDO :
+			message = MESSAGE_SUCCESS_UNDO;
+			break;
+
+		case HELP :
+			message = MESSAGE_HELP;
+			break;
+			
+		default :
+			message = MESSAGE_ERROR_UNKNOWN_STATE;
 			break;
 
 		}
@@ -115,46 +156,151 @@ class Status {
 	}
 	
 	private static String errorCall(String taskName, String taskID, String commandType) {
-		String message = null;
+		String message;
+		if (_errorCode == ErrorCode.SYSTEM) {
+			message = MESSAGE_ERROR_SYSTEM;
+			return message;
+		} else if (_errorCode == ErrorCode.INVALID_COMMAND) {
+			message = MESSAGE_ERROR_INVALID_COMMAND;
+			return message;
+		} else {
+			message = null;
+		}
 		
-		switch(commandType) {
-		case "add" :
-			message = String.format(MESSAGE_ERROR_ADD, taskName);
+		CommandKey command = CommandKey.get(commandType);
+		
+		switch(command) {
+		case ADD :
+			message = getAddErrorMessage(taskName, taskID);
 			break;
 
-		case "delete" :
-			if (taskName != null) {
-				message = String.format(MESSAGE_ERROR_DELETE, taskName);
-			} else {
-				message = String.format(MESSAGE_ERROR_DELETE, taskID);
-			}
+		case DELETE :
+			message = getDeleteErrorMessage(taskName, taskID);
 			break;
 			
-		case "update" : // includes both update error and not found error
-			if (taskName != null) {
-				message = String.format(MESSAGE_ERROR_UPDATE, taskName);
-			} else if (taskID != null){
-				message = String.format(MESSAGE_ERROR_UPDATE, taskID);
-			} else {
-				message = MESSAGE_ERROR_UPDATE_NOT_FOUND;
-				break;
-			}
+		case UPDATE : // includes both update error and not found error
+			message = getUpdateErrorMessage(taskName, taskID);
 			break;
 			
-		case "completed" :
-			if (taskName != null) {
-				message = String.format(MESSAGE_ERROR_SET_COMPLETED, taskName);
-			} else {
-				message = String.format(MESSAGE_ERROR_SET_COMPLETED, taskID);
-			}
+		case COMPLETE :
+			message = getCompleteErrorMessage(taskName, taskID);
+			break;
+			
+		case SORT :
+			message = MESSAGE_ERROR_SORT_INVALID_CRITERION;
 			break;
 
-		case "undo" :
+		case UNDO :
 			message = MESSAGE_ERROR_UNDO;
 			break;
 
-		case "help" :
+		case HELP :
+			message = MESSAGE_HELP;
 			break;
+			
+		default :
+			message = MESSAGE_ERROR_UNKNOWN_STATE;
+			break;
+		}
+		
+		return message;
+	}
+	
+	private static String getAddErrorMessage(String taskName, String taskID) {
+		String message = null;
+		
+		switch (_errorCode) {
+			case ADD_INVALID_FORMAT :
+				message = MESSAGE_ERROR_ADD_INVALID_FORMAT;
+				break;
+				
+			case ADD_MISSING_NAME :
+				message = MESSAGE_ERROR_ADD_MISSING_NAME;
+				break;
+			
+			default :
+				message = MESSAGE_ERROR_UNKNOWN_STATE;
+				break;
+		}
+		
+		return message;
+	}
+	
+	private static String getDeleteErrorMessage(String taskName, String taskID) {
+		String message = null;
+		
+		switch (_errorCode) {
+			case DELETE_NOT_FOUND :
+				message = MESSAGE_ERROR_DELETE_NOT_FOUND;
+				break;
+				
+			case DELETE_DUPLICATES_PRESENT :
+				message = String.format(MESSAGE_ERROR_DELETE_DUPLICATES_PRESENT, taskName);
+				break;
+			
+			default :
+				message = MESSAGE_ERROR_UNKNOWN_STATE;
+				break;
+		}
+		
+		return message;
+	}
+	
+	private static String getUpdateErrorMessage(String taskName, String taskID) {
+		String message = null;
+		
+		switch (_errorCode) {
+			case UPDATE_NOT_FOUND :
+				message = MESSAGE_ERROR_UPDATE_NOT_FOUND;
+				break;
+				
+			case UPDATE_DUPLICATES_PRESENT :
+				message = String.format(MESSAGE_ERROR_UPDATE_DUPLICATES_PRESENT, taskName);
+				break;
+			
+			case UPDATE_INVALID_FIELD :
+				message = MESSAGE_ERROR_UPDATE_INVALID_FIELD;
+				break;
+				
+			case UPDATE_START_END_VIOLATE :
+				message = MESSAGE_ERROR_UPDATE_START_END_VIOLATE;
+				break;
+				
+			case UPDATE_INVALID_PRIORITY :
+				message = MESSAGE_ERROR_UPDATE_INVALID_PRIORITY;
+				break;
+			
+			default :
+				message = MESSAGE_ERROR_UNKNOWN_STATE;
+				break;
+		}
+		
+		return message;
+	}
+	
+	private static String getCompleteErrorMessage(String taskName, String taskID) {
+		String message = null;
+		
+		switch (_errorCode) {
+			case COMPLETED_NOT_FOUND :
+				message = MESSAGE_ERROR_COMPLETED_NOT_FOUND;
+				break;
+				
+			case COMPLETED_DUPLICATES_PRESENT :
+				message = String.format(MESSAGE_ERROR_COMPLETED_DUPLICATES_PRESENT, taskName);
+				break;
+				
+			case COMPLETED_ALREADY_COMPLETED :
+				if (taskName != null) {
+					message = String.format(MESSAGE_ERROR_COMPLETED_ALREADY_COMPLETED, taskName);
+				} else {
+					message = String.format(MESSAGE_ERROR_COMPLETED_ALREADY_COMPLETED, taskID);
+				}
+				break;
+			
+			default :
+				message = MESSAGE_ERROR_UNKNOWN_STATE;
+				break;
 		}
 		
 		return message;

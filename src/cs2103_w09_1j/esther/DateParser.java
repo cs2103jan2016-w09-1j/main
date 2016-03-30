@@ -9,6 +9,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DateParser {
 	private final static ArrayList<String> dateFormatList = new ArrayList<String>(
@@ -37,7 +39,7 @@ public class DateParser {
 
 	private final static String ERROR_DIFFERENTDATE = "The date you entered is not correct. Please check again.";
 
-	//
+	// @@author A0126000H
 	public static void main(String[] args) throws ParseException, InvalidInputException {
 		DateParser dp = new DateParser();
 		String[] dt = dp.getDateTime("23/7/16");
@@ -47,8 +49,10 @@ public class DateParser {
 			System.out.println("Time " + dt[1]);
 	}
 
+	// @@author A0126000H
 	public String[] getDateTime(String input) throws InvalidInputException, ParseException {
 		String[] dateTime = new String[2];
+		String oldInput = input;
 
 		input = input.toLowerCase();
 		DateParser dp = new DateParser();
@@ -56,7 +60,14 @@ public class DateParser {
 		// Check for wordy date first
 		String wordyDate = dp.getWordyDateFormat(input);
 		input = dp.getProperDateTime(input);
+		
+		String[] twentyFourTime = find24HTime(input);
+		if(twentyFourTime[0] != null) {
+			dateTime[1] = twentyFourTime[0];
+			input = twentyFourTime[1];
+		} 
 		while (input != null) {
+			oldInput = input;
 			if (dateTime[0] == null) {
 				String dateFormat = dp.getDateFormat(input);
 				if (!dateFormat.isEmpty()) {
@@ -66,7 +77,7 @@ public class DateParser {
 					String givenDate = givenDateFormat.format(inputDate);
 					String givenMonth = null;
 					String givenYear = null;
-					System.out.println(dateFormat + " " + givenDate);
+					// System.out.println(dateFormat + " " + givenDate);
 					if (dateFormat.contains(FULLMONTH)) {
 						givenMonth = getMonth(givenDate);
 						if (input.contains(givenMonth.toLowerCase())) {
@@ -74,19 +85,19 @@ public class DateParser {
 						}
 					}
 					if (dateFormat.contains(HALFYEAR)) {
-						System.out.println("here");
 						Calendar cal = Calendar.getInstance();
 						cal.setTime(inputDate);
 						givenYear = givenDate.substring(givenDate.length() - 2, givenDate.length());
-						System.out.println("YEAR" + cal.get(Calendar.YEAR));
+						// System.out.println("YEAR" + cal.get(Calendar.YEAR));
 						if (input.contains(String.valueOf(cal.get(Calendar.YEAR)))) {
 							givenDate = givenDate.substring(0, givenDate.length() - 2) + cal.get(Calendar.YEAR);
 						}
 					}
-					System.out.println(givenYear);
+					// System.out.println(givenYear);
 					int lastIndexOfDate = input.indexOf(givenDate.toLowerCase());
 					input = input.substring(lastIndexOfDate + givenDate.length());
-					System.out.println(input);
+					input = input.trim();
+					// System.out.println(input);
 				}
 			}
 			if (dateTime[1] == null) {
@@ -101,9 +112,14 @@ public class DateParser {
 					}
 					int lastIndexOfTime = input.toLowerCase().lastIndexOf(givenTime.toLowerCase());
 					input = input.substring(lastIndexOfTime + givenTime.length());
+					input = input.trim();
 				}
 			}
 			input = dp.getProperDateTime(input);
+			if (oldInput == input) {
+				// looping indefinitely, so cut the string by 1
+				input = input.substring(1);
+			}
 		}
 		if (wordyDate != null && dateTime[0] != null)
 
@@ -121,6 +137,7 @@ public class DateParser {
 
 	}
 
+	// @@author A0126000H
 	private String getProperDateTime(String input) {
 
 		// Have to check if number or is a month
@@ -152,6 +169,7 @@ public class DateParser {
 		return input.substring(firstIntegerIndex);
 	}
 
+	// @@author A0126000H
 	private String getWordyDateFormat(String input) {
 
 		Calendar cal = Calendar.getInstance();
@@ -181,6 +199,7 @@ public class DateParser {
 		return convertToDateFormat.format(cal.getTime());
 	}
 
+	// @@author A0126000H
 	private String getDateFormat(String input) {
 		for (int i = 0; i < dateFormatList.size(); i++) {
 			try {
@@ -196,11 +215,12 @@ public class DateParser {
 		return "";
 	}
 
+	// @@author A0126000H
 	private String getTimeFormat(String input) {
 		for (int i = 0; i < timeFormatList.size(); i++) {
 			try {
 				SimpleDateFormat timeFormat = new SimpleDateFormat(timeFormatList.get(i));
-				timeFormat.parse(input);
+				Date foundDate = timeFormat.parse(input);
 				return timeFormatList.get(i);
 			} catch (ParseException e) {
 				// TODO Auto-generated catch block
@@ -210,6 +230,7 @@ public class DateParser {
 		return "";
 	}
 
+	// @@author A0126000H
 	private String getDate(String input, String givenDateFormat) throws ParseException {
 		Date date = new Date();
 		SimpleDateFormat dateFormat = new SimpleDateFormat(givenDateFormat);
@@ -232,12 +253,14 @@ public class DateParser {
 
 	}
 
+	// @@author A0126000H
 	private String getTime(String input, String givenTimeFormat) throws ParseException {
 		SimpleDateFormat timeFormat = new SimpleDateFormat(givenTimeFormat);
 		Date date = timeFormat.parse(input);
 		return convertToTimeFormat.format(date);
 	}
 
+	// @@author A0126000H
 	private String getMonth(String input) {
 		for (Entry<String, String> e : monthWords.entrySet()) {
 			if (input.toLowerCase().contains(e.getKey())) {
@@ -246,7 +269,53 @@ public class DateParser {
 		}
 		return null;
 	}
+	
+	/**
+	 * 
+	 * @param input
+	 * @return
+	 * @@author A0127572A
+	 */
+	protected String[] find24HTime(String input) {
+	    String[] result = new String[2];
+	    String regex = "\\d{4}";
+	    Matcher matcher = Pattern.compile(regex).matcher(input);
+	    
+	    //find all matches of 4 integers
+	    boolean lastLoopFoundMatch = true;
+	    boolean foundMatch;
+	    while(lastLoopFoundMatch){
+		foundMatch = matcher.find();
+		if(foundMatch){
+		    //assume valid 24H time can only have space characters next to it
+		    //or are at the ends of the string
+		    //identify valid 24H times
+		    if((matcher.start() == 0 || charAtIndexOfStringIsSpace(input, matcher.start()-1) 
+			    && (matcher.end() >= input.length() - 1 || charAtIndexOfStringIsSpace(input, matcher.end()+1)))) {
+			//this is a valid 24H time
+			result[0] = matcher.group().substring(0, 2) + ":" + matcher.group().substring(2);
+			result[1] = input.substring(0, matcher.start()) + input.substring(matcher.end());
+			return result;
+		    }
+		    //otherwise this is an invalid 24H time, ignore
+		}
+		lastLoopFoundMatch = foundMatch;
+	    }
+	    return result;
+	}
+	
+	/**
+	 * 
+	 * @param string
+	 * @param index
+	 * @return
+	 * @@author A0127572A
+	 */
+	private boolean charAtIndexOfStringIsSpace(String string, int index){
+	    return string.charAt(index) == ' ';
+	}
 
+	// @@author A0126000H
 	private static HashMap<String, Integer> createDayMap() {
 		HashMap<String, Integer> result = new HashMap<String, Integer>();
 		result.put("today", 0);
@@ -257,6 +326,7 @@ public class DateParser {
 		return result;
 	}
 
+	// @@author A0126000H
 	private static HashMap<String, Integer> createWeekMap() {
 		HashMap<String, Integer> result = new HashMap<String, Integer>();
 		result.put("sun", Calendar.SUNDAY + 1);
@@ -269,6 +339,7 @@ public class DateParser {
 		return result;
 	}
 
+	// @@author A0126000H
 	private static HashMap<String, String> createMonthMap() {
 		HashMap<String, String> result = new HashMap<String, String>();
 		result.put("jan", "January");
@@ -286,6 +357,7 @@ public class DateParser {
 		return result;
 	}
 
+	// @@author A0126000H
 	private int checkForWordInMap(String input, HashMap<String, Integer> map) {
 		for (Entry<String, Integer> e : map.entrySet()) {
 			if (input.toLowerCase().contains(e.getKey())) {

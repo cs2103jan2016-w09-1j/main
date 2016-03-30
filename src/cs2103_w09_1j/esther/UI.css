@@ -1,0 +1,16 @@
+/*
+ * @author: Guo Mingxuan
+ * @@A0130749A
+ */
+
+.main {
+	-fx-border-width: 2px; 
+	-fx-border-color: #2F75BF;
+	-fx-background-color: #DBDBDB;
+}
+
+.title {
+	-fx-font-color: #2956d0;
+	-fx-font-size:20px;
+	-fx-font-family: Roboto;
+}
