@@ -37,7 +37,7 @@ class DateTimeTester {
 			timeFormatter = new SimpleDateFormat(timeFormat);
 		}
 
-		if (isHasTime()) {
+		if (hasTime()) {
 			if (getTimePattern().contains("m")) {
 				setHasMinutes(true);
 			} else {
@@ -58,7 +58,7 @@ class DateTimeTester {
 		if (!isHasMinutes()) {
 			calendar.set(Calendar.MINUTE, 0);
 		}
-		if (!isHasTime()) {
+		if (!hasTime()) {
 			calendar.set(Calendar.HOUR, 23);
 			calendar.set(Calendar.MINUTE, 59);
 		}
@@ -129,7 +129,7 @@ class DateTimeTester {
 		}
 	}
 
-	public boolean isHasTime() {
+	public boolean hasTime() {
 		return hasTime;
 	}
 
@@ -140,7 +140,7 @@ class DateTimeTester {
 		}
 	}
 
-	public boolean isHasDate() {
+	public boolean hasDate() {
 		return hasDate;
 	}
 
