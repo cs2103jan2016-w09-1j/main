@@ -717,8 +717,10 @@ class Logic {
 	// TODO: finalize this when Parser supports with enums
 	private String setSaveFilePath(Command command) {
 		/*
+		 * try {
 		 * TODO: call Jeremy's path method accepting file path string
 		 * _config.setSavePath(command.getSpecificParameter(Task.TaskField.SET_FILEPATH.getTaskKeyName()));
+		 * _storage.updateConfig(_config);
 		 */
 		if (true) { // TODO: change
 			Status._outcome = Status.Outcome.SUCCESS;
@@ -727,6 +729,13 @@ class Logic {
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SET_SAVEPATH;
 		}
+		/*} catch (InvalidPathException ipe) {
+		 	Status._outcome = Status.Outcome.ERROR;
+			Status._errorCode = Status.ErrorCode.SET_SAVEPATH;
+		 } catch (IOException ioe) {
+		 	Status._outcome = Status.Outcome.ERROR;
+			Status._errorCode = Status.ErrorCode.SET_SAVEPATH;
+		 }*/
 		return getOperationStatus(command);
 	}
 	
