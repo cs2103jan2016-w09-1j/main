@@ -18,7 +18,7 @@ import cs2103_w09_1j.esther.Task;
 /**
  * 
  * @author Jeremy Hon
- * @@A0127572A
+ * @@author A0127572A
  *
  */
 public class EstherTest {

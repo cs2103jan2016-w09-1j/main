@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!--  
+ * @author: Guo Mingxuan
+ * @@author A0130749A
+ */
+ -->
+
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
@@ -11,22 +17,22 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<GridPane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UIController">
+<GridPane fx:id="mainPane" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UIController">
    <children>
-      <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="312.0" prefWidth="586.0" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
+      <ScrollPane fitToHeight="true" fitToWidth="true" minHeight="-Infinity" minWidth="-Infinity" prefHeight="312.0" prefWidth="586.0" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
          <content>
-            <VBox id="VBox" fx:id="displayWindow" prefHeight="299.0" spacing="8.0" styleClass="main">
+            <VBox id="VBox" fx:id="displayWindow" spacing="8.0" styleClass="main">
                <padding>
                   <Insets bottom="10" left="10" right="10" top="10" />
                </padding>
                <children>
-                  <Text id="Title" fill="#2956d0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="title" text="Welcome to ESTHER" wrappingWidth="553.806640625" />
-                  <Text fx:id="intro" layoutX="22.0" layoutY="31.0" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="555.806640625">
+                  <Text id="Title" boundsType="VISUAL" fill="#2956d0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="title" text="Welcome to ESTHER" wrappingWidth="553.806640625" VBox.vgrow="ALWAYS" />
+                  <Text fx:id="intro" layoutX="22.0" layoutY="31.0" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="555.806640625" VBox.vgrow="ALWAYS">
                      <font>
                         <Font name="Arial" size="15.0" />
                      </font>
                   </Text>
-                  <Text fx:id="display" layoutX="20.0" layoutY="55.0" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="555.806640625">
+                  <Text fx:id="display" layoutX="20.0" layoutY="55.0" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="555.806640625" VBox.vgrow="ALWAYS">
                      <font>
                         <Font name="Arial" size="15.0" />
                      </font>
@@ -41,15 +47,15 @@
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
          </padding>
       </ScrollPane>
-      <Label fx:id="commandLog" layoutX="14.0" layoutY="326.0" prefHeight="17.0" prefWidth="574.0" GridPane.columnIndex="0" GridPane.rowIndex="1">
+      <Label fx:id="commandLog" layoutX="14.0" layoutY="326.0" GridPane.columnIndex="0" GridPane.columnSpan="2147483647" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
          <padding>
-            <Insets bottom="10.0" left="10.0" right="10.0" top="1.0" />
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
          </padding>
          <GridPane.margin>
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
          </GridPane.margin>
       </Label>
-      <TextField fx:id="input" layoutX="8.0" layoutY="363.0" onKeyPressed="#ENTER" prefHeight="33.0" prefWidth="586.0" GridPane.columnIndex="0" GridPane.rowIndex="2">
+      <TextField fx:id="input" layoutX="8.0" layoutY="363.0" onKeyPressed="#ENTER" GridPane.columnIndex="0" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.vgrow="ALWAYS">
          <padding>
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
          </padding>

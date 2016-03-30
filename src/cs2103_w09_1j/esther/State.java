@@ -7,7 +7,7 @@ package cs2103_w09_1j.esther;
  * component of the program. This class is used to
  * support the undo functionality.
  * 
- * @author Tay Guo Qiang
+ * @@author A0130749A
  */
 
 import java.util.ArrayList;

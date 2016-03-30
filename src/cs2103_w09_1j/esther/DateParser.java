@@ -39,6 +39,7 @@ public class DateParser {
 
 	private final static String ERROR_DIFFERENTDATE = "The date you entered is not correct. Please check again.";
 
+	// @@author A0126000H
 	public static void main(String[] args) throws ParseException, InvalidInputException {
 		DateParser dp = new DateParser();
 		String[] dt = dp.getDateTime("23/7/16");
@@ -48,6 +49,7 @@ public class DateParser {
 			System.out.println("Time " + dt[1]);
 	}
 
+	// @@author A0126000H
 	public String[] getDateTime(String input) throws InvalidInputException, ParseException {
 		String[] dateTime = new String[2];
 		String oldInput = input;
@@ -135,6 +137,7 @@ public class DateParser {
 
 	}
 
+	// @@author A0126000H
 	private String getProperDateTime(String input) {
 
 		// Have to check if number or is a month
@@ -166,6 +169,7 @@ public class DateParser {
 		return input.substring(firstIntegerIndex);
 	}
 
+	// @@author A0126000H
 	private String getWordyDateFormat(String input) {
 
 		Calendar cal = Calendar.getInstance();
@@ -195,6 +199,7 @@ public class DateParser {
 		return convertToDateFormat.format(cal.getTime());
 	}
 
+	// @@author A0126000H
 	private String getDateFormat(String input) {
 		for (int i = 0; i < dateFormatList.size(); i++) {
 			try {
@@ -210,6 +215,7 @@ public class DateParser {
 		return "";
 	}
 
+	// @@author A0126000H
 	private String getTimeFormat(String input) {
 		for (int i = 0; i < timeFormatList.size(); i++) {
 			try {
@@ -224,6 +230,7 @@ public class DateParser {
 		return "";
 	}
 
+	// @@author A0126000H
 	private String getDate(String input, String givenDateFormat) throws ParseException {
 		Date date = new Date();
 		SimpleDateFormat dateFormat = new SimpleDateFormat(givenDateFormat);
@@ -246,12 +253,14 @@ public class DateParser {
 
 	}
 
+	// @@author A0126000H
 	private String getTime(String input, String givenTimeFormat) throws ParseException {
 		SimpleDateFormat timeFormat = new SimpleDateFormat(givenTimeFormat);
 		Date date = timeFormat.parse(input);
 		return convertToTimeFormat.format(date);
 	}
 
+	// @@author A0126000H
 	private String getMonth(String input) {
 		for (Entry<String, String> e : monthWords.entrySet()) {
 			if (input.toLowerCase().contains(e.getKey())) {
@@ -265,7 +274,7 @@ public class DateParser {
 	 * 
 	 * @param input
 	 * @return
-	 * @@A0127572A
+	 * @@author A0127572A
 	 */
 	protected String[] find24HTime(String input) {
 
@@ -308,12 +317,13 @@ public class DateParser {
 	 * @param string
 	 * @param index
 	 * @return
-	 * @@A0127572A
+	 * @@author A0127572A
 	 */
 	private boolean charAtIndexOfStringIsSpace(String string, int index) {
 		return string.charAt(index) == ' ';
 	}
 
+	// @@author A0126000H
 	private static HashMap<String, Integer> createDayMap() {
 		HashMap<String, Integer> result = new HashMap<String, Integer>();
 		result.put("today", 0);
@@ -324,6 +334,7 @@ public class DateParser {
 		return result;
 	}
 
+	// @@author A0126000H
 	private static HashMap<String, Integer> createWeekMap() {
 		HashMap<String, Integer> result = new HashMap<String, Integer>();
 		result.put("sun", Calendar.SUNDAY + 1);
@@ -336,6 +347,7 @@ public class DateParser {
 		return result;
 	}
 
+	// @@author A0126000H
 	private static HashMap<String, String> createMonthMap() {
 		HashMap<String, String> result = new HashMap<String, String>();
 		result.put("jan", "January");
@@ -353,6 +365,7 @@ public class DateParser {
 		return result;
 	}
 
+	// @@author A0126000H
 	private int checkForWordInMap(String input, HashMap<String, Integer> map) {
 		for (Entry<String, Integer> e : map.entrySet()) {
 			if (input.toLowerCase().contains(e.getKey())) {

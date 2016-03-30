@@ -1,5 +1,16 @@
 package cs2103_w09_1j.esther;
 
+/**
+ * ========= [ STATUS CLASS DEFINITIONS ] =========
+ * This class contains the representation of the
+ * Status class that will be used by the Logic
+ * component of the program. This class is used to
+ * convey messages to the user about the status of
+ * the user operations being carried out.
+ * 
+ * @@author A0130749A
+ */
+
 import cs2103_w09_1j.esther.Command.CommandKey;
 
 public class Status {
