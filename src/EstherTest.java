@@ -25,7 +25,7 @@ public class EstherTest {
 
 	private String pathString = "esther.txt";
 	private Path saveLoc = Paths.get(pathString);
-	private String[] dateFormats = { "", "dd/MM/yy", "dd/MM/yyyy", "d/M/yy", "d/MM/yy", "dd/M/yy" };
+	private String[] dateFormats = { "", "dd/MM/yy", "dd/MM/yyyy", "d/M/yy", "d/MM/yy", "dd/M/yy", "E" };
 	private String[] timeFormats = { "", "HHmm", "HH:mm", "hha", "hhmma" };
 	private ArrayList<DateTimeTester> todayTestFormats;
 	private ArrayList<DateTimeTester> todayOneHourTestFormats;
@@ -48,13 +48,13 @@ public class EstherTest {
 
 	@Test
 	public void addTestFloating() {
-		assertTrue(logic.executeCommand("add task").contains("success"));
+		tryAddTask();
 	}
 
 	@Test
 	public void addTestOn() {
-		assertTrue(logic.executeCommand("add task on " + defaultTester.getDTString()).contains("success"));
-		assertTrue(verifyTaskEndDate(defaultTester));
+		tryCommand("add task on " + defaultTester.getDTString());
+		assertTrue(verifyEndDate(defaultTester));
 	}
 
 	@Test
@@ -81,7 +81,7 @@ public class EstherTest {
 					System.out.println(result);
 					fail();
 				} else {
-					assertTrue(verifyTaskEndDate(dateTimeTester));
+					assertTrue(verifyEndDate(dateTimeTester));
 				}
 			}
 		}
@@ -89,11 +89,9 @@ public class EstherTest {
 
 	@Test
 	public void addTestFromTo() {
-		assertTrue(logic
-				.executeCommand("add task from " + defaultTester.getDTString() + " to " + default1HTester.getDTString())
-				.contains("success"));
-		assertTrue(verifyTaskStartDate(defaultTester));
-		assertTrue(verifyTaskEndDate(default1HTester));
+		tryCommand("add task from " + defaultTester.getDTString() + " to " + default1HTester.getDTString());
+		assertTrue(verifyStartDate(defaultTester));
+		assertTrue(verifyEndDate(default1HTester));
 	}
 
 	@Test
@@ -110,8 +108,8 @@ public class EstherTest {
 					System.out.println(result);
 					fail();
 				} else {
-					assertTrue(verifyTaskStartDate(tester));
-					assertTrue(verifyTaskEndDate(tester1H));
+					assertTrue(verifyStartDate(tester));
+					assertTrue(verifyEndDate(tester1H));
 				}
 			}
 		}
@@ -120,13 +118,13 @@ public class EstherTest {
 
 	@Test
 	public void addWithKeyword() {
-		assertTrue(logic.executeCommand("add \"task from to on \"").contains("success"));
+		tryCommand("add \"task from to on \"");
 	}
 
 	@Test
 	public void addDuplicate() {
 		for (int i = 0; i < 2; i++) {
-			tryCommand("add task");
+			tryAddTask();
 		}
 	}
 
@@ -134,8 +132,8 @@ public class EstherTest {
 	public void deleteNameTest() {
 		// equivalence partition for delete based on name
 		int tasks = logic.getInternalStorage().size();
-		assertTrue(logic.executeCommand("add deltask").contains("success"));
-		assertTrue(logic.executeCommand("delete deltask").contains("success"));
+		tryCommand("add deltask");
+		tryCommand("delete deltask");
 		assertEquals(tasks, logic.getInternalStorage().size());
 	}
 
@@ -144,15 +142,15 @@ public class EstherTest {
 		// equivalence partition for delete based on id
 		Task.setGlobalId(0);
 		int tasks = logic.getInternalStorage().size();
-		assertTrue(logic.executeCommand("add deltask").contains("success"));
-		assertTrue(logic.executeCommand("delete 0").contains("success"));
+		tryCommand("add deltask");
+		tryCommand("delete 0");
 		assertEquals(tasks, logic.getInternalStorage().size());
 	}
 
 	@Test
 	public void deleteDuplicate() {
 		for (int i = 0; i < 2; i++) {
-			tryCommand("add task");
+			tryAddTask();
 		}
 		failCommand("delete task");
 	}
@@ -161,14 +159,15 @@ public class EstherTest {
 	public void updateNameByNameTest() {
 		// equivalence partition for updating different fields based on name
 		// reference
-		assertTrue(logic.executeCommand("add updTask on 03/07/2016").contains("success"));
-		assertTrue(logic.executeCommand("update updTask name to updatedTask").contains("success"));
+		tryCommand("add updtask");
+		tryCommand("update updtask name to updatedTask");
+		verifyName("updatedTask");
 	}
 
 	@Test
 	public void updateDupNameByNameTest() {
 		for (int i = 0; i < 2; i++) {
-			tryCommand("add task");
+			tryAddTask();
 		}
 		failCommand("update task name to updatedTask");
 	}
@@ -177,38 +176,44 @@ public class EstherTest {
 	public void updateDateByNameTest() {
 		// equivalence partition for updating different fields based on name
 		// reference
-		assertTrue(logic.executeCommand("add updTask on 03/07/2016").contains("success"));
-		assertTrue(logic.executeCommand("update updTask date to 04/07/2016").contains("success"));
+		tryCommand("add task on "+defaultTester.getDTString());
+		tryCommand("update task date to "+default1HTester.getDString());
+		tryCommand("update task time to "+default1HTester.getTString());
+		assertTrue(verifyEndDate(default1HTester));
 	}
 
 	@Test
 	public void updatePriorityByNameTest() {
-		// equivalence partition for updating different fields based on name
-		// reference
-		assertTrue(logic.executeCommand("add updTask on 03/07/2016").contains("success"));
-		assertTrue(logic.executeCommand("update updTask priority to 1").contains("success"));
+		tryAddTask();
+		tryCommand("update task pr to 1");
+		assertTrue(verifyPriority(1));
 	}
 
 	@Test
 	public void updateFloatToDeadline() {
-		tryCommand("add task");
-		tryCommand("update task date to " + defaultTester.getDTString());
+		tryAddTask();
+		tryCommand("update task date to " + defaultTester.getDString());
+		tryCommand("update task time to " + defaultTester.getTString());
+		assertTrue(verifyEndDate(defaultTester));
 	}
 
 	@Test
 	public void updateFloatToEvent() {
-		tryCommand("add task");
-		tryCommand("update task endtime to "+default1HTester.getTString());
-		tryCommand("update task date to "+default1HTester.getDString());
-		tryCommand("update task starttime to "+defaultTester.getTString());
-		tryCommand("update task sDate to "+defaultTester.getDString());
+		tryAddTask();
+		tryCommand("update task endtime to " + default1HTester.getTString());
+		tryCommand("update task date to " + default1HTester.getDString());
+		tryCommand("update task starttime to " + defaultTester.getTString());
+		tryCommand("update task sDate to " + defaultTester.getDString());
+		assertTrue(verifyEndDate(default1HTester));
+		assertTrue(verifyStartDate(defaultTester));
 	}
 
 	@Test
 	public void updateDeadlineToEvent() {
 		tryCommand("add task on " + default1HTester.getDTString());
-		tryCommand("update task starttime to "+defaultTester.getTString());
-		tryCommand("update task startdate to "+defaultTester.getDString());
+		tryCommand("update task stime to " + defaultTester.getTString());
+		tryCommand("update task sdate to " + defaultTester.getDString());
+		assertTrue(verifyStartDate(defaultTester));
 	}
 
 	@Test
@@ -216,15 +221,26 @@ public class EstherTest {
 		// equivalence partition for updating different fields based on ID
 		// reference
 		Task.setGlobalId(0);
-		assertTrue(logic.executeCommand("add updTask on 03/07/2016").contains("success"));
-		assertTrue(logic.executeCommand("update 0 name to updatedTask").contains("success"));
+		tryAddTask();
+		tryCommand("update 0 name to task2");
+		assertTrue(verifyName("task2"));
+	}
+
+	@Test
+	public void updateDupByIDTest() {
+		// equivalence partition for updating different fields based on ID
+		// reference
+		Task.setGlobalId(0);
+		tryAddTask();
+		tryAddTask();
+		tryCommand("update 0 name to task2");
+		assertTrue(verifyName("task"));
 	}
 
 	@Test
 	public void completeTest() {
-		logic.executeCommand("add task");
-		String result = logic.executeCommand("complete task");
-		assertTrue(result.contains("success"));
+		tryAddTask();
+		tryCommand("complete task");
 	}
 
 	@After
@@ -245,7 +261,7 @@ public class EstherTest {
 		}
 		deleteFile();
 	}
-	
+
 	/**
 	 * 
 	 * @param command
@@ -258,6 +274,10 @@ public class EstherTest {
 			System.out.println(result);
 		}
 		assertTrue(assertResult);
+	}
+
+	private void tryAddTask() {
+		tryCommand("add task");
 	}
 
 	private void failCommand(String command) {
@@ -287,12 +307,12 @@ public class EstherTest {
 		return new Date(date.getTime() / (60 * 60 * 60000) * (60 * 60 * 60000));
 	}
 
-	private boolean verifyTaskStartDate(DateTimeTester dateTimeTester) {
+	private boolean verifyStartDate(DateTimeTester dateTimeTester) {
 		Date date = getLastElement(logic.getInternalStorage()).getStartDate();
 		return verifyDate(dateTimeTester, date);
 	}
 
-	private boolean verifyTaskEndDate(DateTimeTester dateTimeTester) {
+	private boolean verifyEndDate(DateTimeTester dateTimeTester) {
 		Date date = getLastElement(logic.getInternalStorage()).getEndDate();
 		return verifyDate(dateTimeTester, date);
 	}
@@ -300,13 +320,25 @@ public class EstherTest {
 	private boolean verifyDate(DateTimeTester dateTimeTester, Date date) {
 		if (!date.equals(dateTimeTester.getDate())) {
 			System.out.println("Verification of task failed.");
-			System.out.println("Expected: "+dateTimeTester.getDate().toString());
-			System.out.println("Actual: "+date.toString());
-			System.out.println("Date time given: "+dateTimeTester.getDTString());
+			System.out.println("Expected: " + dateTimeTester.getDate().toString());
+			System.out.println("Actual: " + date.toString());
+			System.out.println("Date time given: " + dateTimeTester.getDTString());
 			return false;
 		} else {
 			return true;
 		}
+	}
+
+	private boolean verifyName(String name) {
+		return getLastElement(logic.getInternalStorage()).getName().equals(name);
+	}
+	
+	private boolean verifyPriority(int priority) {
+		return getLastElement(logic.getInternalStorage()).getPriority() == priority;
+	}
+	
+	private boolean verifyComplete() {
+		return getLastElement(logic.getInternalStorage()).isCompleted();
 	}
 
 	private <E> E getLastElement(ArrayList<E> list) {
