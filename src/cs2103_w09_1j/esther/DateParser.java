@@ -228,7 +228,7 @@ public class DateParser {
 					}
 				}
 			}
-			cal.add(Calendar.DATE, specificDayValue);
+			cal.set(Calendar.DAY_OF_WEEK, specificDayValue - 1);
 		}
 		return convertToDateFormat.format(cal.getTime());
 	}
@@ -363,6 +363,7 @@ public class DateParser {
 		HashMap<String, Integer> result = new HashMap<String, Integer>();
 		result.put("today", 0);
 		result.put("tmr", 1);
+		result.put("tmw", 1);
 		result.put("tom", 1);
 		result.put("day after", 2);
 		result.put("tda", 2);

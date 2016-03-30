@@ -145,7 +145,7 @@ public class Task implements Comparable<Task> {
 		String startTimeString = command.hasParameter(TaskField.STARTTIME.getTaskKeyName())
 				? command.getSpecificParameter(TaskField.STARTTIME.getTaskKeyName())
 				: null;
-		startDate = parseDateTimeToString(today, startDateString, startTimeString);
+		startDate = parseDateTimeToString(today, startDateString, startTimeString, true);
 
 		String endDateString = command.hasParameter(TaskField.ENDDATE.getTaskKeyName())
 				? command.getSpecificParameter(TaskField.ENDDATE.getTaskKeyName())
@@ -154,7 +154,7 @@ public class Task implements Comparable<Task> {
 		String endTimeString = command.hasParameter(TaskField.ENDTIME.getTaskKeyName())
 				? command.getSpecificParameter(TaskField.ENDTIME.getTaskKeyName())
 				: null;
-		endDate = parseDateTimeToString(today, endDateString, endTimeString);
+		endDate = parseDateTimeToString(today, endDateString, endTimeString, false);
 
 		int priority = command.hasParameter(TaskField.PRIORITY.getTaskKeyName())
 				? Integer.parseInt(command.getSpecificParameter(TaskField.PRIORITY.getTaskKeyName()))
@@ -353,14 +353,14 @@ public class Task implements Comparable<Task> {
 	 * @throws ParseException
 	 * @@author A0127572A
 	 */
-	private Date parseDateTimeToString(Date today, String dateString, String timeString)
+	private Date parseDateTimeToString(Date today, String dateString, String timeString, boolean start)
 			throws ParseException {
 		Date date = null;
 		if (dateString != null && timeString != null) {
 			//System.out.println("Date and time parts are modified.");
 			date = _dateAndTimeFormatter.parse(dateString + " " + timeString);
 		} else if (dateString != null && timeString == null) {
-			date = _dateAndTimeFormatter.parse(dateString + " 23:59");
+			date = _dateAndTimeFormatter.parse(dateString + " " + (start ? "00:00" : "23:59"));
 		} else if (dateString == null && timeString != null) {
 			//System.out.println("Time part is modified.");
 			date = _dateAndTimeFormatter.parse(_dateOnlyFormatter.format(today) + " " + timeString);
@@ -617,24 +617,24 @@ public class Task implements Comparable<Task> {
 		Date newEndDate = null;
 		
 		if (_startDate == null) {
-			newStartDate = parseDateTimeToString(new Date(), startDate, startTime);
+			newStartDate = parseDateTimeToString(new Date(), startDate, startTime, true);
 			this.setStartDate(newStartDate);
 		} else if (startTime == null) {
-			newStartDate = parseDateTimeToString(_startDate, startDate, oldStartTime);
+			newStartDate = parseDateTimeToString(_startDate, startDate, oldStartTime, true);
 			this.setStartDate(newStartDate);
 		} else {
-			newStartDate = parseDateTimeToString(_startDate, startDate, startTime);
+			newStartDate = parseDateTimeToString(_startDate, startDate, startTime, true);
 			this.setStartDate(newStartDate);
 		}
 		
 		if (_endDate == null) {
-			newEndDate = parseDateTimeToString(new Date(), endDate, endTime);
+			newEndDate = parseDateTimeToString(new Date(), endDate, endTime, false);
 			this.setEndDate(newEndDate);
 		} else if (endTime == null) {
-			newEndDate = parseDateTimeToString(_endDate, endDate, oldEndTime);
+			newEndDate = parseDateTimeToString(_endDate, endDate, oldEndTime, false);
 			this.setEndDate(newEndDate);
 		} else {
-			newEndDate = parseDateTimeToString(_endDate, endDate, endTime); 
+			newEndDate = parseDateTimeToString(_endDate, endDate, endTime, false); 
 			this.setEndDate(newEndDate);
 		}
 		

@@ -710,7 +710,7 @@ class Logic {
 				//results.add(entry);
 			}
 		}
-		System.out.println(results);
+		//System.out.println(results);
 		return results;
 	}
 	
@@ -922,7 +922,7 @@ class Logic {
 	private void updateTaskInFile(Command command) {
 		Task toUpdate = null;
 		int taskIndex = getTaskIndex(command);
-		System.out.println(taskIndex);
+		//System.out.println(taskIndex);
 		
 		try {
 			if (taskIndex != NOT_FOUND_INDEX && taskIndex != DUPLICATE_TASK_INDEX) {
