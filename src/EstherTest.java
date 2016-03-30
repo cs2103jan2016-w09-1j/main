@@ -25,8 +25,8 @@ public class EstherTest {
 
 	private String pathString = "esther.txt";
 	private Path saveLoc = Paths.get(pathString);
-	private String[] dateFormats = { "", "dd/MM/yy", "dd/MM/yyyy" };
-	private String[] timeFormats = { "", "HHmm", "HH:mm", "hha" };
+	private String[] dateFormats = { "", "dd/MM/yy", "dd/MM/yyyy", "d/M/yy", "d/MM/yy", "dd/M/yy" };
+	private String[] timeFormats = { "", "HHmm", "HH:mm", "hha", "hhmma" };
 	private ArrayList<DateTimeTester> todayTestFormats;
 	private ArrayList<DateTimeTester> todayOneHourTestFormats;
 	private Date now = new Date();
@@ -53,7 +53,7 @@ public class EstherTest {
 
 	@Test
 	public void addTestOn() {
-		assertTrue(logic.executeCommand("add task on " + defaultTester.getString1()).contains("success"));
+		assertTrue(logic.executeCommand("add task on " + defaultTester.getDTString()).contains("success"));
 		assertTrue(verifyTaskEndDate(defaultTester));
 	}
 
@@ -66,13 +66,13 @@ public class EstherTest {
 				if (i == 1) {
 					// has 2 strings
 					if (dateTimeTester.isHasReverse()) {
-						addCommand = "add task on " + dateTimeTester.getString2();
+						addCommand = "add task on " + dateTimeTester.getTDString();
 					} else {
 						continue;
 					}
 				} else {
 					// has 1 string anyway
-					addCommand = "add task on " + dateTimeTester.getString2();
+					addCommand = "add task on " + dateTimeTester.getTDString();
 				}
 				String result = logic.executeCommand(addCommand);
 				if (!result.contains("success")) {
@@ -90,7 +90,7 @@ public class EstherTest {
 	@Test
 	public void addTestFromTo() {
 		assertTrue(logic
-				.executeCommand("add task from " + defaultTester.getString1() + " to " + default1HTester.getString1())
+				.executeCommand("add task from " + defaultTester.getDTString() + " to " + default1HTester.getDTString())
 				.contains("success"));
 		assertTrue(verifyTaskStartDate(defaultTester));
 		assertTrue(verifyTaskEndDate(default1HTester));
@@ -102,7 +102,7 @@ public class EstherTest {
 		for (DateTimeTester tester : todayTestFormats) {
 			for (DateTimeTester tester1H : todayOneHourTestFormats) {
 				index++;
-				String addCommand = ("add task from " + tester.getString1() + " to " + tester1H.getString1());
+				String addCommand = ("add task from " + tester.getDTString() + " to " + tester1H.getDTString());
 				String result = logic.executeCommand(addCommand);
 				if (!result.contains("success")) {
 					System.out.println("Add test failed on iteration " + index);
@@ -192,23 +192,23 @@ public class EstherTest {
 	@Test
 	public void updateFloatToDeadline() {
 		tryCommand("add task");
-		tryCommand("update task date to " + defaultTester.getString1());
+		tryCommand("update task date to " + defaultTester.getDTString());
 	}
 
 	@Test
 	public void updateFloatToEvent() {
 		tryCommand("add task");
-		tryCommand("update task endtime to 3pm");
-		tryCommand("update task date to 29/3/2016");
-		tryCommand("update task starttime to 2pm");
-		tryCommand("update task sDate to 29/3/2016");
+		tryCommand("update task endtime to "+default1HTester.getTString());
+		tryCommand("update task date to "+default1HTester.getDString());
+		tryCommand("update task starttime to "+defaultTester.getTString());
+		tryCommand("update task sDate to "+defaultTester.getDString());
 	}
 
 	@Test
 	public void updateDeadlineToEvent() {
-		tryCommand("add task on " + defaultTester.getString1());
-		tryCommand("update task starttime to 2pm");
-		tryCommand("update task startdate to 29/3/2016");
+		tryCommand("add task on " + default1HTester.getDTString());
+		tryCommand("update task starttime to "+defaultTester.getTString());
+		tryCommand("update task startdate to "+defaultTester.getDString());
 	}
 
 	@Test
@@ -299,8 +299,10 @@ public class EstherTest {
 
 	private boolean verifyDate(DateTimeTester dateTimeTester, Date date) {
 		if (!date.equals(dateTimeTester.getDate())) {
-			System.out.println(dateTimeTester.getDate().toString());
-			System.out.println(date.toString());
+			System.out.println("Verification of task failed.");
+			System.out.println("Expected: "+dateTimeTester.getDate().toString());
+			System.out.println("Actual: "+date.toString());
+			System.out.println("Date time given: "+dateTimeTester.getDTString());
 			return false;
 		} else {
 			return true;
