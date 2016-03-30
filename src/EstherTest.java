@@ -85,7 +85,6 @@ public class EstherTest {
 				}
 			}
 		}
-		assertTrue(true);
 	}
 
 	@Test
@@ -246,7 +245,11 @@ public class EstherTest {
 		}
 		deleteFile();
 	}
-
+	
+	/**
+	 * 
+	 * @param command
+	 */
 	private void tryCommand(String command) {
 		String result = logic.executeCommand(command);
 		boolean assertResult = result.contains("success");
