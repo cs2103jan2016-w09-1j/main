@@ -277,7 +277,13 @@ public class DateParser {
 	 * @@author A0127572A
 	 */
 	protected String[] find24HTime(String input) {
+		
 	    String[] result = new String[2];
+	    
+	    if(input == null){
+			return result; 
+		}
+	    
 	    String regex = "\\d{4}";
 	    Matcher matcher = Pattern.compile(regex).matcher(input);
 	    
