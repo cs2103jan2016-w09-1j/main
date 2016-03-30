@@ -58,12 +58,12 @@ public class DateParser {
 		// Check for wordy date first
 		String wordyDate = dp.getWordyDateFormat(input);
 		input = dp.getProperDateTime(input);
-		
+
 		String[] twentyFourTime = find24HTime(input);
-		if(twentyFourTime[0] != null) {
+		if (twentyFourTime[0] != null) {
 			dateTime[1] = twentyFourTime[0];
 			input = twentyFourTime[1];
-		} 
+		}
 		while (input != null) {
 			oldInput = input;
 			if (dateTime[0] == null) {
@@ -260,7 +260,7 @@ public class DateParser {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * 
 	 * @param input
@@ -268,39 +268,41 @@ public class DateParser {
 	 * @@A0127572A
 	 */
 	protected String[] find24HTime(String input) {
-		
-	    String[] result = new String[2];
-	    
-	    if(input == null){
-			return result; 
-		}
-	    
-	    String regex = "\\d{4}";
-	    Matcher matcher = Pattern.compile(regex).matcher(input);
-	    
-	    //find all matches of 4 integers
-	    boolean lastLoopFoundMatch = true;
-	    boolean foundMatch;
-	    while(lastLoopFoundMatch){
-		foundMatch = matcher.find();
-		if(foundMatch){
-		    //assume valid 24H time can only have space characters next to it
-		    //or are at the ends of the string
-		    //identify valid 24H times
-		    if((matcher.start() == 0 || charAtIndexOfStringIsSpace(input, matcher.start()-1) 
-			    && (matcher.end() >= input.length() - 1 || charAtIndexOfStringIsSpace(input, matcher.end()+1)))) {
-			//this is a valid 24H time
-			result[0] = matcher.group().substring(0, 2) + ":" + matcher.group().substring(2);
-			result[1] = input.substring(0, matcher.start()) + input.substring(matcher.end());
+
+		String[] result = new String[2];
+
+		if (input == null) {
 			return result;
-		    }
-		    //otherwise this is an invalid 24H time, ignore
 		}
-		lastLoopFoundMatch = foundMatch;
-	    }
-	    return result;
+
+		String regex = "\\d{4}";
+		Matcher matcher = Pattern.compile(regex).matcher(input);
+
+		// find all matches of 4 integers
+		boolean lastLoopFoundMatch = true;
+		boolean foundMatch;
+		while (lastLoopFoundMatch) {
+			foundMatch = matcher.find();
+			if (foundMatch) {
+				// assume valid 24H time can only have space characters next to
+				// it
+				// or are at the ends of the string
+				// identify valid 24H times
+				if ((matcher.start() == 0 || charAtIndexOfStringIsSpace(input, matcher.start() - 1)
+						&& (matcher.end() >= input.length() - 1
+								|| charAtIndexOfStringIsSpace(input, matcher.end() + 1)))) {
+					// this is a valid 24H time
+					result[0] = matcher.group().substring(0, 2) + ":" + matcher.group().substring(2);
+					result[1] = input.substring(0, matcher.start()) + input.substring(matcher.end());
+					return result;
+				}
+				// otherwise this is an invalid 24H time, ignore
+			}
+			lastLoopFoundMatch = foundMatch;
+		}
+		return result;
 	}
-	
+
 	/**
 	 * 
 	 * @param string
@@ -308,8 +310,8 @@ public class DateParser {
 	 * @return
 	 * @@A0127572A
 	 */
-	private boolean charAtIndexOfStringIsSpace(String string, int index){
-	    return string.charAt(index) == ' ';
+	private boolean charAtIndexOfStringIsSpace(String string, int index) {
+		return string.charAt(index) == ' ';
 	}
 
 	private static HashMap<String, Integer> createDayMap() {
