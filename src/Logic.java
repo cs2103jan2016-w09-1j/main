@@ -187,6 +187,12 @@ class Logic {
 				statusMessage = undo(command);
 				break;
 				
+			// TODO: adjust after CommandKey has set_filepath enum
+			/*case SET_FILEPATH :
+			  	statusMessage = setSaveFilePath(command);
+			  	break;
+			 */
+				
 			case HELP :
 				Status._outcome = Status.Outcome.SUCCESS;
 				statusMessage = Status.getMessage(null, null, commandName);
@@ -678,9 +684,20 @@ class Logic {
 	 * @return a list of Task objects that match the search criteria
 	 * 
 	 */
-	// TODO: implement (for later stages)
+	// TODO: implement search before/on/after <date> command operation
 	private String/*ArrayList<Task>*/ searchFile(Command command) {
 		String results = "Search:\n";
+		String searchCriteria = null;
+		if (command.getSpecificParameter(Task.TaskField.NAME.getTaskKeyName()) != null) {
+			searchCriteria = Task.TaskField.NAME.getTaskKeyName();
+			// TODO: change TaskField enum name
+		}/* else if (command.getSpecificParameter(Task.TaskField.SEARCHDATE.getTaskKeyName()) != null) {
+			searchCriteria = Task.TaskField.SEARCHDATE.getTaskKeyName();
+		} else {
+			Status._outcome = Status.Outcome.ERROR;
+			Status._errorCode = Status.ErrorCode.SEARCH_INVALID;
+			return getOperationStatus(command);
+		}*/
 		// String searchKey = command.getSpecificParameter("something_for_search");
 		//logger.logp(Level.INFO, "Logic", "searchFile(Command command)",
 				  	  //"Searching tasks in file.", searchKey);
@@ -695,6 +712,22 @@ class Logic {
 		}
 		System.out.println(results);
 		return results;
+	}
+	
+	// TODO: finalize this when Parser supports with enums
+	private String setSaveFilePath(Command command) {
+		/*
+		 * TODO: call Jeremy's path method accepting file path string
+		 * _config.setSavePath(command.getSpecificParameter(Task.TaskField.SET_FILEPATH.getTaskKeyName()));
+		 */
+		if (true) { // TODO: change
+			Status._outcome = Status.Outcome.SUCCESS;
+			updateUndoStack(command, null);
+		} else {
+			Status._outcome = Status.Outcome.ERROR;
+			Status._errorCode = Status.ErrorCode.SET_SAVEPATH;
+		}
+		return getOperationStatus(command);
 	}
 	
 	/**
@@ -741,9 +774,12 @@ class Logic {
 					break;
 					
 				case SEARCH :
-				 	// TODO for Parser: add enum field + value
-					// undo a search does not make logical sense
 					break;
+					
+				/*case SET_FILEPATH // TODO for Parser: add enum for CommandKey, TaskField
+				 * undoSetSaveFilePath(previousState.getFilePath());
+				 * break; 
+				 */
 					
 				case HELP :
 					break;
@@ -1034,6 +1070,12 @@ class Logic {
 			case SEARCH : // TODO for Parser: add enum field + value
 				previous = new State(EMPTY_STATE);
 				break;
+				
+			/*case SET_SAVEPATH : // TODO for Parser: add enum fields in CommandKey, TaskField
+			  	previous = new State(commandName);
+			  	previous.setFilePath(commandName.getSpecificParameter(Task.TaskField.SET_FILEPATH.getTaskKeyName()));
+			  	break;
+			 */
 
 			case UNDO :
 				previous = new State(EMPTY_STATE);
@@ -1179,6 +1221,10 @@ class Logic {
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
+	}
+	
+	private void undoSetSaveFilePath(String filePath) {
+		// TODO: set back to old filePath
 	}
 	
 	/**
