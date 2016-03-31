@@ -19,7 +19,7 @@ public class Status {
 		SYSTEM, INVALID_COMMAND, ADD_INVALID_FORMAT, ADD_MISSING_NAME, DELETE_NOT_FOUND, DELETE_DUPLICATES_PRESENT,
 		UPDATE_NOT_FOUND, UPDATE_DUPLICATES_PRESENT, UPDATE_INVALID_FIELD, UPDATE_START_END_VIOLATE,
 		UPDATE_INVALID_PRIORITY, COMPLETED_NOT_FOUND, COMPLETED_DUPLICATES_PRESENT, COMPLETED_ALREADY_COMPLETED,
-		SORT_INVALID_CRITERION, UNDO, UNKNOWN_STATE
+		SORT_INVALID_CRITERION, SEARCH_INVALID, SET_SAVEPATH, UNDO, UNKNOWN_STATE
 	}
 
 	public enum Outcome {
@@ -55,6 +55,9 @@ public class Status {
 	static final String MESSAGE_SUCCESS_SORT = "File is successfully sorted.\n";
 	static final String MESSAGE_ERROR_SORT_INVALID_CRITERION = "Unable to sort file: Please specify a recognized criterion to sort the file by.\n";
 	
+	static final String MESSAGE_ERROR_SEARCH_INVALID = "Search keyword or date-time not present.\n";
+	static final String MESSAGE_SUCCESS_SET_SAVEPATH = "Successfully set file path.\n";
+	static final String MESSAGE_ERROR_SET_SAVEPATH = "Unable to set file path.\n";
 	static final String MESSAGE_SUCCESS_UNDO = "Undo is successful.\n";
 	static final String MESSAGE_ERROR_UNDO = "Cannot undo any further.\n";
 	static final String MESSAGE_ERROR_UNKNOWN_STATE = "ESTHER has encountered an unknown error. Please restart this application.\n";
@@ -153,6 +156,12 @@ public class Status {
 		case UNDO :
 			message = MESSAGE_SUCCESS_UNDO;
 			break;
+			
+		// TODO: adjust w.r.t. CommandKey enum			
+		/*case SET_FILEPATH :
+		    message = MESSAGE_SUCCESS_SET_FILEPATH;
+		    break;
+		 */
 
 		case HELP :
 			message = MESSAGE_HELP;
@@ -190,7 +199,7 @@ public class Status {
 			message = getDeleteErrorMessage(taskName, taskID);
 			break;
 			
-		case UPDATE : // includes both update error and not found error
+		case UPDATE :
 			message = getUpdateErrorMessage(taskName, taskID);
 			break;
 			
@@ -201,6 +210,16 @@ public class Status {
 		case SORT :
 			message = MESSAGE_ERROR_SORT_INVALID_CRITERION;
 			break;
+		
+		case SEARCH :
+			message = MESSAGE_ERROR_SEARCH_INVALID;
+			break;
+			
+		// TODO: adjust w.r.t. CommandKey enum
+		/*case SET_FILEPATH :
+		    message = MESSAGE_ERROR_SET_FILEPATH;
+		    break;
+		 */
 
 		case UNDO :
 			message = MESSAGE_ERROR_UNDO;

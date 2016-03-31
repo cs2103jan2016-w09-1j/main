@@ -143,8 +143,8 @@ public class Task implements Comparable<Task> {
 				: null;
 
 		String startTimeString = command.hasParameter(TaskField.STARTTIME.getTaskKeyName())
-				? command.getSpecificParameter(TaskField.STARTTIME.getTaskKeyName())
-				: null;
+								 ? command.getSpecificParameter(TaskField.STARTTIME.getTaskKeyName())
+								 : null;
 		startDate = parseDateTimeToString(today, startDateString, startTimeString, true);
 
 		String endDateString = command.hasParameter(TaskField.ENDDATE.getTaskKeyName())
@@ -152,8 +152,8 @@ public class Task implements Comparable<Task> {
 				: null;
 
 		String endTimeString = command.hasParameter(TaskField.ENDTIME.getTaskKeyName())
-				? command.getSpecificParameter(TaskField.ENDTIME.getTaskKeyName())
-				: null;
+							   ? command.getSpecificParameter(TaskField.ENDTIME.getTaskKeyName())
+							   : null;
 		endDate = parseDateTimeToString(today, endDateString, endTimeString, false);
 
 		int priority = command.hasParameter(TaskField.PRIORITY.getTaskKeyName())
@@ -634,7 +634,7 @@ public class Task implements Comparable<Task> {
 			newEndDate = parseDateTimeToString(_endDate, endDate, oldEndTime, false);
 			this.setEndDate(newEndDate);
 		} else {
-			newEndDate = parseDateTimeToString(_endDate, endDate, endTime, false); 
+			newEndDate = parseDateTimeToString(_endDate, endDate, endTime, false);
 			this.setEndDate(newEndDate);
 		}
 		
