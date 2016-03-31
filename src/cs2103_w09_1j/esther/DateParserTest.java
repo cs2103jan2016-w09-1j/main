@@ -40,38 +40,10 @@ public class DateParserTest {
 		input = "12-02-2015";
 		date = dateParser.getDateTime(input)[0];
 		Assert.assertEquals("For Format dd-MM-yyyy: ", "12/02/2015", date);
-
-		input = "12 02 2015";
-		date = dateParser.getDateTime(input)[0];
-		Assert.assertEquals("For Format dd MM yyyy: ", "12/02/2015", date);
-
+		
 		input = "12022015";
 		date = dateParser.getDateTime(input)[0];
 		Assert.assertEquals("For Format ddMMyyyy: ", "12/02/2015", date);
-
-		input = "12 Feb 2015";
-		date = dateParser.getDateTime(input)[0];
-		Assert.assertEquals("For Format dd MMM yyyy: ", "12/02/2015", date);
-
-		input = "12 february 2015";
-		date = dateParser.getDateTime(input)[0];
-		Assert.assertEquals("For Format dd MMM yyyy: ", "12/02/2015", date);
-
-		input = "12feb 2015";
-		date = dateParser.getDateTime(input)[0];
-		Assert.assertEquals("For Format ddMMM yyyy: ", "12/02/2015", date);
-
-		input = "12 february, 2015";
-		date = dateParser.getDateTime(input)[0];
-		Assert.assertEquals("For Format dd MMM, yyyy: ", "12/02/2015", date);
-
-		input = "12 FEB, 2015";
-		date = dateParser.getDateTime(input)[0];
-		Assert.assertEquals("For Format dd MMM, yyyy: ", "12/02/2015", date);
-
-		input = "Feb 12, 2015";
-		date = dateParser.getDateTime(input)[0];
-		Assert.assertEquals("For Format MMM dd, yyyy: ", "12/02/2015", date);
 
 		input = "12/02";
 		date = dateParser.getDateTime(input)[0];
@@ -80,10 +52,6 @@ public class DateParserTest {
 		input = "12 feb";
 		date = dateParser.getDateTime(input)[0];
 		Assert.assertEquals("For Format dd MMM: ", "12/02/2017", date);
-
-		input = "12FEBRUARY";
-		date = dateParser.getDateTime(input)[0];
-		Assert.assertEquals("For Format ddMMM: ", "12/02/2017", date);
 
 		input = "feb 12";
 		date = dateParser.getDateTime(input)[0];
@@ -107,18 +75,11 @@ public class DateParserTest {
 		input = "0300pm";
 		time = dateParser.getDateTime(input)[1];
 		Assert.assertEquals("For Format hhmma : ", "15:00", time);
-
-		System.out.println(1);
-		input = "0300 pm";
-		time = dateParser.getDateTime(input)[1];
-		Assert.assertEquals("For Format hhmm a : ", "15:00", time);
-
-		System.out.println(2);
+		
 		input = "03:00";
 		time = dateParser.getDateTime(input)[1];
 		Assert.assertEquals("For Format HH:mm : ", "03:00", time);
-
-		System.out.println(3);
+		
 		input = "15:00";
 		time = dateParser.getDateTime(input)[1];
 		Assert.assertEquals("For Format HH:mm : ", "15:00", time);
