@@ -308,18 +308,6 @@ public class ParserTest {
 		resultCommand = parser.acceptUserInput(input);
 	}
 	
-	@Test(expected = InvalidInputException.class)
-	public void testUpdateAlternate3() throws ParseException, InvalidInputException {
-		input = "update meeting time to 4pm";
-		resultCommand = parser.acceptUserInput(input);
-	}
-	
-	@Test(expected = InvalidInputException.class)
-	public void testUpdateAlternate4() throws ParseException, InvalidInputException {
-		input = "update meeting starttime to 23 feb";
-		resultCommand = parser.acceptUserInput(input);
-	}
-	
 	// Basic case
 	@Test
 	public void testDeleteBasic1() throws ParseException, InvalidInputException {

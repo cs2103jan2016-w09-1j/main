@@ -129,11 +129,6 @@ class Logic {
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.INVALID_COMMAND;
 			return Status.getMessage(null, null, null);
-		} catch (ParseException pe) {
-			//logger.log(Level.WARNING, "Invalid input supplied by user.");
-			Status._outcome = Status.Outcome.ERROR;
-			Status._errorCode = Status.ErrorCode.INVALID_COMMAND;
-			return Status.getMessage(null, null, null);
 		}
 	}
 	
