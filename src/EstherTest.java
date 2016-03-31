@@ -9,9 +9,12 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 
+import javax.xml.ws.handler.LogicalMessageContext;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.validator.PublicClassValidator;
 
 import cs2103_w09_1j.esther.Task;
 
@@ -45,6 +48,7 @@ public class EstherTest {
 	private DateTimeTester default1HTester = new DateTimeTester(nowOneHr, dateFormats[1], timeFormats[1]);
 
 	private final boolean DEBUG = false;
+	private final boolean EXHAUSTIVE = true;
 
 	private Logic logic;
 
@@ -116,24 +120,25 @@ public class EstherTest {
 
 	@Test
 	public void addEventExhaustive() {
-		int index = 0;
-		for (DateTimeTester tester : todayTestFormats) {
-			for (DateTimeTester tester1H : todayOneHourTestFormats) {
-				index++;
-				String addCommand = ("add task from " + tester.getDTString() + " to " + tester1H.getDTString());
-				String result = logic.executeCommand(addCommand);
-				if (!result.contains("success")) {
-					System.out.println("Add test failed on iteration " + index);
-					System.out.println(addCommand);
-					System.out.println(result);
-					fail();
-				} else {
-					assertTrue(verifyStartDate(tester));
-					assertTrue(verifyEndDate(tester1H));
+		if (EXHAUSTIVE) {
+			int index = 0;
+			for (DateTimeTester tester : todayTestFormats) {
+				for (DateTimeTester tester1H : todayOneHourTestFormats) {
+					index++;
+					String addCommand = ("add task from " + tester.getDTString() + " to " + tester1H.getDTString());
+					String result = logic.executeCommand(addCommand);
+					if (!result.contains("success")) {
+						System.out.println("Add test failed on iteration " + index);
+						System.out.println(addCommand);
+						System.out.println(result);
+						fail();
+					} else {
+						assertTrue(verifyStartDate(tester));
+						assertTrue(verifyEndDate(tester1H));
+					}
 				}
 			}
 		}
-		// System.out.println(index);
 	}
 
 	@Test
@@ -269,14 +274,16 @@ public class EstherTest {
 
 	@Test
 	public void updateEvtDateExhaustive() {
-		Task.setGlobalId(0);
-		tryAddEvent();
-		for (DateTimeTester tester : tmwTestFormats) {
-			for (DateTimeTester laterTester : tmwOneHrTestFormats) {
-				tryCommand("update 0 date to " + laterTester.getDTString());
-				tryCommand("update 0 st to " + tester.getTDString());
-				assertTrue(verifyEndDate(laterTester));
-				assertTrue(verifyStartDate(tester));
+		if (EXHAUSTIVE) {
+			Task.setGlobalId(0);
+			tryAddEvent();
+			for (DateTimeTester tester : tmwTestFormats) {
+				for (DateTimeTester laterTester : tmwOneHrTestFormats) {
+					tryCommand("update 0 date to " + laterTester.getDTString());
+					tryCommand("update 0 st to " + tester.getTDString());
+					assertTrue(verifyEndDate(laterTester));
+					assertTrue(verifyStartDate(tester));
+				}
 			}
 		}
 	}
@@ -286,8 +293,8 @@ public class EstherTest {
 		Task.setGlobalId(0);
 		tryAddTask();
 		for (DateTimeTester tester : todayTestFormats) {
-				tryCommand("update 0 date to " + tester.getDTString());
-				tryCommand("update 0 time to " + tester.getTDString());
+			tryCommand("update 0 date to " + tester.getDTString());
+			tryCommand("update 0 time to " + tester.getTDString());
 			assertTrue(verifyEndDate(tester));
 		}
 	}
@@ -298,12 +305,12 @@ public class EstherTest {
 		tryAddTaskWithDeadline();
 		for (DateTimeTester tester : tmwTestFormats) {
 			for (DateTimeTester laterTester : tmwOneHrTestFormats) {
-					tryCommand("update 0 date to " + laterTester.getDTString());
-					if(laterTester.hasDate()){
-						tryCommand("update 0 sd to " + tester.getDTString());
-					} else {
-						tryCommand("update 0 st to " + tester.getTString());
-					}					
+				tryCommand("update 0 date to " + laterTester.getDTString());
+				if (laterTester.hasDate()) {
+					tryCommand("update 0 sd to " + tester.getDTString());
+				} else {
+					tryCommand("update 0 st to " + tester.getTString());
+				}
 				assertTrue(verifyEndDate(laterTester));
 				assertTrue(verifyStartDate(tester));
 			}
@@ -312,18 +319,20 @@ public class EstherTest {
 
 	@Test
 	public void updateFltToEvtExhaustive() {
-		Task.setGlobalId(0);
-		tryAddTask();
-		for (DateTimeTester tester : tmwTestFormats) {
-			for (DateTimeTester laterTester : tmwOneHrTestFormats) {
-				tryCommand("update 0 date to " + laterTester.getDTString());
-				if(laterTester.hasDate()){
-					tryCommand("update 0 sd to " + tester.getDTString());
-				} else {
-					tryCommand("update 0 st to " + tester.getTString());
-				}					
-				assertTrue(verifyEndDate(laterTester));
-				assertTrue(verifyStartDate(tester));
+		if (EXHAUSTIVE) {
+			Task.setGlobalId(0);
+			tryAddTask();
+			for (DateTimeTester tester : tmwTestFormats) {
+				for (DateTimeTester laterTester : tmwOneHrTestFormats) {
+					tryCommand("update 0 date to " + laterTester.getDTString());
+					if (laterTester.hasDate()) {
+						tryCommand("update 0 sd to " + tester.getDTString());
+					} else {
+						tryCommand("update 0 st to " + tester.getTString());
+					}
+					assertTrue(verifyEndDate(laterTester));
+					assertTrue(verifyStartDate(tester));
+				}
 			}
 		}
 	}
@@ -349,51 +358,115 @@ public class EstherTest {
 		tryCommand("complete 0");
 		failCommand("complete task");
 	}
-	
-	//@Test
-	public void searchTest() {
-		String searchResult = logic.executeCommand("search");
+
+	// TODO: For GQ all search test cases
+	// @Test
+	public void searchFor() {
+		tryAddTask();
+		String searchResult = logic.executeCommand("search for " + taskName);
 	}
-	
+
+	// @Test
+	public void searchFail() {
+		// without using for, on, before, after keywords
+	}
+
+	// @Test
+	public void searchFailFor() {
+		// search for name that doesn't exist
+	}
+
+	// @Test
+	public void searchOn() {
+		// use the on keyword
+	}
+
+	// @Test
+	public void searchOnFail() {
+		// search for task with date that does not exist
+	}
+
+	// @Test
+	public void searchBefore() {
+		// use the before keyword
+	}
+
+	// @Test
+	public void searchAfterDate() {
+		// use the after keyword in a fail test case
+	}
+
+	@Test
+	public void sortFail() {
+		failCommand("sort by blah");
+	}
+
 	@Test
 	public void sortNameTest() {
+		tryCommand("add btask");
+		tryCommand("add atask");
 		tryCommand("sort by name");
+		assertTrue(verifyName("btask"));
 	}
-	
+
 	@Test
 	public void sortDateTest() {
+		tryCommand("add task on " + default1HTester.getDTString());
+		tryCommand("add task2 on " + defaultTester.getDTString());
 		tryCommand("sort by date");
+		assertTrue(verifyName("task"));
 	}
-	
+
 	@Test
 	public void sortPriorityTest() {
+		Task.setGlobalId(0);
+		tryAddTask();
+		tryAddTask();
+		tryCommand("update 0 pr to 4");
+		tryCommand("update 1 pr to 3");
 		tryCommand("sort by priority");
+		assertTrue(verifyPriority(4));
 	}
-	
+
 	@Test
 	public void undoAdd() {
 		tryAddTask();
+		tryAddTask();
 		tryCommand("undo");
+		assertTrue(logic.getInternalStorage().size() == 1);
 	}
-	
+
 	@Test
 	public void undoUpdate() {
-		
+		tryAddTask();
+		tryCommand("update task name to task2");
+		tryCommand("undo");
+		assertTrue(verifyName("task"));
 	}
-	
+
 	@Test
 	public void undoDelete() {
-		
+		tryAddTask();
+		tryCommand("delete task");
+		tryCommand("undo");
+		assertTrue(logic.getInternalStorage().size() == 1);
 	}
-	
+
 	@Test
 	public void undoComplete() {
-		
+		tryAddTask();
+		tryCommand("complete task");
+		tryCommand("undo");
+		assertFalse(verifyComplete());
 	}
-	
+
 	@Test
 	public void undoSort() {
-		
+		tryCommand("add btask");
+		tryCommand("add atask");
+		tryCommand("sort by name");
+		tryCommand("undo");
+		assertTrue(verifyName("atask"));
 	}
 
 	@After
