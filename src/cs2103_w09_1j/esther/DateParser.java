@@ -14,9 +14,9 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 public class DateParser {
-	private final static ArrayList<String> dateFormatList = new ArrayList<String>(Arrays.asList("dd/MM/yy",
-			"dd.MM.yy", "dd-MM-yy", "dd MM yy", "ddMMyy", "d MMM yy", "dMMM yy",
-			"d MMM,yy", "MMM d, yy", "dd/MM", "dd.MM","d MMM", "dMMM", "MMM d", "MMMd"));
+	private final static ArrayList<String> dateFormatList = new ArrayList<String>(
+			Arrays.asList("dd/MM/yy", "dd.MM.yy", "dd-MM-yy", "dd MM yy", "ddMMyy", "d MMM yy", "dMMM yy", "d MMM,yy",
+					"MMM d, yy", "dd/MM", "dd.MM", "d MMM", "dMMM", "MMM d", "MMMd"));
 
 	private final static ArrayList<String> timeFormatList = new ArrayList<String>(
 			Arrays.asList("hh:mma", "hh:mm a", "hhmma", "hhmm a", "HH:mm", "HHmm", "hha", "hh a", "HH"));
