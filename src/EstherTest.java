@@ -48,7 +48,7 @@ public class EstherTest {
 	private DateTimeTester default1HTester = new DateTimeTester(nowOneHr, dateFormats[1], timeFormats[1]);
 
 	private final boolean DEBUG = false;
-	private final boolean EXHAUSTIVE = false;
+	private final boolean EXHAUSTIVE = true;
 
 	private Logic logic;
 
@@ -88,33 +88,27 @@ public class EstherTest {
 
 	@Test
 	public void addTaskDetailed() {
-		String addCommand;
-		for (DateTimeTester dateTimeTester : todayTestFormats) {
-			for (int i = 0; i < 2; i++) {
-				// tester obj has 1 or 2 strings
-				if (i == 1) {
-					// has 2 strings
-					if (dateTimeTester.isHasReverse()) {
-						addCommand = "add task on " + dateTimeTester.getTDString();
-					} else {
-						continue;
-					}
-				} else {
-					// has 1 string anyway
-					addCommand = "add task on " + dateTimeTester.getTDString();
-				}
-				String result = logic.executeCommand(addCommand);
-				if (!result.contains("success")) {
-					System.out.println("Add test failed");
-					System.out.println(addCommand);
-					System.out.println(result);
-					fail();
-				} else {
-					assertTrue(verifyEndDate(dateTimeTester));
-				}
+	    String addCommand;
+	    for (DateTimeTester dateTimeTester : todayTestFormats) {
+		for (int i = 0; i < 2; i++) {
+		    // tester obj has 1 or 2 strings
+		    if (i == 1) {
+			// has 2 strings
+			if (dateTimeTester.hasReverse()) {
+			    addCommand = "add task on " + dateTimeTester.getTDString();
+			} else {
+			    continue;
 			}
+		    } else {
+			// has 1 string anyway
+			addCommand = "add task on " + dateTimeTester.getTDString();
+		    }
+		    String result = logic.executeCommand(addCommand);
+		    assertTrue(verifyEndDate(dateTimeTester));
 		}
+	    }
 	}
+
 	
 	@Test
 	public void addTaskFail() {
@@ -138,15 +132,9 @@ public class EstherTest {
 					index++;
 					String addCommand = ("add task from " + tester.getDTString() + " to " + tester1H.getDTString());
 					String result = logic.executeCommand(addCommand);
-					if (!result.contains("success")) {
-						System.out.println("Add test failed on iteration " + index);
-						System.out.println(addCommand);
-						System.out.println(result);
-						fail();
-					} else {
 						assertTrue(verifyStartDate(tester));
 						assertTrue(verifyEndDate(tester1H));
-					}
+					
 				}
 			}
 		}
@@ -336,11 +324,7 @@ public class EstherTest {
 		for (DateTimeTester tester : tmwTestFormats) {
 			for (DateTimeTester laterTester : tmwOneHrTestFormats) {
 				tryCommand("update 0 date to " + laterTester.getDTString());
-				if (laterTester.hasDate()) {
-					tryCommand("update 0 sd to " + tester.getDTString());
-				} else {
-					tryCommand("update 0 st to " + tester.getTString());
-				}
+				tryCommand("update 0 sd to " + tester.getDTString());
 				assertTrue(verifyEndDate(laterTester));
 				assertTrue(verifyStartDate(tester));
 			}
@@ -560,23 +544,6 @@ public class EstherTest {
 			System.out.println(result);
 		}
 		assertFalse(assertResult);
-	}
-
-	private Date getNowWithoutSeconds() {
-		Date now = setSecondsToZero(new Date());
-		return now;
-	}
-
-	private Date setSecondsToZero(Date date) {
-		return new Date(date.getTime() / 60000 * 60000);
-	}
-
-	private Date setMinutesToZero(Date date) {
-		return new Date(date.getTime() / (60 * 60000) * (60 * 60000));
-	}
-
-	private Date setHoursToZero(Date date) {
-		return new Date(date.getTime() / (60 * 60 * 60000) * (60 * 60 * 60000));
 	}
 
 	private boolean verifyStartDate(DateTimeTester dateTimeTester) {
