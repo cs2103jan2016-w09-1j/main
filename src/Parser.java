@@ -43,11 +43,13 @@
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import cs2103_w09_1j.esther.Command;
+import cs2103_w09_1j.esther.Config;
 import cs2103_w09_1j.esther.Command.CommandKey;
 import cs2103_w09_1j.esther.DateParser;
 import cs2103_w09_1j.esther.InvalidInputException;
@@ -70,6 +72,7 @@ public class Parser {
 			+ "\nFormat for sort command: sort by [name/id/startDate/endDate]";
 	public static final String ERROR_COMPLETEFORMAT = ERROR_WRONGFORMAT
 			+ "\nFormat for complete command: complete [taskName/taskID]";
+	public static final String ERROR_SETFORMAT = ERROR_WRONGFORMAT + " \nFormat for set command: set [path].";
 	public static final String ERROR_DATETIMEFORMAT = ERROR_WRONGFORMAT
 			+ "\nYour date or time is invalid. Please check again.";
 	public static final String ERROR_PRIORITYFORMAT = "Priority is only allowed in integer format.";
@@ -79,6 +82,8 @@ public class Parser {
 	public static final String WHITESPACE = " ";
 	public static final String defaultStartTime = "00:00";
 	public static final String defaultEndTime = "23:59";
+	public static final String[] dateKeywords = { "before", "after", "on" };
+	public static final String[] nameKeywords = { "for" };
 
 	private Command currentCommand;
 	private HashMap<String, String> fieldNameAliases;
@@ -195,6 +200,8 @@ public class Parser {
 		case HELP:
 			parseHelp();
 			break;
+		case SET:
+			parseSet(commandInput);
 		default:
 			throw new InvalidInputException(ERROR_UNKNOWN);
 		}
@@ -205,14 +212,15 @@ public class Parser {
 	// add "Tea With Grandma" on tomorrow
 	// Current implementation only date
 	/**
-	 * This method breaks down the input to the proper fields that is 
-	 * acceptable by the add command.
+	 * This method breaks down the input to the proper fields that is acceptable
+	 * by the add command.
+	 * 
 	 * @param input
 	 * @throws InvalidInputException
 	 */
 	private void parseAdd(String input) throws InvalidInputException {
 
-		//Incorrect format case 1: add 
+		// Incorrect format case 1: add
 		if (input.isEmpty()) {
 			throw new InvalidInputException(ERROR_ADDFORMAT);
 		}
@@ -420,20 +428,29 @@ public class Parser {
 		}
 	}
 
-	// Format: search [task name]
+	// Format: search [for] [taskname/datetime]
 	private void parseSearch(String input) throws InvalidInputException {
 		if (input.isEmpty()) {
 			throw new InvalidInputException(ERROR_SEARCHFORMAT);
 		}
-
-		if (input.charAt(0) == QUOTE) {
-			if (input.charAt(input.length() - 1) == QUOTE) {
-				input = input.substring(1, input.length() - 1);
-			} else {
-				throw new InvalidInputException(ERROR_SEARCHFORMAT);
+		String[] keywordTermArray = input.split(WHITESPACE, 2);
+		String keyword = keywordTermArray[0];
+		String term = keywordTermArray[1];
+		if (Arrays.asList(dateKeywords).contains(keyword.toLowerCase())) {
+			String[] dateTime = dateParser.getDateTime(term);
+			addDateTime(dateTime, TaskField.ENDDATE, TaskField.ENDTIME);
+		} else if (Arrays.asList(nameKeywords).contains(keyword.toLowerCase())) {
+			if (term.charAt(0) == QUOTE) {
+				if (term.charAt(term.length() - 1) == QUOTE) {
+					term = term.substring(1, input.length() - 1);
+				} else {
+					throw new InvalidInputException(ERROR_SEARCHFORMAT);
+				}
 			}
+			currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), term);
+		} else {
+			throw new InvalidInputException(ERROR_SEARCHFORMAT);
 		}
-		currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), input);
 	}
 
 	// Format: show by [fieldName]
@@ -516,6 +533,16 @@ public class Parser {
 		} catch (NumberFormatException nfe) {
 			return 0;
 		}
+	}
+
+	private void parseSet(String input) throws InvalidInputException {
+		if (input.isEmpty()) {
+			throw new InvalidInputException(ERROR_SETFORMAT);
+		}
+		if (input.charAt(0) == QUOTE) {
+			input = input.substring(1, input.length() - 1);
+		}
+		currentCommand.addFieldToMap(TaskField.PATH.getTaskKeyName(), input);
 	}
 
 	private boolean getParseKey(String input) {
