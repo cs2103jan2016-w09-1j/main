@@ -349,6 +349,52 @@ public class EstherTest {
 		tryCommand("complete 0");
 		failCommand("complete task");
 	}
+	
+	//@Test
+	public void searchTest() {
+		String searchResult = logic.executeCommand("search");
+	}
+	
+	@Test
+	public void sortNameTest() {
+		tryCommand("sort by name");
+	}
+	
+	@Test
+	public void sortDateTest() {
+		tryCommand("sort by date");
+	}
+	
+	@Test
+	public void sortPriorityTest() {
+		tryCommand("sort by priority");
+	}
+	
+	@Test
+	public void undoAdd() {
+		tryAddTask();
+		tryCommand("undo");
+	}
+	
+	@Test
+	public void undoUpdate() {
+		
+	}
+	
+	@Test
+	public void undoDelete() {
+		
+	}
+	
+	@Test
+	public void undoComplete() {
+		
+	}
+	
+	@Test
+	public void undoSort() {
+		
+	}
 
 	@After
 	public void cleanUp() {
