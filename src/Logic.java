@@ -129,13 +129,7 @@ class Logic {
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.INVALID_COMMAND;
 			return Status.getMessage(null, null, null);
-		} catch (ParseException pe) {
-			//logger.log(Level.WARNING, "Invalid input supplied by user.");
-			Status._outcome = Status.Outcome.ERROR;
-			Status._errorCode = Status.ErrorCode.INVALID_COMMAND;
-			return Status.getMessage(null, null, null);
-		}
-	}
+		}	}
 	
 	/**
 	 * This method acts as the main handler for all user
@@ -697,7 +691,7 @@ class Logic {
 				//results.add(entry);
 			}
 		}
-		System.out.println(results);
+		//System.out.println(results);
 		return results;
 	}
 	
@@ -881,7 +875,7 @@ class Logic {
 	private void updateTaskInFile(Command command) {
 		Task toUpdate = null;
 		int taskIndex = getTaskIndex(command);
-		System.out.println(taskIndex);
+		//System.out.println(taskIndex);
 		
 		try {
 			if (taskIndex != NOT_FOUND_INDEX && taskIndex != DUPLICATE_TASK_INDEX) {
