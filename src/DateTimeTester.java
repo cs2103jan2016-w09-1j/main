@@ -46,7 +46,7 @@ class DateTimeTester {
 		}
 
 		setCreationInstant(date);
-		if (isHasReverse()) {
+		if (hasReverse()) {
 		}
 	}
 
@@ -148,7 +148,7 @@ class DateTimeTester {
 		this.hasDate = hasDate;
 	}
 
-	public boolean isHasReverse() {
+	public boolean hasReverse() {
 		return hasReverse;
 	}
 
