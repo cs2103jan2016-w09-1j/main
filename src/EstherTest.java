@@ -48,7 +48,7 @@ public class EstherTest {
 	private DateTimeTester default1HTester = new DateTimeTester(nowOneHr, dateFormats[1], timeFormats[1]);
 
 	private final boolean DEBUG = false;
-	private final boolean EXHAUSTIVE = true;
+	private final boolean EXHAUSTIVE = false;
 
 	private Logic logic;
 
@@ -68,6 +68,11 @@ public class EstherTest {
 		todayOneHourTestFormats = generateDateTimes(nowOneHr);
 		tmwTestFormats = generateDateTimes(tmwOneHr);
 		tmwOneHrTestFormats = generateDateTimes(tmwTwoHr);
+	}
+	
+	@Test
+	public void failCommand() {
+		failCommand("blah");
 	}
 
 	@Test
@@ -110,6 +115,12 @@ public class EstherTest {
 			}
 		}
 	}
+	
+	@Test
+	public void addTaskFail() {
+		failCommand("add task on");
+		failCommand("add task from to");
+	}
 
 	@Test
 	public void addEventTest() {
@@ -139,6 +150,11 @@ public class EstherTest {
 				}
 			}
 		}
+	}
+	
+	@Test
+	public void addEventFail() {
+		failCommand("add task from "+default1HTester.getDTString()+" to "+defaultTester.getDTString());
 	}
 
 	@Test
@@ -173,6 +189,14 @@ public class EstherTest {
 		tryCommand("delete 0");
 		assertEquals(tasks, logic.getInternalStorage().size());
 	}
+	
+	@Test
+	public void deleteFail() {
+		Task.setGlobalId(0);
+		tryAddTask();
+		failCommand("delete task2");
+		failCommand("delete 1");
+	}
 
 	@Test
 	public void deleteDuplicate() {
@@ -190,6 +214,12 @@ public class EstherTest {
 		tryCommand("add updtask");
 		tryCommand("update updtask name to updatedTask");
 		assertTrue(verifyName("updatedTask"));
+	}
+	
+	@Test
+	public void updateNameFail() {
+		tryAddTask();
+		failCommand("update task2 name to task");
 	}
 
 	@Test
