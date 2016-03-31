@@ -14,9 +14,9 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 public class DateParser {
-	private final static ArrayList<String> dateFormatList = new ArrayList<String>(
-			Arrays.asList("dd/MM/yy", "dd.MM.yy", "dd-MM-yy", "dd MM yy", "ddMMyy", "dd MMM yy", "ddMMM yy",
-					"dd MMM,yy", "MMM dd, yy", "dd/MM", "dd.MM", "dd MMM", "ddMMM", "MMM dd", "MMMdd"));
+	private final static ArrayList<String> dateFormatList = new ArrayList<String>(Arrays.asList("dd/MM/yy",
+			"dd.MM.yy", "dd-MM-yy", "dd MM yy", "ddMMyy", "d MMM yy", "dMMM yy",
+			"d MMM,yy", "MMM d, yy", "dd/MM", "dd.MM","d MMM", "dMMM", "MMM d", "MMMd"));
 
 	private final static ArrayList<String> timeFormatList = new ArrayList<String>(
 			Arrays.asList("hh:mma", "hh:mm a", "hhmma", "hhmm a", "HH:mm", "HHmm", "hha", "hh a", "HH"));
@@ -106,9 +106,15 @@ public class DateParser {
 					// }
 					String givenDate = convertToProperDateFormat(input, dateFormat);
 					// System.out.println(givenYear);
-					// int lastIndexOfDate =
-					// input.indexOf(givenDate.toLowerCase());
-					input = input.substring(givenDate.length());
+					int lastIndexOfDate = input.indexOf(givenDate.toLowerCase());
+					try {
+						input = input.substring(lastIndexOfDate + givenDate.length());
+					} catch (StringIndexOutOfBoundsException sioobe) {
+						System.out.println(lastIndexOfDate);
+						System.out.println(input);
+						System.out.println(givenDate);
+						throw sioobe;
+					}
 					input = input.trim();
 					// System.out.println(input);
 				}

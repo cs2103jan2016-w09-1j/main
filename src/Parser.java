@@ -388,11 +388,11 @@ public class Parser {
 		if (newValue.isEmpty()) {
 			throw new InvalidInputException(ERROR_UPDATEFORMAT);
 		}
-		if (aliaseField == TaskField.STARTDATE || aliaseField == TaskField.ENDDATE) {
+		if (aliaseField == TaskField.STARTDATE || aliaseField == TaskField.STARTTIME) {
 			String[] dateTimeArray = dateParser.getDateTime(newValue);
 			addDateTime(dateTimeArray, TaskField.STARTDATE, TaskField.STARTTIME);
 			return;
-		} else if (aliaseField == TaskField.STARTTIME || aliaseField == TaskField.ENDTIME) {
+		} else if (aliaseField == TaskField.ENDDATE || aliaseField == TaskField.ENDTIME) {
 			String[] dateTimeArray = dateParser.getDateTime(newValue);
 			addDateTime(dateTimeArray, TaskField.ENDDATE, TaskField.ENDTIME);
 			return;
