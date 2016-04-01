@@ -94,8 +94,8 @@ public class Task implements Comparable<Task> {
 	private static String _sortCriterion = SORT_BY_PRIORITY_KEYWORD;
 	private static int _assignId = DEFAULT_STARTING_ID;
 
-	private final static SimpleDateFormat _dateOnlyFormatter = new SimpleDateFormat("dd/MM/yyyy");
-	private final static SimpleDateFormat _dateAndTimeFormatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+	public static SimpleDateFormat _dateOnlyFormatter = new SimpleDateFormat("dd/MM/yyyy");
+	public static SimpleDateFormat _dateAndTimeFormatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 	private final static Logger taskLogger = Logger.getLogger("taskLogger");
 	private final static int NUM_FIELDS = 6;
 	private final static String completedStr = "Completed";
@@ -348,7 +348,7 @@ public class Task implements Comparable<Task> {
 	 * @throws ParseException
 	 * @@author A0127572A
 	 */
-	private Date parseDateTimeToString(Date today, String dateString, String timeString, boolean start)
+	public static Date parseDateTimeToString(Date today, String dateString, String timeString, boolean start)
 			throws ParseException {
 		Date date = null;
 		if (dateString != null && timeString != null) {
