@@ -129,6 +129,7 @@ class Logic {
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.INVALID_COMMAND;
 			return iie.getMessage();
+			//return Status.getMessage(null, null, null);
 		}
 	}
 	
