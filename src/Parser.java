@@ -425,29 +425,32 @@ public class Parser {
 		}
 	}
 
-	// Format: search [task name]
-	private void parseSearch(String input) throws InvalidInputException {
-		if (input.isEmpty()) {
-			throw new InvalidInputException(ERROR_SEARCHFORMAT);
-		}
-		String[] keywordTermArray = input.split(WHITESPACE, 2);
-		String keyword = keywordTermArray[0];
-		String term = keywordTermArray[1];
-		if (Arrays.asList(dateKeywords).contains(keyword.toLowerCase())) {
-			String[] dateTime = dateParser.getDateTime(term);
-			addDateTime(dateTime, TaskField.ENDDATE, TaskField.ENDTIME);
-			currentCommand.addFieldToMap(TaskField.KEYWORD.getTaskKeyName(), keyword);
-		} else if (Arrays.asList(nameKeywords).contains(keyword.toLowerCase())) {
-			if (term.charAt(0) == QUOTE) {
-				if (term.charAt(term.length() - 1) == QUOTE) {
-					term = term.substring(1, input.length() - 1);
-				} else {
-					throw new InvalidInputException(ERROR_SEARCHFORMAT);
+	// Format: search [for] [taskname/datetime]
+		private void parseSearch(String input) throws InvalidInputException {
+			if (input.isEmpty()) {
+				throw new InvalidInputException(ERROR_SEARCHFORMAT);
+			}
+			String[] keywordTermArray = input.split(WHITESPACE, 2);
+			String keyword = keywordTermArray[0];
+			String term = keywordTermArray[1];
+			if (Arrays.asList(dateKeywords).contains(keyword.toLowerCase())) {
+				String[] dateTime = dateParser.getDateTime(term);
+				addDateTime(dateTime, TaskField.ENDDATE, TaskField.ENDTIME);
+				currentCommand.addFieldToMap(TaskField.KEYWORD.getTaskKeyName(), keyword);
+			} else if (Arrays.asList(nameKeywords).contains(keyword.toLowerCase())) {
+				if (term.charAt(0) == QUOTE) {
+					if (term.charAt(term.length() - 1) == QUOTE) {
+						term = term.substring(1, input.length() - 1);
+					} else {
+						throw new InvalidInputException(ERROR_SEARCHFORMAT);
+					}
 				}
+				currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), term);
+			} else {
+				throw new InvalidInputException(ERROR_SEARCHFORMAT);
 			}
 		}
-		currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), input);
-	}
+
 
 	// Format: show by [fieldName]
 	private void parseShow(String input) throws InvalidInputException {
