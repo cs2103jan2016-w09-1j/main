@@ -9,14 +9,9 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 
-import javax.xml.ws.handler.LogicalMessageContext;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.validator.PublicClassValidator;
-
-import com.sun.corba.se.impl.legacy.connection.SocketFactoryAcceptorImpl;
 
 import cs2103_w09_1j.esther.Task;
 
@@ -50,7 +45,7 @@ public class EstherTest {
 	private DateTimeTester default1HTester = new DateTimeTester(nowOneHr, dateFormats[1], timeFormats[1]);
 
 	private final boolean DEBUG = false;
-	private final boolean EXHAUSTIVE = true;
+	private final boolean EXHAUSTIVE = false;
 
 	private Logic logic;
 
@@ -71,7 +66,7 @@ public class EstherTest {
 		tmwTestFormats = generateDateTimes(tmwOneHr);
 		tmwOneHrTestFormats = generateDateTimes(tmwTwoHr);
 	}
-	
+
 	@Test
 	public void failCommand() {
 		failCommand("blah");
@@ -90,28 +85,27 @@ public class EstherTest {
 
 	@Test
 	public void addTaskDetailed() {
-	    String addCommand;
-	    for (DateTimeTester dateTimeTester : todayTestFormats) {
-		for (int i = 0; i < 2; i++) {
-		    // tester obj has 1 or 2 strings
-		    if (i == 1) {
-			// has 2 strings
-			if (dateTimeTester.hasReverse()) {
-			    addCommand = "add task on " + dateTimeTester.getTDString();
-			} else {
-			    continue;
+		String addCommand;
+		for (DateTimeTester dateTimeTester : todayTestFormats) {
+			for (int i = 0; i < 2; i++) {
+				// tester obj has 1 or 2 strings
+				if (i == 1) {
+					// has 2 strings
+					if (dateTimeTester.hasReverse()) {
+						addCommand = "add task on " + dateTimeTester.getTDString();
+					} else {
+						continue;
+					}
+				} else {
+					// has 1 string anyway
+					addCommand = "add task on " + dateTimeTester.getTDString();
+				}
+				String result = logic.executeCommand(addCommand);
+				assertTrue(verifyEndDate(dateTimeTester));
 			}
-		    } else {
-			// has 1 string anyway
-			addCommand = "add task on " + dateTimeTester.getTDString();
-		    }
-		    String result = logic.executeCommand(addCommand);
-		    assertTrue(verifyEndDate(dateTimeTester));
 		}
-	    }
 	}
 
-	
 	@Test
 	public void addTaskFail() {
 		failCommand("add task on");
@@ -134,17 +128,17 @@ public class EstherTest {
 					index++;
 					String addCommand = ("add task from " + tester.getDTString() + " to " + tester1H.getDTString());
 					String result = logic.executeCommand(addCommand);
-						assertTrue(verifyStartDate(tester));
-						assertTrue(verifyEndDate(tester1H));
-					
+					assertTrue(verifyStartDate(tester));
+					assertTrue(verifyEndDate(tester1H));
+
 				}
 			}
 		}
 	}
-	
+
 	@Test
 	public void addEventFail() {
-		failCommand("add task from "+default1HTester.getDTString()+" to "+defaultTester.getDTString());
+		failCommand("add task from " + default1HTester.getDTString() + " to " + defaultTester.getDTString());
 	}
 
 	@Test
@@ -179,7 +173,7 @@ public class EstherTest {
 		tryCommand("delete 0");
 		assertEquals(tasks, logic.getInternalStorage().size());
 	}
-	
+
 	@Test
 	public void deleteFail() {
 		Task.setGlobalId(0);
@@ -205,7 +199,7 @@ public class EstherTest {
 		tryCommand("update updtask name to updatedTask");
 		assertTrue(verifyName("updatedTask"));
 	}
-	
+
 	@Test
 	public void updateNameFail() {
 		tryAddTask();
@@ -284,11 +278,13 @@ public class EstherTest {
 
 	@Test
 	public void updateTskDateExhaustive() {
-		Task.setGlobalId(0);
-		tryAddTaskWithDeadline();
-		for (DateTimeTester tester : tmwTestFormats) {
-			tryCommand("update 0 date to " + tester.getDTString());
-			assertTrue(verifyEndDate(tester));
+		if (EXHAUSTIVE) {
+			Task.setGlobalId(0);
+			tryAddTaskWithDeadline();
+			for (DateTimeTester tester : tmwTestFormats) {
+				tryCommand("update 0 date to " + tester.getDTString());
+				assertTrue(verifyEndDate(tester));
+			}
 		}
 	}
 
@@ -484,18 +480,18 @@ public class EstherTest {
 		tryCommand("undo");
 		assertTrue(verifyName("atask"));
 	}
-	
-	//@Test
+
+	// @Test
 	public void setTest() {
 		tryCommand("set esther2.txt");
 	}
-	
-	//@Test
+
+	// @Test
 	public void setAbsolute() {
 		tryCommand("set C://esther/esther.txt");
 	}
-	
-	//@Test
+
+	// @Test
 	public void setFail() {
 		failCommand("set blah");
 	}
