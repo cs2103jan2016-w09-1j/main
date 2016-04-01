@@ -76,6 +76,7 @@ public class Parser {
 	public static final String ERROR_DATETIMEFORMAT = ERROR_WRONGFORMAT
 			+ "\nYour date or time is invalid. Please check again.";
 	public static final String ERROR_PRIORITYFORMAT = "Priority is only allowed in integer format.";
+	public static final String ERROR_ADDINTEGER="Integers alone is not allowed to be a task name.";
 	public static final String ERROR_UNKNOWN = "Unknown error.";
 
 	public static final char QUOTE = '"';
@@ -257,6 +258,9 @@ public class Parser {
 			taskName = taskName.substring(0, taskName.length() - 1);
 		}
 
+		if(isNameOrID(taskName)==1){
+			throw new InvalidInputException(ERROR_ADDINTEGER);
+		}
 		currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), taskName);
 		// Case 2: add on Monday (No name) or add "something (no end ")
 		if (endOfTaskName == -1) {
@@ -451,6 +455,7 @@ public class Parser {
 		} else {
 			throw new InvalidInputException(ERROR_SEARCHFORMAT);
 		}
+		currentCommand.addFieldToMap(TaskField.KEYWORD.getTaskKeyName(), keyword);
 	}
 
 	// Format: show by [fieldName]
