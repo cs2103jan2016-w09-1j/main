@@ -16,6 +16,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.validator.PublicClassValidator;
 
+import com.sun.corba.se.impl.legacy.connection.SocketFactoryAcceptorImpl;
+
 import cs2103_w09_1j.esther.Task;
 
 /**
@@ -481,6 +483,21 @@ public class EstherTest {
 		tryCommand("sort by name");
 		tryCommand("undo");
 		assertTrue(verifyName("atask"));
+	}
+	
+	//@Test
+	public void setTest() {
+		tryCommand("set esther2.txt");
+	}
+	
+	//@Test
+	public void setAbsolute() {
+		tryCommand("set C://esther/esther.txt");
+	}
+	
+	//@Test
+	public void setFail() {
+		failCommand("set blah");
 	}
 
 	@After
