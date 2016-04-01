@@ -34,7 +34,7 @@ public class UserInterface extends Application {
 		
 		Pane mainPane = null;
 		try {
-			mainPane = (Pane) FXMLLoader.load(getClass().getResource("tabView.fxml"));
+			mainPane = (Pane) FXMLLoader.load(getClass().getResource("mainUI.fxml"));
 		} catch (IOException e) {
 			logger.log(Level.SEVERE, e.toString(), e);
 		}
