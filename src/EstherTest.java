@@ -208,7 +208,6 @@ public class EstherTest {
 
 	@Test
 	public void updateDupNameTest() {
-		int tasks = logic.getInternalStorage().size();
 		Task.setGlobalId(0);
 		for (int i = 0; i < 2; i++) {
 			tryAddTask();
@@ -317,14 +316,16 @@ public class EstherTest {
 
 	@Test
 	public void updateTskToEvtExhaustive() {
-		Task.setGlobalId(0);
-		tryAddTaskWithDeadline();
-		for (DateTimeTester tester : tmwTestFormats) {
-			for (DateTimeTester laterTester : tmwOneHrTestFormats) {
-				tryCommand("update 0 date to " + laterTester.getDTString());
-				tryCommand("update 0 sd to " + tester.getDTString());
-				assertTrue(verifyEndDate(laterTester));
-				assertTrue(verifyStartDate(tester));
+		if (EXHAUSTIVE) {
+			Task.setGlobalId(0);
+			tryAddTaskWithDeadline();
+			for (DateTimeTester tester : tmwTestFormats) {
+				for (DateTimeTester laterTester : tmwOneHrTestFormats) {
+					tryCommand("update 0 date to " + laterTester.getDTString());
+					tryCommand("update 0 sd to " + tester.getDTString());
+					assertTrue(verifyEndDate(laterTester));
+					assertTrue(verifyStartDate(tester));
+				}
 			}
 		}
 	}
@@ -372,19 +373,23 @@ public class EstherTest {
 	}
 
 	// TODO: For GQ all search test cases
-	// @Test
+	@Test
 	public void searchFor() {
 		tryAddTask();
-		String searchResult = logic.executeCommand("search for " + taskName);
+		tryCommand("search for "+taskName);
 	}
 
-	// @Test
+	@Test
 	public void searchFail() {
+		failCommand("search fail");
 		// without using for, on, before, after keywords
 	}
 
-	// @Test
+	@Test
 	public void searchFailFor() {
+		tryAddEvent();
+		failCommand("search for blah");
+		failCommand("search for ");
 		// search for name that doesn't exist
 	}
 
@@ -546,7 +551,7 @@ public class EstherTest {
 	 * @@A0127572A
 	 */
 	private void tryAddEvent() {
-		tryCommand("add task from " + defaultTester.getDTString() + " to " + default1HTester.getDTString());
+		tryCommand("add "+taskName+" from " + defaultTester.getDTString() + " to " + default1HTester.getDTString());
 	}
 
 	private void failCommand(String command) {
