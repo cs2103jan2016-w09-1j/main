@@ -440,6 +440,7 @@ public class Parser {
 		if (Arrays.asList(dateKeywords).contains(keyword.toLowerCase())) {
 			String[] dateTime = dateParser.getDateTime(term);
 			addDateTime(dateTime, TaskField.ENDDATE, TaskField.ENDTIME);
+			currentCommand.addFieldToMap(TaskField.KEYWORD.getTaskKeyName(), keyword);
 		} else if (Arrays.asList(nameKeywords).contains(keyword.toLowerCase())) {
 			if (term.charAt(0) == QUOTE) {
 				if (term.charAt(term.length() - 1) == QUOTE) {
