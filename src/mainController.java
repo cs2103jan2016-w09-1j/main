@@ -95,7 +95,7 @@ public class mainController implements Initializable {
 		overdueList.setItems(obList);
 		
 		// TODO can use css file to set images
-		homeTab.setGraphic(new ImageView);
+		//homeTab.setGraphic(new ImageView);
 	}
 
     

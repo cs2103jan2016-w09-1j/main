@@ -19,7 +19,7 @@ public class Status {
 		SYSTEM, INVALID_COMMAND, ADD_INVALID_FORMAT, ADD_MISSING_NAME, DELETE_NOT_FOUND, DELETE_DUPLICATES_PRESENT,
 		UPDATE_NOT_FOUND, UPDATE_DUPLICATES_PRESENT, UPDATE_INVALID_FIELD, UPDATE_START_END_VIOLATE,
 		UPDATE_INVALID_PRIORITY, COMPLETED_NOT_FOUND, COMPLETED_DUPLICATES_PRESENT, COMPLETED_ALREADY_COMPLETED,
-		SORT_INVALID_CRITERION, UNDO, UNKNOWN_STATE
+		SORT_INVALID_CRITERION, SEARCH_INVALID, SET_SAVEPATH, UNDO, UNKNOWN_STATE
 	}
 
 	public enum Outcome {
@@ -55,19 +55,24 @@ public class Status {
 	static final String MESSAGE_SUCCESS_SORT = "File is successfully sorted.\n";
 	static final String MESSAGE_ERROR_SORT_INVALID_CRITERION = "Unable to sort file: Please specify a recognized criterion to sort the file by.\n";
 	
+	static final String MESSAGE_ERROR_SEARCH_INVALID = "Search keyword or date-time not present.\n";
+	static final String MESSAGE_SUCCESS_SET_SAVEPATH = "Successfully set file path.\n";
+	static final String MESSAGE_ERROR_SET_SAVEPATH = "Unable to set file path.\n";
 	static final String MESSAGE_SUCCESS_UNDO = "Undo is successful.\n";
 	static final String MESSAGE_ERROR_UNDO = "Cannot undo any further.\n";
 	static final String MESSAGE_ERROR_UNKNOWN_STATE = "ESTHER has encountered an unknown error. Please restart this application.\n";
-	static final String MESSAGE_HELP = "List of commands are:\n1. add\n2. delete\n3. update\n"
-			+ "4. completed\n5. undo\n\n" + "Note that for these commands, "
-			+ "_value_ indicates that these fields are compulsory and need "
-			+ "to be substituted with the relevant values.\n"
+	static final String MESSAGE_HELP = "Help:\n"
+			+ "List of commands are:\n1. add\n2. delete\n3. update\n"
+			+ "4. complete\n5. search\n6. sort\n7. undo\n\n" + "Note that for these commands, "
+			+ "_value_ indicates that these fields are compulsory and\n"
+			+ "need to be substituted with the relevant values.\n"
 			+ "[optional] indicates optional fields to input.\n\n"
 			+ "Using the 'add' command:\n"
-			+ "General usage: add _task name_ [on _date/time_]\n"
+			+ "General usage:\n1. add _task name_ [on _date/time_]\n2. add _task name_ [from _date/time_ to _date/time_]\n"
 			+ "-> 'add something on this date or time'\n"
 			+ "add _task name_ (adds a task with the specified task name)\n"
-			+ "add _task name_ on _date/time_ (adds task with deadline)\n\n"
+			+ "add _task name_ on _date/time_ (adds task with deadline)\n"
+			+ "add _task name_ from _date/time_ to _date/time_\n\n"
 			+ "Using the 'delete' command:\n"
 			+ "General usage: delete _task name/task ID_\n"
 			+ "-> 'delete something'\n"
@@ -75,12 +80,22 @@ public class Status {
 			+ "delete _task ID_ (deletes a task with exact matching ID)\n\n"
 			+ "Using the 'update' command:\n"
 			+ "General usage: update _task name/task ID_ _field name_ to _value_\n"
-			+ "-> 'update something to something else'\n"
-			+ "update _task name_ time to _time_ (updates time for the task)\n"
-			+ "update _task name_ name to _name_ (changes the name of task)\n\n"
-			+ "Using the 'completed' command:\n"
-			+ "General usage: completed _task name_\n"
-			+ "-> 'completed a task'\n\n"
+			+ "-> 'update something in task to something else'\n"
+			+ "update _task name/task ID_ name to _name_ (changes the name of task)\n"
+			+ "update _task name/task ID_ startDate to _date_ (updates starting date for the task)\n"
+			+ "update _task name/task ID_ startTime to _time_ (updates starting time for the task)\n"
+			+ "update _task name/task ID_ endDate to _date_ (updates ending date for the task)\n"
+			+ "update _task name/task ID_ endTime to _time_ (updates ending time for the task)\n"
+			+ "update _task name/task ID_ priority to _priority_ (changes the priority of task)\n\n"
+			+ "Using the 'complete' command:\n"
+			+ "General usage: complete _task name/task ID_\n"
+			+ "-> 'complete something'\n\n"
+			+ "Using the 'search' command:\n"
+			+ "General usage: search _keyword_\n"
+			+ "-> 'search for any tasks containing the keyword'\n\n"
+			+ "Using the 'sort' command:\n"
+			+ "-> 'sort tasks by something'\n"
+			+ "sort by date/name/priority (sorts your tasks by date/name/priority)\n\n"
 			+ "Using the 'undo' command:\n"
 			+ "General usage: undo\n" + "Undo one step back to previous state.\n";
 
@@ -141,6 +156,12 @@ public class Status {
 		case UNDO :
 			message = MESSAGE_SUCCESS_UNDO;
 			break;
+			
+		// TODO: adjust w.r.t. CommandKey enum			
+		/*case SET_FILEPATH :
+		    message = MESSAGE_SUCCESS_SET_FILEPATH;
+		    break;
+		 */
 
 		case HELP :
 			message = MESSAGE_HELP;
@@ -178,7 +199,7 @@ public class Status {
 			message = getDeleteErrorMessage(taskName, taskID);
 			break;
 			
-		case UPDATE : // includes both update error and not found error
+		case UPDATE :
 			message = getUpdateErrorMessage(taskName, taskID);
 			break;
 			
@@ -189,6 +210,16 @@ public class Status {
 		case SORT :
 			message = MESSAGE_ERROR_SORT_INVALID_CRITERION;
 			break;
+		
+		case SEARCH :
+			message = MESSAGE_ERROR_SEARCH_INVALID;
+			break;
+			
+		// TODO: adjust w.r.t. CommandKey enum
+		/*case SET_FILEPATH :
+		    message = MESSAGE_ERROR_SET_FILEPATH;
+		    break;
+		 */
 
 		case UNDO :
 			message = MESSAGE_ERROR_UNDO;

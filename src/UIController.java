@@ -50,16 +50,21 @@ public class UIController implements Initializable {
 	void ENTER(KeyEvent event) throws Exception {
 		if (event.getCode() == KeyCode.ENTER) {
 			String userInput = input.getText();
-			System.out.println(userInput);
+			if (userInput.trim().length() == 0) {
+				commandLog.setText("Empty command entered.");
+				input.clear();
+			} else {
+				//System.out.println(userInput);
 
-			String logicOutput =logic.executeCommand(userInput); 
-			 /* down below is for testing purpose
-			  *String logicOutput = "search:\n" + "Search Result should be displayed here";
-			  *String logicOutput = "search";
-			  *String logicOutput = "help:\n" + "this is the help menu";
-			  */
-			logicResult(logicOutput, commandLog);
-			input.clear();
+				String logicOutput =logic.executeCommand(userInput); 
+				/* down below is for testing purpose
+				 *String logicOutput = "search:\n" + "Search Result should be displayed here";
+				 *String logicOutput = "search";
+				 *String logicOutput = "help:\n" + "this is the help menu";
+				 */
+				logicResult(logicOutput, commandLog);
+				input.clear();
+			}
 		}
 		
 	}

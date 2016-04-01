@@ -15,6 +15,7 @@ import java.util.ArrayList;
 public class State {
 	
 	private String _command;
+	private String _filePath;
 	private String _sortOrder;
 	private ArrayList<Task> _tasks = new ArrayList<Task>();
 	
@@ -44,6 +45,14 @@ public class State {
 	
 	public ArrayList<Task> getState() {
 		return _tasks;
+	}
+	
+	public String getFilePath() {
+		return _filePath;
+	}
+	
+	public void setFilePath(String filePath) {
+		_filePath = filePath;
 	}
 	
 }

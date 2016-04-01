@@ -9,11 +9,10 @@ import java.util.Date;
  *
  */
 class DateTimeTester {
-	private String formattedDateTime1, formattedDateTime2, datePattern, timePattern;
+	private String formattedDateTime, formattedTimeDate, datePattern, timePattern, formattedDate, formattedTime;
 	private Date creationInstant;
 	private boolean hasMinutes, hasTime, hasDate, hasReverse;
-	private SimpleDateFormat dateFormatter;
-	private SimpleDateFormat reverseDateFormatter;
+	private SimpleDateFormat dateTimeFormatter, timeDateFormatter, dateFormatter, timeFormatter;
 
 	public DateTimeTester(Date date, String dateFormat, String timeFormat) {
 		setDatePattern(dateFormat);
@@ -21,64 +20,78 @@ class DateTimeTester {
 		if (dateFormat == null || dateFormat.length() == 0) {
 			setHasDate(false);
 			setHasTime(true);
-			dateFormatter = new SimpleDateFormat(timeFormat);
+			dateTimeFormatter = new SimpleDateFormat(timeFormat);
+			timeFormatter = new SimpleDateFormat(timeFormat);
 		} else if (timeFormat == null || timeFormat.length() == 0) {
 			setHasTime(false);
 			setHasDate(true);
+			dateTimeFormatter = new SimpleDateFormat(dateFormat);
 			dateFormatter = new SimpleDateFormat(dateFormat);
 		} else {
 			setHasDate(true);
 			setHasTime(true);
 			setHasReverse(true);
-			dateFormatter = new SimpleDateFormat(dateFormat + " " + timeFormat);
-			reverseDateFormatter = new SimpleDateFormat(timeFormat + " " + dateFormat);
+			dateTimeFormatter = new SimpleDateFormat(dateFormat + " " + timeFormat);
+			timeDateFormatter = new SimpleDateFormat(timeFormat + " " + dateFormat);
+			dateFormatter = new SimpleDateFormat(dateFormat);
+			timeFormatter = new SimpleDateFormat(timeFormat);
 		}
 
-		if (isHasTime()) {
-			if(getTimePattern().contains("m")){
+		if (hasTime()) {
+			if (getTimePattern().contains("m")) {
 				setHasMinutes(true);
 			} else {
 				setHasMinutes(false);
 			}
 		}
-		
+
 		setCreationInstant(date);
-		setString1(dateFormatter.format(creationInstant));
-		if(isHasReverse()){
-			setString2(reverseDateFormatter.format(creationInstant));
+		if (isHasReverse()) {
 		}
 	}
-	
+
 	public Date getDate() {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(getCreationInstant());
 		calendar.set(Calendar.MILLISECOND, 0);
 		calendar.set(Calendar.SECOND, 0);
-		if(!isHasMinutes()){
+		if (!isHasMinutes()) {
 			calendar.set(Calendar.MINUTE, 0);
 		}
-		if(!isHasTime()){
+		if (!hasTime()) {
 			calendar.set(Calendar.HOUR, 23);
 			calendar.set(Calendar.MINUTE, 59);
 		}
-		
+
 		return calendar.getTime();
 	}
 
-	public String getString1() {
-		return formattedDateTime1;
+	public String getDTString() {
+		return dateTimeFormatter.format(creationInstant);
 	}
 
-	public void setString1(String format) {
-		this.formattedDateTime1 = format;
+	public String getTDString() {
+		if (hasReverse) {
+			return timeDateFormatter.format(creationInstant);
+		} else {
+			return "";
+		}
 	}
 
-	public String getString2() {
-		return formattedDateTime2;
+	public String getDString() {
+		if (hasDate) {
+			return dateFormatter.format(creationInstant);
+		} else {
+			return "";
+		}
 	}
 
-	public void setString2(String format) {
-		this.formattedDateTime2 = format;
+	public String getTString() {
+		if (hasTime) {
+			return timeFormatter.format(creationInstant);
+		} else {
+			return "";
+		}
 	}
 
 	public String getDatePattern() {
@@ -104,30 +117,30 @@ class DateTimeTester {
 	public void setCreationInstant(Date creationInstant) {
 		this.creationInstant = creationInstant;
 	}
-	
+
 	public boolean isHasMinutes() {
 		return hasMinutes;
 	}
 
 	public void setHasMinutes(boolean hasMinutes) {
 		this.hasMinutes = hasMinutes;
-		if(hasMinutes) {
+		if (hasMinutes) {
 			setHasTime(hasMinutes);
 		}
 	}
 
-	public boolean isHasTime() {
+	public boolean hasTime() {
 		return hasTime;
 	}
 
 	public void setHasTime(boolean hasTime) {
 		this.hasTime = hasTime;
-		if(!hasTime){
+		if (!hasTime) {
 			setHasMinutes(hasTime);
 		}
 	}
 
-	public boolean isHasDate() {
+	public boolean hasDate() {
 		return hasDate;
 	}
 
