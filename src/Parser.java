@@ -43,6 +43,7 @@
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -81,6 +82,8 @@ public class Parser {
 	public static final String WHITESPACE = " ";
 	public static final String defaultStartTime = "00:00";
 	public static final String defaultEndTime = "23:59";
+	public static final String[] dateKeywords = { "before", "after", "on" };
+	public static final String[] nameKeywords = { "for" };
 
 	private Command currentCommand;
 	private HashMap<String, String> fieldNameAliases;
@@ -427,12 +430,20 @@ public class Parser {
 		if (input.isEmpty()) {
 			throw new InvalidInputException(ERROR_SEARCHFORMAT);
 		}
-
-		if (input.charAt(0) == QUOTE) {
-			if (input.charAt(input.length() - 1) == QUOTE) {
-				input = input.substring(1, input.length() - 1);
-			} else {
-				throw new InvalidInputException(ERROR_SEARCHFORMAT);
+		String[] keywordTermArray = input.split(WHITESPACE, 2);
+		String keyword = keywordTermArray[0];
+		String term = keywordTermArray[1];
+		if (Arrays.asList(dateKeywords).contains(keyword.toLowerCase())) {
+			String[] dateTime = dateParser.getDateTime(term);
+			addDateTime(dateTime, TaskField.ENDDATE, TaskField.ENDTIME);
+			currentCommand.addFieldToMap(TaskField.KEYWORD.getTaskKeyName(), keyword);
+		} else if (Arrays.asList(nameKeywords).contains(keyword.toLowerCase())) {
+			if (term.charAt(0) == QUOTE) {
+				if (term.charAt(term.length() - 1) == QUOTE) {
+					term = term.substring(1, input.length() - 1);
+				} else {
+					throw new InvalidInputException(ERROR_SEARCHFORMAT);
+				}
 			}
 		}
 		currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), input);

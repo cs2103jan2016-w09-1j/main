@@ -24,6 +24,7 @@
  */
 
 import java.io.IOException;
+import java.nio.file.InvalidPathException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,6 +64,9 @@ class Logic {
 	private static final String EMPTY_STATE = "Empty";
 	private static final String DEFAULT_TASKS_SORT_ORDER = Task.TaskField.ENDDATE.getTaskKeyName();
 	private static final String DEFAULT_FLOATING_TASKS_SORT_ORDER = "id";
+	private static final String SEARCH_BEFORE = "before";
+	private static final String SEARCH_ON = "on";
+	private static final String SEARCH_AFTER = "after";
 	
 	private Parser _parser;
 	private Storage _storage;
@@ -146,7 +150,6 @@ class Logic {
 	 * @return a message indicating the status of the operation carried out
 	 * 
 	 */
-	// TODO: implement search functionality
 	protected String executeCommand(Command command) {
 		assert command != null;
 		String commandName = command.getCommand();
@@ -187,11 +190,9 @@ class Logic {
 				statusMessage = undo(command);
 				break;
 				
-			// TODO: adjust after CommandKey has set_filepath enum
-			/*case SET_FILEPATH :
+			case SET :
 			  	statusMessage = setSaveFilePath(command);
 			  	break;
-			 */
 				
 			case HELP :
 				Status._outcome = Status.Outcome.SUCCESS;
@@ -684,58 +685,100 @@ class Logic {
 	 * @return a list of Task objects that match the search criteria
 	 * 
 	 */
-	// TODO: implement search before/on/after <date> command operation
-	private String/*ArrayList<Task>*/ searchFile(Command command) {
+	private String searchFile(Command command) {
 		String results = "Search:\n";
-		String searchCriteria = null;
-		if (command.getSpecificParameter(Task.TaskField.NAME.getTaskKeyName()) != null) {
-			searchCriteria = Task.TaskField.NAME.getTaskKeyName();
-			// TODO: change TaskField enum name
-		}/* else if (command.getSpecificParameter(Task.TaskField.SEARCHDATE.getTaskKeyName()) != null) {
-			searchCriteria = Task.TaskField.SEARCHDATE.getTaskKeyName();
-		} else {
+		String searchKeyword = command.getSpecificParameter(Task.TaskField.NAME.getTaskKeyName());
+		String searchDateKeyword = command.getSpecificParameter(Task.TaskField.KEYWORD.getTaskKeyName());
+		//System.out.println(searchDateKeyword);
+		String dateString = command.getSpecificParameter(Task.TaskField.ENDDATE.getTaskKeyName());
+		String timeString = command.getSpecificParameter(Task.TaskField.ENDTIME.getTaskKeyName());
+		
+		if ((searchKeyword == null && searchDateKeyword == null) ||
+			(searchDateKeyword != null && dateString == null && timeString == null)) {
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SEARCH_INVALID;
 			return getOperationStatus(command);
-		}*/
-		// String searchKey = command.getSpecificParameter("something_for_search");
+		}
 		//logger.logp(Level.INFO, "Logic", "searchFile(Command command)",
 				  	  //"Searching tasks in file.", searchKey);
-		//ArrayList<Task> results = new ArrayList<Task>();
-		for (Task entry: _tasks) {
-			String taskNameCopy = entry.getName();
-			String taskNameLowerCase = taskNameCopy.toLowerCase();
-			if (taskNameLowerCase.contains(command.getSpecificParameter(Task.TaskField.NAME.getTaskKeyName()).trim().toLowerCase())) {
-				results += (entry.toString() + "\n");
-				//results.add(entry);
+		if (searchKeyword != null) {
+			for (Task entry: _tasks) {
+				String taskNameCopy = entry.getName();
+				String taskNameLowerCase = taskNameCopy.toLowerCase();
+				if (taskNameLowerCase.contains(command.getSpecificParameter(Task.TaskField.NAME.getTaskKeyName()).trim().toLowerCase())) {
+					results += (entry.toString() + "\n");
+				}
+			}
+		} else {
+			Date referenceDate;
+			try {
+				if (searchDateKeyword.trim().equalsIgnoreCase(SEARCH_BEFORE)) {
+					referenceDate = Task.parseDateTimeToString(new Date(), dateString, timeString, true);
+				} else {
+					referenceDate = Task.parseDateTimeToString(new Date(), dateString, timeString, false);
+				}
+			} catch (ParseException pe) {
+				Status._outcome = Status.Outcome.ERROR;
+				Status._errorCode = Status.ErrorCode.SEARCH_INVALID;
+				return getOperationStatus(command);
+			}
+			//System.out.println(Task._dateAndTimeFormatter.format(referenceDate));
+			for (Task entry: _tasks) {
+				if (searchDateKeyword.trim().equalsIgnoreCase(SEARCH_BEFORE)) {
+					if (entry.isEvent() && referenceDate.compareTo(entry.getStartDate()) > 0) {
+						results += (entry.toString() + "\n");
+					} else if (!entry.isFloatingTask() && referenceDate.compareTo(entry.getEndDate()) > 0) {
+						results += (entry.toString() + "\n");
+					} else {
+						
+					}
+				} else if (searchDateKeyword.trim().equalsIgnoreCase(SEARCH_ON)) {
+					Date intervalStart = (Date) referenceDate.clone();
+					intervalStart.setHours(0);
+					intervalStart.setMinutes(0);
+					Date intervalEnd = (Date) referenceDate.clone();
+					intervalEnd.setHours(23);
+					intervalEnd.setMinutes(59);
+					//System.out.println(Task._dateAndTimeFormatter.format(intervalStart));
+					//System.out.println(Task._dateAndTimeFormatter.format(intervalEnd));
+					if (entry.isEvent() && intervalStart.compareTo(entry.getStartDate()) <= 0 &&
+						intervalEnd.compareTo(entry.getStartDate()) >= 0) {
+						results += (entry.toString() + "\n");
+					} else if (!entry.isFloatingTask() && intervalStart.compareTo(entry.getEndDate()) <= 0
+							   && intervalEnd.compareTo(entry.getEndDate()) >= 0) {
+						results += (entry.toString() + "\n");
+					} else {
+						
+					}
+				} else {
+					if (entry.isEvent() && referenceDate.compareTo(entry.getStartDate()) <= 0) {
+						results += (entry.toString() + "\n");
+					} else if (!entry.isFloatingTask() && referenceDate.compareTo(entry.getEndDate()) <= 0) {
+						results += (entry.toString() + "\n");
+					} else {
+						
+					}
+				}
 			}
 		}
 		//System.out.println(results);
 		return results;
 	}
 	
-	// TODO: finalize this when Parser supports with enums
 	private String setSaveFilePath(Command command) {
-		/*
-		 * try {
-		 * TODO: call Jeremy's path method accepting file path string
-		 * _config.setSavePath(command.getSpecificParameter(Task.TaskField.SET_FILEPATH.getTaskKeyName()));
-		 * _storage.updateConfig(_config);
-		 */
-		if (true) { // TODO: change
+		try {
+			_config.setSavePath(command.getSpecificParameter(Task.TaskField.PATH.getTaskKeyName()));
+			_storage.updateConfig(_config);
+			updateInternalStorage(); // refresh internal memory due to different file specified
 			Status._outcome = Status.Outcome.SUCCESS;
 			updateUndoStack(command, null);
-		} else {
-			Status._outcome = Status.Outcome.ERROR;
-			Status._errorCode = Status.ErrorCode.SET_SAVEPATH;
-		}
-		/*} catch (InvalidPathException ipe) {
+		} catch (InvalidPathException ipe) {
 		 	Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SET_SAVEPATH;
 		 } catch (IOException ioe) {
 		 	Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SET_SAVEPATH;
-		 }*/
+		 }
 		return getOperationStatus(command);
 	}
 	
@@ -785,10 +828,9 @@ class Logic {
 				case SEARCH :
 					break;
 					
-				/*case SET_FILEPATH // TODO for Parser: add enum for CommandKey, TaskField
-				 * undoSetSaveFilePath(previousState.getFilePath());
-				 * break; 
-				 */
+				case SET :
+					undoSetSaveFilePath(previousState.getFilePath());
+					break;
 					
 				case HELP :
 					break;
@@ -1076,15 +1118,15 @@ class Logic {
 				previous.storeInnerMemoryState(preSortTaskList);
 				break;
 				
-			case SEARCH : // TODO for Parser: add enum field + value
+			case SEARCH :
 				previous = new State(EMPTY_STATE);
 				break;
 				
-			/*case SET_SAVEPATH : // TODO for Parser: add enum fields in CommandKey, TaskField
+			case SET :
 			  	previous = new State(commandName);
-			  	previous.setFilePath(commandName.getSpecificParameter(Task.TaskField.SET_FILEPATH.getTaskKeyName()));
+			  	String oldFilePath = _config.getSavePath().toString();
+			  	previous.setFilePath(oldFilePath);
 			  	break;
-			 */
 
 			case UNDO :
 				previous = new State(EMPTY_STATE);
@@ -1234,6 +1276,17 @@ class Logic {
 	
 	private void undoSetSaveFilePath(String filePath) {
 		// TODO: set back to old filePath
+		try {
+			_config.setSavePath(filePath);
+			_storage.updateConfig(_config);
+			Status._outcome = Status.Outcome.SUCCESS;
+		} catch (InvalidPathException ipe) {
+			Status._outcome = Status.Outcome.ERROR;
+			Status._errorCode = Status.ErrorCode.SET_SAVEPATH;
+		} catch (IOException ioe) {
+			Status._outcome = Status.Outcome.ERROR;
+			Status._errorCode = Status.ErrorCode.SYSTEM;
+		}
 	}
 	
 	/**
