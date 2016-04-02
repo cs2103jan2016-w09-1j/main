@@ -87,8 +87,8 @@ public class Task implements Comparable<Task> {
 	public static final int TODAY_TASK_INDEX = 1;
 	public static final int TOMORROW_TASK_INDEX = 2;
 	public static final int THIS_WEEK_TASK_INDEX = 3;
-	public static final int FLOATING_TASK_INDEX = 4;
-	public static final int UNCODED_TASK_INDEX = 5;
+	public static final int UNCODED_TASK_INDEX = 4;
+	public static final int FLOATING_TASK_INDEX = 5;
 	public static final int COMPLETED_TASK_INDEX = 6;
 
 	private String _name;
