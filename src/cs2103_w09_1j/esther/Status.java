@@ -55,7 +55,7 @@ public class Status {
 	static final String MESSAGE_SUCCESS_SORT = "File is successfully sorted.\n";
 	static final String MESSAGE_ERROR_SORT_INVALID_CRITERION = "Unable to sort file: Please specify a recognized criterion to sort the file by.\n";
 	
-	static final String MESSAGE_ERROR_SEARCH_INVALID = "Search keyword or date-time not present.\n";
+	static final String MESSAGE_ERROR_SEARCH_INVALID = "Search keyword or date-time is either not specified, or not recognized.\n";
 	static final String MESSAGE_SUCCESS_SET_SAVEPATH = "Successfully set file path.\n";
 	static final String MESSAGE_ERROR_SET_SAVEPATH = "Unable to set file path.\n";
 	static final String MESSAGE_SUCCESS_UNDO = "Undo is successful.\n";
