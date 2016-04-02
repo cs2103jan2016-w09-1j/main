@@ -7,44 +7,38 @@ public class UIResult {
 	// buffers
 	private ArrayList<Task> overdueBuffer;
 	private ArrayList<Task> todayBuffer;
-	private ArrayList<Task> tmrBuffer;
+	private ArrayList<Task> tomorrowBuffer;
 	private ArrayList<Task> weekBuffer;
+	private ArrayList<Task> allTaskBuffer;
 	private ArrayList<Task> floatingBuffer;
 	private ArrayList<Task> completedBuffer;
+	private ArrayList<Task> searchBuffer;
 	
 	/* buffer & position indicator
 	 * index[0] shows which buffer to use
 	 * 	0 - overdueBuffer
 	 * 	1 - todayBuffer
-	 * 	2 - tmrBuffer
+	 * 	2 - tomorrowBuffer
 	 * 	3 - weekBuffer
-	 * 	4 - floatingBuffer
+	 * 	4 - allTaskBuffer
 	 * 	5 - floatingBuffer
 	 * 	6 - completedBuffer
 	 * index[1] shows position of the task inside the buffer
 	 */
 	private int[] index = new int[2];
+	private String commandType;
 	
 	public UIResult() {
 		overdueBuffer = new ArrayList<Task>();
 		todayBuffer = new ArrayList<Task>();
-		tmrBuffer = new ArrayList<Task>();
+		tomorrowBuffer = new ArrayList<Task>();
 		weekBuffer = new ArrayList<Task>();
+		allTaskBuffer = new ArrayList<Task>();
 		floatingBuffer = new ArrayList<Task>();
 		completedBuffer = new ArrayList<Task>();
+		searchBuffer = new ArrayList<Task>();
 	}
 	
-	public UIResult(ArrayList<Task> overdueBuffer, ArrayList<Task> todayBuffer,
-			ArrayList<Task> tmrBuffer, ArrayList<Task> weekBuffer,
-			ArrayList<Task> floatingBuffer, ArrayList<Task> completedBuffer) {
-		this.overdueBuffer = overdueBuffer;
-		this.todayBuffer = todayBuffer;
-		this.tmrBuffer = tmrBuffer;
-		this.weekBuffer = weekBuffer;
-		this.floatingBuffer = floatingBuffer;
-		this.completedBuffer = completedBuffer;
-	}
-
 	public ArrayList<Task> getOverdueBuffer() {
 		return overdueBuffer;
 	}
@@ -61,12 +55,12 @@ public class UIResult {
 		this.todayBuffer = todayBuffer;
 	}
 
-	public ArrayList<Task> getTmrBuffer() {
-		return tmrBuffer;
+	public ArrayList<Task> getTomorrowBuffer() {
+		return tomorrowBuffer;
 	}
 
-	public void setTmrBuffer(ArrayList<Task> tmrBuffer) {
-		this.tmrBuffer = tmrBuffer;
+	public void setTomorrowBuffer(ArrayList<Task> tomorrowBuffer) {
+		this.tomorrowBuffer = tomorrowBuffer;
 	}
 
 	public ArrayList<Task> getWeekBuffer() {
@@ -93,12 +87,36 @@ public class UIResult {
 		this.completedBuffer = completedBuffer;
 	}
 
+	public ArrayList<Task> getAllTaskBuffer() {
+		return allTaskBuffer;
+	}
+	
+	public void setAllTaskBuffer(ArrayList<Task> remainingBuffer) {
+		this.allTaskBuffer = remainingBuffer;
+	}
+	
+	public ArrayList<Task> getSearchBuffer() {
+		return searchBuffer;
+	}
+	
+	public void setSearchBuffer(ArrayList<Task> searchBuffer) {
+		this.searchBuffer = searchBuffer;
+	}
+
 	public int[] getIndex() {
 		return index;
 	}
 
 	public void setIndex(int[] index) {
 		this.index = index;
+	}
+	
+	public String getCommandType() {
+		return commandType;
+	}
+	
+	public void setCommandType(String commandType) {
+		this.commandType = commandType;
 	}
 	
 }
