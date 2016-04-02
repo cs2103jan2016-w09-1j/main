@@ -52,14 +52,7 @@ class Logic {
 	/*
 	 * Note: this implementation will affect ALL logic operations.
 	 * */
-	private static final int OVERDUE_TASK_INDEX = 0;
-	private static final int TODAY_TASK_INDEX = 1;
-	private static final int TOMORROW_TASK_INDEX = 2;
-	private static final int THIS_WEEK_TASK_INDEX = 3;
-	private static final int FLOATING_TASK_INDEX = 4;
-	private static final int COMPLETED_TASK_INDEX = 5;
-	private static final int NUM_TASK_BUFFERS = 6;
-	private static final int INITIAL_CAPACITY = 1000;
+	private static final int NUM_TASK_BUFFERS = 7;
 	
 	private static final String EMPTY_STATE = "Empty";
 	private static final String DEFAULT_TASKS_SORT_ORDER = Task.TaskField.ENDDATE.getTaskKeyName();
@@ -351,7 +344,7 @@ class Logic {
 	private void initializeBuffers() {
 		_displayBuffers = new ArrayList<ArrayList<Task>>(NUM_TASK_BUFFERS);
 		for (int i = 0; i < NUM_TASK_BUFFERS; i++) {
-			_displayBuffers.add(new ArrayList<Task>(INITIAL_CAPACITY));
+			_displayBuffers.add(new ArrayList<Task>());
 		}
 	}
 	
@@ -393,8 +386,8 @@ class Logic {
 		try {
 			_tasks = _storage.readSaveFile();
 			assert _tasks != null;
-			_floatingTasksHolder = new ArrayList<Task>(INITIAL_CAPACITY);
-			_eventsHolder = new ArrayList<Task>(INITIAL_CAPACITY);
+			_floatingTasksHolder = new ArrayList<Task>();
+			_eventsHolder = new ArrayList<Task>();
 			filterEventsAndFloatingTasks(DEFAULT_TASKS_SORT_ORDER, false);
 		} catch (Exception e) {
 			// TODO: error handling
@@ -452,20 +445,6 @@ class Logic {
 	 */
 	private void filterEventsAndFloatingTasks(String sortOrder, boolean toSort) {
 		initializeBuffers();
-		/*Date today = new Date();
-		today.setHours(23);
-		today.setMinutes(59);
-		System.out.println(today);
-		Date tomorrow = (Date) today.clone();
-		tomorrow.setDate(today.getDate() + 1);
-		System.out.println(tomorrow);
-		Date afterTomorrow = (Date) tomorrow.clone();
-		afterTomorrow.setDate(tomorrow.getDate() + 1);
-		System.out.println(afterTomorrow);
-		Date thisWeek = (Date) today.clone();
-		thisWeek.setDate(today.getDate() + 7);
-		System.out.println(thisWeek);
-		*/
 		_eventsHolder = new ArrayList<Task>();
 		_floatingTasksHolder = new ArrayList<Task>();
 		Iterator<Task> iter = _tasks.iterator();
@@ -483,55 +462,12 @@ class Logic {
 			} else {
 				
 			}
-			
-			/* else if (currentTask.isCompleted()) {
-				_displayBuffers.get(COMPLETED_TASK_INDEX).add(currentTask);
-				iter.remove();
-			} else if (currentTask.isEvent()) {
-				if (currentTask.getStartDate().compareTo(today) < 0) {
-					_displayBuffers.get(OVERDUE_TASK_INDEX).add(currentTask);
-					iter.remove();
-				} else if (currentTask.getStartDate().compareTo(today) >= 0 &&
-						   currentTask.getStartDate().compareTo(tomorrow) < 0) {
-					_displayBuffers.get(TODAY_TASK_INDEX).add(currentTask);
-					iter.remove();
-				} else if (currentTask.getStartDate().compareTo(tomorrow) >= 0 &&
-						   currentTask.getStartDate().compareTo(afterTomorrow) < 0) {
-					_displayBuffers.get(TOMORROW_TASK_INDEX).add(currentTask);
-					iter.remove();
-				} else if (currentTask.getStartDate().compareTo(afterTomorrow) >= 0 &&
-						   currentTask.getStartDate().compareTo(thisWeek) < 0) {
-					_displayBuffers.get(THIS_WEEK_TASK_INDEX).add(currentTask);
-					iter.remove();
-				} else {
-					
-				}
-			} else {
-				if (currentTask.getEndDate().compareTo(today) < 0) {
-					_displayBuffers.get(OVERDUE_TASK_INDEX).add(currentTask);
-					iter.remove();
-				} else if (currentTask.getEndDate().compareTo(today) >= 0 &&
-						   currentTask.getEndDate().compareTo(tomorrow) < 0) {
-					_displayBuffers.get(TODAY_TASK_INDEX).add(currentTask);
-					iter.remove();
-				} else if (currentTask.getEndDate().compareTo(tomorrow) >= 0 &&
-						   currentTask.getEndDate().compareTo(afterTomorrow) < 0) {
-					_displayBuffers.get(TOMORROW_TASK_INDEX).add(currentTask);
-					iter.remove();
-				} else if (currentTask.getEndDate().compareTo(afterTomorrow) >= 0 &&
-						   currentTask.getEndDate().compareTo(thisWeek) < 0) {
-					_displayBuffers.get(THIS_WEEK_TASK_INDEX).add(currentTask);
-					iter.remove();
-				} else {
-					
-				}
-			}*/
 		}
 		
 		if (toSort) {
 			Task.setSortCriterion(sortOrder);
 			/*
-			ArrayList<Task> sortedTasksList = new ArrayList<Task>(INITIAL_CAPACITY);
+			ArrayList<Task> sortedTasksList = new ArrayList<Task>();
 			sortedTasksList.addAll(_displayBuffers.get(OVERDUE_TASK_INDEX));
 			sortedTasksList.addAll(_displayBuffers.get(TODAY_TASK_INDEX));
 			sortedTasksList.addAll(_displayBuffers.get(TOMORROW_TASK_INDEX));
@@ -750,7 +686,7 @@ class Logic {
 					} else {
 						
 					}
-				} else {
+				} else if (searchDateKeyword.trim().equalsIgnoreCase(SEARCH_AFTER)){
 					if (entry.isEvent() && referenceDate.compareTo(entry.getStartDate()) <= 0) {
 						results += (entry.toString() + "\n");
 					} else if (!entry.isFloatingTask() && referenceDate.compareTo(entry.getEndDate()) <= 0) {
@@ -758,6 +694,10 @@ class Logic {
 					} else {
 						
 					}
+				} else {
+					Status._outcome = Status.Outcome.ERROR;
+					Status._errorCode = Status.ErrorCode.SEARCH_INVALID;
+					return getOperationStatus(command);
 				}
 			}
 		}
