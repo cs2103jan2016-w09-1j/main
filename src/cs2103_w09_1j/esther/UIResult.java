@@ -2,7 +2,7 @@ package cs2103_w09_1j.esther;
 
 import java.util.ArrayList;
 
-class UIResult {
+public class UIResult {
 
 	// buffers
 	private ArrayList<Task> overdueBuffer;

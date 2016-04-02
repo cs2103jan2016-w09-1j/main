@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.ResourceBundle;
 
-import cs2103_w09_1j.esther.Task;
+import cs2103_w09_1j.esther.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -90,14 +90,26 @@ public class mainController implements Initializable {
 			e.printStackTrace();
 		}
 		
-		// dummy arraylist of tasks
-		ArrayList<Task> arr = new ArrayList<Task>();
+		// get UIResult from logic somehow
+		UIResult res = new UIResult();
 		
-		ObservableList<Task> obList = (ObservableList) FXCollections.observableArrayList(arr);
-		overdueList.setItems(obList);
+		ArrayList<Task> overdue = res.getOverdueBuffer();
+		ArrayList<Task> today = res.getTodayBuffer();
+		ArrayList<Task> tmr = res.getTmrBuffer();
+		ArrayList<Task> week = res.getWeekBuffer();
+		
+		ObservableList<Task> overdueList = (ObservableList) FXCollections.observableArrayList(overdue);
+		ObservableList<Task> todayList = (ObservableList) FXCollections.observableArrayList(today);
+		ObservableList<Task> tmrList = (ObservableList) FXCollections.observableArrayList(tmr);
+		ObservableList<Task> weekList = (ObservableList) FXCollections.observableArrayList(week);
+		((TableView<Task>) overdueList).setItems(overdueList);
 		
 		// TODO can use css file to set images
-		homeTab.setGraphic(new ImageView(new Image("cs2103_w09_1j/esther/Resources/HomeTab.ico")));
+		// homeTab.setGraphic(new ImageView(new Image("cs2103_w09_1j/esther/Resources/HomeTab.ico")));
+		
+		
+		
+		
 	}
 
     
