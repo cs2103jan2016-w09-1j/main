@@ -17,7 +17,8 @@ public class State {
 	private String _command;
 	private String _filePath;
 	private String _sortOrder;
-	private ArrayList<Task> _tasks = new ArrayList<Task>();
+	private ArrayList<ArrayList<Task>> _tasks = new ArrayList<ArrayList<Task>>();
+	private int _oldIndices[] = new int[2];
 	
 	public State(String command) {
 		_command = command;
@@ -25,14 +26,6 @@ public class State {
 	
 	public void setSortOrder(String order) {
 		_sortOrder = order;
-	}
-	
-	public void storeOriginalTaskState(Task task) {
-		_tasks.add(task);
-	}
-	
-	public void storeInnerMemoryState(ArrayList<Task> tasks) {
-		_tasks = tasks;
 	}
 	
 	public String getCommand() {
@@ -43,8 +36,20 @@ public class State {
 		return _sortOrder;
 	}
 	
-	public ArrayList<Task> getState() {
+	public ArrayList<ArrayList<Task>> getState() {
 		return _tasks;
+	}
+	
+	public void setState(ArrayList<ArrayList<Task>> taskLists) {
+		_tasks = taskLists;
+	}
+	
+	public int[] getIndices() {
+		return _oldIndices;
+	}
+	
+	public void setIndices(int[] indices) {
+		_oldIndices = indices;
 	}
 	
 	public String getFilePath() {
