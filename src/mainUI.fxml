@@ -17,7 +17,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<GridPane fx:id="mainPane" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UIController">
+<GridPane fx:id="mainPane" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UIController">
    <children>
       <ScrollPane fitToHeight="true" fitToWidth="true" minHeight="-Infinity" minWidth="-Infinity" prefHeight="312.0" prefWidth="586.0" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
          <content>
@@ -50,7 +50,7 @@
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
          </padding>
       </ScrollPane>
-      <Label fx:id="commandLog" layoutX="14.0" layoutY="326.0" GridPane.columnIndex="0" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
+      <Label fx:id="commandLog" layoutX="14.0" layoutY="326.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" wrapText="true" GridPane.columnIndex="0" GridPane.hgrow="SOMETIMES" GridPane.rowIndex="1" GridPane.vgrow="SOMETIMES">
          <GridPane.margin>
             <Insets />
          </GridPane.margin>
@@ -58,12 +58,9 @@
             <Font size="26.0" />
          </font>
       </Label>
-      <TextField fx:id="input" layoutX="8.0" layoutY="363.0" onKeyPressed="#ENTER" GridPane.columnIndex="0" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.vgrow="ALWAYS">
-         <padding>
-            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-         </padding>
+      <TextField fx:id="input" layoutX="8.0" layoutY="363.0" onKeyPressed="#ENTER" GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
          <font>
-            <Font name="Verdana" size="10.0" />
+            <Font name="Verdana" size="18.0" />
          </font>
          <GridPane.margin>
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />

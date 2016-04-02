@@ -15,6 +15,8 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeView;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 
 public class mainController implements Initializable {
@@ -95,7 +97,7 @@ public class mainController implements Initializable {
 		overdueList.setItems(obList);
 		
 		// TODO can use css file to set images
-		//homeTab.setGraphic(new ImageView);
+		homeTab.setGraphic(new ImageView(new Image("cs2103_w09_1j/esther/Resources/HomeTab.ico")));
 	}
 
     
