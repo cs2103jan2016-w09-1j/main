@@ -55,11 +55,15 @@ public class Status {
 	static final String MESSAGE_SUCCESS_SORT = "File is successfully sorted.\n";
 	static final String MESSAGE_ERROR_SORT_INVALID_CRITERION = "Unable to sort file: Please specify a recognized criterion to sort the file by.\n";
 	
-	static final String MESSAGE_ERROR_SEARCH_INVALID = "Search keyword or date-time not present.\n";
+	static final String MESSAGE_SUCCESS_SEARCH = "Search is successful.\n";
+	static final String MESSAGE_ERROR_SEARCH_INVALID = "Search keyword or date-time is either not specified, or not recognized.\n";
+	
 	static final String MESSAGE_SUCCESS_SET_SAVEPATH = "Successfully set file path.\n";
 	static final String MESSAGE_ERROR_SET_SAVEPATH = "Unable to set file path.\n";
+	
 	static final String MESSAGE_SUCCESS_UNDO = "Undo is successful.\n";
 	static final String MESSAGE_ERROR_UNDO = "Cannot undo any further.\n";
+	
 	static final String MESSAGE_ERROR_UNKNOWN_STATE = "ESTHER has encountered an unknown error. Please restart this application.\n";
 	static final String MESSAGE_HELP = "Help:\n"
 			+ "List of commands are:\n1. add\n2. delete\n3. update\n"
@@ -156,12 +160,14 @@ public class Status {
 		case UNDO :
 			message = MESSAGE_SUCCESS_UNDO;
 			break;
-			
-		// TODO: adjust w.r.t. CommandKey enum			
-		/*case SET_FILEPATH :
-		    message = MESSAGE_SUCCESS_SET_FILEPATH;
+						
+		case SET :
+		    message = MESSAGE_SUCCESS_SET_SAVEPATH;
 		    break;
-		 */
+			
+		case SEARCH :
+			message = MESSAGE_SUCCESS_SEARCH;
+			break;
 
 		case HELP :
 			message = MESSAGE_HELP;
@@ -215,11 +221,9 @@ public class Status {
 			message = MESSAGE_ERROR_SEARCH_INVALID;
 			break;
 			
-		// TODO: adjust w.r.t. CommandKey enum
-		/*case SET_FILEPATH :
-		    message = MESSAGE_ERROR_SET_FILEPATH;
+		case SET :
+		    message = MESSAGE_ERROR_SET_SAVEPATH;
 		    break;
-		 */
 
 		case UNDO :
 			message = MESSAGE_ERROR_UNDO;
