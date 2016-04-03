@@ -274,7 +274,7 @@ class Logic {
 	 */
 	public void setUiTaskDisplays(String commandType, int[] indices) {
 		UIResult displayResult = createDisplayResult(commandType, indices);
-		MainController.setRes(displayResult);
+		UiMainController.setRes(displayResult);
 	}
 	
 	public UIResult createDisplayResult(String commandType, int[] indices) {
