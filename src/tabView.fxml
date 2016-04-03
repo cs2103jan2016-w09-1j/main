@@ -19,7 +19,7 @@
 
 <VBox spacing="5.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UiMainController">
 	<children>
-		<TabPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" nodeOrientation="LEFT_TO_RIGHT" prefHeight="400.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+		<TabPane fx:id="tabSum" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" nodeOrientation="LEFT_TO_RIGHT" prefHeight="400.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
 			<tabs>
 				<Tab fx:id="homeTab" closable="false" text="Home">
 					<content>
@@ -201,12 +201,12 @@
 				</Tab>
 			</tabs>
 		</TabPane>
-		<Label layoutX="50.0" text="This is a fking label" VBox.vgrow="ALWAYS">
+		<Label fx:id="commandLog" layoutX="50.0" text="This is a fking label" VBox.vgrow="ALWAYS">
 			<padding>
 				<Insets left="14.0" />
 			</padding>
 		</Label>
-		<TextField promptText="Enter your commands here:" VBox.vgrow="ALWAYS">
+		<TextField fx:id="input" onKeyPressed="#ENTER" promptText="Enter your commands here:" VBox.vgrow="ALWAYS">
 			<padding>
 				<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
 			</padding>

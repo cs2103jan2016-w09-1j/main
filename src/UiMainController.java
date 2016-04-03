@@ -10,14 +10,19 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableColumn.CellDataFeatures;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
@@ -37,6 +42,9 @@ public class UiMainController implements Initializable {
 		UiMainController.res = res;
 	}
 
+	@FXML
+	private TabPane tabSum;
+	
 	/*
 	 * This section is for reference to
 	 * Home Tab content
@@ -202,6 +210,39 @@ public class UiMainController implements Initializable {
 	@FXML
 	private TableColumn<TaskWrapper, String> ATPriority;
 
+	// handle user input
+	@FXML
+    private TextField input;
+
+	@FXML
+	private Label commandLog;
+	
+	@FXML
+	void ENTER(KeyEvent event) throws Exception {
+		if (event.getCode() == KeyCode.ENTER) {
+			String userInput = input.getText();
+			System.out.println(userInput);
+
+			String logicOutput =logic.executeCommand(userInput); 
+
+			String command = res.getCommandType();
+			if (command.equalsIgnoreCase("search")) {
+				Tab searchTab = new Tab();
+				searchTab.setText("Search");
+				tabSum.getTabs().add(searchTab);
+				
+				searchTab
+				
+			} else if (command.equalsIgnoreCase("help")) {
+				
+			}
+			
+			commandLog.setText(logicOutput);
+			input.clear();
+		}
+		
+	}	
+	
 	// initialize logic
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -215,11 +256,8 @@ public class UiMainController implements Initializable {
 		}*/
 
 		// TODO get UIResult from logic somehow
-		UIResult res = new UIResult();
+		res = new UIResult();
 		initializeTabs(res);
-
-
-
 
 
 	}
