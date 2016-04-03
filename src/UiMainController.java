@@ -332,13 +332,13 @@ public class UiMainController implements Initializable {
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 
-		/*try {
+		try {
 			logic = new Logic();
 		} catch (ParseException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}*/
+		}
 
 		// TODO get UIResult from logic somehow
 		res = new UIResult();
