@@ -1,28 +1,3 @@
-
-/**
- * ============= [LOGIC COMPONENT FOR ESTHER] =============
- * 
- * Logic handles all operations as requested by the user,
- * which are basically CRUD operations.
- * 
- * Generally, when these operations succeed or fail,
- * relevant messages confirming the statuses of these
- * operations shall be passed to the UI via the Parser,
- * which will then be shown to the user.
- * 
- * For certain operations, Task objects are returned and
- * these will be passed to the Parser, which will parse
- * them to human-readable format and forward these to the
- * UI to be displayed to the user.
- * 
- * 
- * =================== [CURRENT STATUS] ===================
- * Most of ESTHER is broken due to Task changes. When all
- * necessary fixes are done, will proceed to test.
- * 
- * @@author A0129660A
- */
-
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
 import java.text.ParseException;
@@ -44,6 +19,41 @@ import cs2103_w09_1j.esther.State;
 import cs2103_w09_1j.esther.Status;
 import cs2103_w09_1j.esther.InvalidInputException;
 
+/**
+ * ============= [LOGIC COMPONENT FOR ESTHER] =============
+ * <br>
+ * <br>
+ * Logic handles all operations as requested by the user.
+ * A list of operations that are supported are:
+ * <br>
+ * 1. CRUD
+ * <br>
+ * 2. Sort
+ * <br>
+ * 3. Search
+ * <br>
+ * 4. Set save file-path
+ * <br>
+ * <br>
+ * Generally, when these operations succeed or fail,
+ * relevant messages confirming the statuses of these
+ * operations shall be passed to the UI via the Parser,
+ * which will then be shown to the user.
+ * <br>
+ * <br>
+ * If operations succeed, <code>UIResult</code> is passed to UI for
+ * display to the user. Otherwise, an error message is
+ * shown to the user.
+ * <br>
+ * <br>
+ * =================== [CURRENT STATUS] ===================
+ * <br>
+ * <br>
+ * Most of ESTHER is broken due to Task changes. When all
+ * necessary fixes are done, will proceed to test.
+ * 
+ * @@author A0129660A
+ */
 class Logic {
 	
 	private static final int NOT_FOUND_INDEX = -1;
@@ -231,6 +241,26 @@ class Logic {
 			_fullTaskList.addAll(_taskDisplayLists.get(i));
 		}
 		return _fullTaskList;
+	}
+	
+	protected ArrayList<Task> getOverdueBuffer() {
+		return _taskDisplayLists.get(Task.OVERDUE_TASK_INDEX);
+	}
+	
+	protected ArrayList<Task> getTodayBuffer() {
+		return _taskDisplayLists.get(Task.TODAY_TASK_INDEX);
+	}
+	
+	protected ArrayList<Task> getTomorrowBuffer() {
+		return _taskDisplayLists.get(Task.TOMORROW_TASK_INDEX);
+	}
+	
+	protected ArrayList<Task> getThisWeekBuffer() {
+		return _taskDisplayLists.get(Task.THIS_WEEK_TASK_INDEX);
+	}
+	
+	protected ArrayList<Task> getRemainingBuffer() {
+		return _taskDisplayLists.get(Task.OVERDUE_TASK_INDEX);
 	}
 	
 	/**
