@@ -6,6 +6,8 @@ import java.util.Date;
 import java.util.ResourceBundle;
 
 import cs2103_w09_1j.esther.*;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -16,6 +18,9 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeTableColumn;
+import javafx.scene.control.TreeTableColumn.CellDataFeatures;
+import javafx.scene.control.TreeTableView;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
@@ -25,6 +30,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.util.Callback;
 
 public class UiMainController implements Initializable {
 
@@ -58,24 +64,40 @@ public class UiMainController implements Initializable {
 
 	// Home tab's overdue list
 	@FXML
-	private TableView<Task> overdueList;
+	private TableView<TaskWrapper> overdueList;
 
 	@FXML
-	private TableColumn<Task, Integer> HOID;
+	private TableColumn<TaskWrapper, String> HOID;
 
 	@FXML
-	private TableColumn<Task, String> HOTask;
+	private TableColumn<TaskWrapper, String> HOTask;
 
 	@FXML
-	private TableColumn<Task, String> HODate;
+	private TableColumn<TaskWrapper, String> HODate;
 
 	@FXML
-	private TableColumn<Task, Integer> HOPriority;
+	private TableColumn<TaskWrapper, String> HOPriority;
 
 	@FXML
 	void overdueClick(MouseEvent event) {
 
 	}
+
+	// home tab's upcoming list
+	@FXML
+	private TreeTableView<TaskWrapper> homeTree;
+
+	@FXML
+	private TreeTableColumn<TaskWrapper, String> homeTreeID;
+
+	@FXML
+	private TreeTableColumn<TaskWrapper, String> homeTreeTask;
+
+	@FXML
+	private TreeTableColumn<TaskWrapper, String> homeTreeDate;
+
+	@FXML
+	private TreeTableColumn<TaskWrapper, String> homeTreePriority;
 
 	// upcoming tab
 	@FXML
@@ -84,6 +106,20 @@ public class UiMainController implements Initializable {
 	@FXML
 	private VBox upContent;
 
+	@FXML
+	private TreeTableView<TaskWrapper> upTabTree;
+
+	@FXML
+	private TreeTableColumn<TaskWrapper, String> upTreeID;
+
+	@FXML
+	private TreeTableColumn<TaskWrapper, String> upTreeTask;
+
+	@FXML
+	private TreeTableColumn<TaskWrapper, String> upTreeDate;
+
+	@FXML
+	private TreeTableColumn<TaskWrapper, String> upTreePriority;
 
 	/*
 	 * This section is for reference to 
@@ -116,19 +152,19 @@ public class UiMainController implements Initializable {
 	private Tab overdueTab;
 
 	@FXML
-	private TableView<Task> overdue;
+	private TableView<TaskWrapper> overdue;
 
 	@FXML
-	private TableColumn<?, ?> OTID;
+	private TableColumn<TaskWrapper, String> OTID;
 
 	@FXML
-	private TableColumn<?, ?> OTTask;
+	private TableColumn<TaskWrapper, String> OTTask;
 
 	@FXML
-	private TableColumn<?, ?> OTDate;
+	private TableColumn<TaskWrapper, String> OTDate;
 
 	@FXML
-	private TableColumn<?, ?> OTPriority;
+	private TableColumn<TaskWrapper, String> OTPriority;
 
 
 	/*
@@ -198,68 +234,144 @@ public class UiMainController implements Initializable {
 	}
 
 	private void initializeTabs(UIResult res) {
-		initializeHomeTab(res);
-		initializeUpcomingList(res);
-	}
-
-	private void initializeHomeTab(UIResult res) {
-		// TODO can use css file to set images
-		// homeTab.setGraphic(new ImageView(new Image("cs2103_w09_1j/esther/Resources/HomeTab.jpg")));
 		initializeOverdueList(res);
 		initializeUpcomingList(res);
 	}
 
 	private void initializeOverdueList(UIResult res) {
 		ArrayList<Task> overdueBuffer = res.getOverdueBuffer();
-		
+
 		ArrayList<TaskWrapper> overdueWrapper = new ArrayList<TaskWrapper>();
 		for (int i = 0; i < overdueBuffer.size(); i++) {
 			TaskWrapper tw = new TaskWrapper(overdueBuffer.get(i));
 			overdueWrapper.add(tw);
 		}
-		
-		ObservableList<Task> odList = (ObservableList) FXCollections.observableArrayList(overdueWrapper);
-		
-		HOID.setCellValueFactory(new PropertyValueFactory<Task,Integer>("id"));
-		HOTask.setCellValueFactory(new PropertyValueFactory<Task,String>("taskName"));
-		HODate.setCellValueFactory(new PropertyValueFactory<Task,String>("date"));
-		HOPriority.setCellValueFactory(new PropertyValueFactory<Task,Integer>("id"));
+
+		ObservableList<TaskWrapper> odList = (ObservableList) FXCollections.observableArrayList(overdueWrapper);
+
+		HOID.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("id"));
+		HOTask.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("taskName"));
+		HODate.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("date"));
+		HOPriority.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("priority"));
+
+		OTID.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("id"));
+		OTTask.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("taskName"));
+		OTDate.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("date"));
+		OTPriority.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("priority"));
+
 		overdueList.setItems(odList);
 		overdue.setItems(odList);
 	}
 
 	private void initializeUpcomingList(UIResult res) {
+		// get all buffers from UIResult
 		ArrayList<Task> todayBuffer = res.getTodayBuffer();
 		ArrayList<Task> tmrBuffer = res.getTomorrowBuffer();
 		ArrayList<Task> weekBuffer = res.getWeekBuffer();
-		ObservableList<Task> tdList = (ObservableList) FXCollections.observableArrayList(todayBuffer);
-		ObservableList<Task> tmList = (ObservableList) FXCollections.observableArrayList(tmrBuffer);
-		ObservableList<Task> wkList = (ObservableList) FXCollections.observableArrayList(weekBuffer);
+
+		// initialize all buffers of wrappers
+		/*ArrayList<TaskWrapper> todayWrapper = new ArrayList<TaskWrapper>();
+		ArrayList<TaskWrapper> tmrWrapper = new ArrayList<TaskWrapper>();
+		ArrayList<TaskWrapper> weekWrapper = new ArrayList<TaskWrapper>();*/
+
+		TreeItem<TaskWrapper> rootNode = new TreeItem<TaskWrapper>(new TaskWrapper("This is the root node for upcoming tab"));
+		TreeItem<TaskWrapper> todayNode = new TreeItem<TaskWrapper>(new TaskWrapper("Today"));
+		TreeItem<TaskWrapper> tomorrowNode = new TreeItem<TaskWrapper>(new TaskWrapper("Tomorrow"));
+		TreeItem<TaskWrapper> weekNode = new TreeItem<TaskWrapper>(new TaskWrapper("One Week"));
+
+		int i;
+		for (i = 0; i < todayBuffer.size(); i++) {
+			TaskWrapper tw = new TaskWrapper(todayBuffer.get(i));
+			todayNode.getChildren().add(new TreeItem<TaskWrapper>(tw));
+			//todayWrapper.add(tw);
+		}
+
+		for (i = 0; i < tmrBuffer.size(); i++) {
+			TaskWrapper tw = new TaskWrapper(tmrBuffer.get(i));
+			tomorrowNode.getChildren().add(new TreeItem<TaskWrapper>(tw));
+			//tmrWrapper.add(tw);
+		}
+
+		for (i = 0; i < weekBuffer.size(); i++) {
+			TaskWrapper tw = new TaskWrapper(weekBuffer.get(i));
+			weekNode.getChildren().add(new TreeItem<TaskWrapper>(tw));
+			//weekWrapper.add(tw);
+		}
+
+		rootNode.getChildren().addAll(todayNode, tomorrowNode, weekNode);
+
+		/*ObservableList<TaskWrapper> tdList = (ObservableList) FXCollections.observableArrayList(todayWrapper);
+		 *ObservableList<TaskWrapper> tmList = (ObservableList) FXCollections.observableArrayList(tmrWrapper);
+		 *ObservableList<TaskWrapper> wkList = (ObservableList) FXCollections.observableArrayList(weekWrapper);
+		 */
 
 
-		TreeItem<String> rootItem = new TreeItem<String>("This is a fking dummy root for homw");
-		TreeItem<String> todayNode = new TreeItem<String>("Today");
-		TreeItem<String> tomorrowNode = new TreeItem<String>("Tomorrow");
-		TreeItem<String> weekNode = new TreeItem<String>("One Week");
-		TreeItem<String> test = new TreeItem<String>("test 12");
-		TreeItem<String> test1 = new TreeItem<String>("test 13");
-		TreeItem<String> test2 = new TreeItem<String>("test 14");
-		TreeItem<String> test3 = new TreeItem<String>("test 15");
-		TreeItem<String> test4 = new TreeItem<String>("test 16");
 
-		rootItem.getChildren().addAll(todayNode, tomorrowNode, weekNode);
-		TreeView<String> upcomingListUI = new TreeView<>(rootItem);
-		TreeView<String> upcomingTabContent = new TreeView<>(rootItem);
+		rootNode.setExpanded(true);
 
-		// attach TreeView to HomeTab upcoming list
-		homeGrid.getChildren().add(upcomingListUI);
-		GridPane.setConstraints(upcomingListUI, 1, 1, 1, 2);
+		/*
+		 * For Home Tab,
+		 * initialize TreeTableView nodes for today
+		 */
+		homeTreeID.setCellValueFactory(new Callback<CellDataFeatures<TaskWrapper, String>, ObservableValue<String>>() {
+			public ObservableValue<String> call(CellDataFeatures<TaskWrapper, String> task) {
+				return new ReadOnlyObjectWrapper(task.getValue().getValue().getId());
+			}
+		});
 
-		// attach TreeView to UpcomingTab content
-		upContent.getChildren().clear();
-		upContent.getChildren().add(upcomingTabContent);
-		upContent.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+		homeTreeTask.setCellValueFactory(new Callback<CellDataFeatures<TaskWrapper, String>, ObservableValue<String>>() {
+			public ObservableValue<String> call(CellDataFeatures<TaskWrapper, String> task) {
+				return new ReadOnlyObjectWrapper(task.getValue().getValue().getTaskName());
+			}
+		});
 
-		upcomingListUI.setShowRoot(false);
+		homeTreeDate.setCellValueFactory(new Callback<CellDataFeatures<TaskWrapper, String>, ObservableValue<String>>() {
+			public ObservableValue<String> call(CellDataFeatures<TaskWrapper, String> task) {
+				return new ReadOnlyObjectWrapper(task.getValue().getValue().getDate());
+			}
+		});
+
+		homeTreePriority.setCellValueFactory(new Callback<CellDataFeatures<TaskWrapper, String>, ObservableValue<String>>() {
+			public ObservableValue<String> call(CellDataFeatures<TaskWrapper, String> task) {
+				return new ReadOnlyObjectWrapper(task.getValue().getValue().getPriority());
+			}
+		});
+
+		homeTree.setRoot(rootNode);
+		homeTree.setShowRoot(false);
+
+
+		/*
+		 * For upcoming tab,
+		 * initialize TreeTableView nodes for today, tomorrow and this week
+		 */
+		upTreeID.setCellValueFactory(new Callback<CellDataFeatures<TaskWrapper, String>, ObservableValue<String>>() {
+			public ObservableValue<String> call(CellDataFeatures<TaskWrapper, String> task) {
+				return new ReadOnlyObjectWrapper(task.getValue().getValue().getId());
+			}
+		});
+
+		upTreeTask.setCellValueFactory(new Callback<CellDataFeatures<TaskWrapper, String>, ObservableValue<String>>() {
+			public ObservableValue<String> call(CellDataFeatures<TaskWrapper, String> task) {
+				return new ReadOnlyObjectWrapper(task.getValue().getValue().getTaskName());
+			}
+		});
+
+		upTreeDate.setCellValueFactory(new Callback<CellDataFeatures<TaskWrapper, String>, ObservableValue<String>>() {
+			public ObservableValue<String> call(CellDataFeatures<TaskWrapper, String> task) {
+				return new ReadOnlyObjectWrapper(task.getValue().getValue().getDate());
+			}
+		});
+
+		upTreePriority.setCellValueFactory(new Callback<CellDataFeatures<TaskWrapper, String>, ObservableValue<String>>() {
+			public ObservableValue<String> call(CellDataFeatures<TaskWrapper, String> task) {
+				return new ReadOnlyObjectWrapper(task.getValue().getValue().getPriority());
+			}
+		});
+
+		upTabTree.setRoot(rootNode);
+		upTabTree.setShowRoot(false);
 	}
+
+
 }

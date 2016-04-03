@@ -8,17 +8,17 @@ public class TaskWrapper {
 	private SimpleStringProperty taskName = new SimpleStringProperty();
 	private SimpleStringProperty startDate = new SimpleStringProperty();
 	private SimpleStringProperty endDate = new SimpleStringProperty();
-	private SimpleIntegerProperty id = new SimpleIntegerProperty();
-	private SimpleIntegerProperty priority = new SimpleIntegerProperty();
+	private SimpleStringProperty id = new SimpleStringProperty();
+	private SimpleStringProperty priority = new SimpleStringProperty();
 	private SimpleStringProperty date = new SimpleStringProperty();
 
 	public TaskWrapper(Task task) {
 		record = task;
 		taskName.set(task.getName());
 		System.out.println("Task name is " + task.getName());
-		id.set(task.getId());
+		id.set(Integer.toString(task.getId()));
 		System.out.println("Task id is " + task.getId());
-		priority.set(task.getPriority());
+		priority.set(Integer.toString(task.getPriority()));
 		System.out.println("Task priority is " + task.getPriority());
 		endDate.set(task.eDateToString());
 		System.out.println("Task endDate is " + task.getEndDate());
@@ -35,27 +35,33 @@ public class TaskWrapper {
 		}
 	}
 
+	// for TreeTableView's sub headings
+	public TaskWrapper(String title) {
+		id.set(title);
+		taskName.set("");
+		startDate.set("");
+	}
 
 	public Task getRecord() {
 		return record;
 	}
 
 
-	public SimpleStringProperty getTaskName() {
-		return taskName;
+	public String getTaskName() {
+		return taskName.get();
 	}
 
 
-	public SimpleIntegerProperty getId() {
-		return id;
+	public String getId() {
+		return id.get();
 	}
 
 
-	public SimpleIntegerProperty getPriority() {
-		return priority;
+	public String getPriority() {
+		return priority.get();
 	}
 
-	public SimpleStringProperty getDate() {
-		return date;
+	public String getDate() {
+		return date.get();
 	}
 }
