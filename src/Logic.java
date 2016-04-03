@@ -399,6 +399,7 @@ class Logic {
 			// TODO: error handling
 			//logger.logp(Level.SEVERE, "Storage", "readSaveFile()",
 						//"Cannot read from save file in Storage.", e);
+			e.printStackTrace();
 			System.exit(1);
 		}
 	}

@@ -1,4 +1,6 @@
+import java.io.IOException;
 import java.net.URL;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
@@ -7,8 +9,11 @@ import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
@@ -24,8 +29,12 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import javafx.util.Callback;
 
 public class UiMainController implements Initializable {
@@ -227,21 +236,97 @@ public class UiMainController implements Initializable {
 
 			String command = res.getCommandType();
 			if (command.equalsIgnoreCase("search")) {
-				Tab searchTab = new Tab();
-				searchTab.setText("Search");
-				tabSum.getTabs().add(searchTab);
 				
-				searchTab
+				displaySearch();
+				commandLog.setText(logicOutput);
 				
 			} else if (command.equalsIgnoreCase("help")) {
 				
+				commandLog.setText("Help Menu Opened!");
+				secondController helpController = createSecondWindow(commandLog, "Help");
+				helpController.setResult("help");
+				
+			} else {
+				commandLog.setText(logicOutput);
 			}
 			
-			commandLog.setText(logicOutput);
 			input.clear();
 		}
 		
 	}	
+	
+	private secondController createSecondWindow(Label lb, String title) {
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("secondWindow.fxml"));
+		Pane secondWindow = null;
+		try {
+			secondWindow = (Pane) loader.load();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		secondController second = loader.getController();
+		second.setMainController(this);
+
+		Stage stage = new Stage();
+		stage.initModality(Modality.WINDOW_MODAL);
+		stage.initOwner(lb.getScene().getWindow());
+		Scene scene = new Scene(secondWindow);
+		scene.getStylesheets().add("cs2103_w09_1j/esther/Resources/UI.css");
+		stage.setScene(scene);
+		stage.setTitle(title);
+		stage.show();
+		scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
+			@Override
+			public void handle(KeyEvent event) {
+				if (event.getCode() == KeyCode.ESCAPE) {
+					stage.close();
+				}
+			}
+		});
+
+		return second;
+	}
+	
+	private void displaySearch() {
+		Tab searchTab = new Tab();
+		searchTab.setText("Search");
+		tabSum.getTabs().add(searchTab);
+		
+		AnchorPane ap = new AnchorPane();
+		ArrayList<Task> searchBuffer = res.getSearchBuffer();
+
+		ArrayList<TaskWrapper> searchWrapper = new ArrayList<TaskWrapper>();
+		for (int i = 0; i < searchBuffer.size(); i++) {
+			TaskWrapper tw = new TaskWrapper(searchBuffer.get(i));
+			searchWrapper.add(tw);
+		}
+
+		ObservableList<TaskWrapper> cList = (ObservableList) FXCollections.observableArrayList(searchWrapper);
+
+		TableView<TaskWrapper> searchTable = new TableView<TaskWrapper>();
+		
+		TableColumn<TaskWrapper, String> STID = new TableColumn<TaskWrapper, String>();
+		TableColumn<TaskWrapper, String> STTask = new TableColumn<TaskWrapper, String>();
+		TableColumn<TaskWrapper, String> STDate = new TableColumn<TaskWrapper, String>();
+		TableColumn<TaskWrapper, String> STPriority = new TableColumn<TaskWrapper, String>();
+		
+		STID.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("id"));
+		STTask.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("taskName"));
+		STDate.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("date"));
+		STPriority.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("priority"));
+		
+		searchTable.getColumns().addAll(STID, STTask, STDate, STPriority);
+		
+		searchTable.setItems(cList);
+		
+		ap.getChildren().add(searchTable);
+		AnchorPane.setBottomAnchor(searchTable, 14.0);
+		AnchorPane.setRightAnchor(searchTable, 14.0);
+		AnchorPane.setTopAnchor(searchTable, 14.0);
+		AnchorPane.setLeftAnchor(searchTable, 14.0);
+		
+		searchTab.setContent(new AnchorPane());
+		
+	}
 	
 	// initialize logic
 	@Override
@@ -447,18 +532,8 @@ public class UiMainController implements Initializable {
 	}
 	
 	private void initializeAllContent(UIResult res) {
-		ArrayList<Task> overdueBuffer = res.getOverdueBuffer();
-		ArrayList<Task> todayBuffer = res.getTodayBuffer();
-		ArrayList<Task> tomorrowBuffer = res.getTomorrowBuffer();
-		ArrayList<Task> weekBuffer = res.getWeekBuffer();
-		ArrayList<Task> floatingBuffer = res.getFloatingBuffer();
-		ArrayList<Task> allBuffer = new ArrayList<Task>();
-		allBuffer.addAll(overdueBuffer);
-		allBuffer.addAll(todayBuffer);
-		allBuffer.addAll(tomorrowBuffer);
-		allBuffer.addAll(weekBuffer);
-		allBuffer.addAll(floatingBuffer);
-
+		ArrayList<Task> allBuffer = res.getAllTaskBuffer();
+		
 		ArrayList<TaskWrapper> allWrapper = new ArrayList<TaskWrapper>();
 		for (int i = 0; i < allBuffer.size(); i++) {
 			TaskWrapper tw = new TaskWrapper(allBuffer.get(i));
