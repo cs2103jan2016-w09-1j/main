@@ -428,7 +428,9 @@ public class Task implements Comparable<Task> {
 	 * @@author A0130749A
 	 */
 	public void setPriority(int priority) {
-		_priority = priority;
+		if (priority >= HIGHEST_TASK_PRIORITY && priority <= DEFAULT_TASK_PRIORITY) {
+			_priority = priority;
+		}
 	}
 
 	/**
