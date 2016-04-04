@@ -199,6 +199,8 @@ class Logic {
 			  	break;
 				
 			case HELP :
+				int indices[] = {-1, -1};
+				setUiTaskDisplays(command.getCommand(), indices);
 				Status._outcome = Status.Outcome.SUCCESS;
 				statusMessage = Status.getMessage(null, null, commandName);
 				break;
@@ -207,8 +209,8 @@ class Logic {
 				assert commandType != null;
 				logger.logp(Level.INFO, "Logic", "executeCommand(Command command)",
 							"Unrecognized command.");
-				int indices[] = {-1, -1};
-				setUiTaskDisplays("Invalid", indices);
+				int indices2[] = {-1, -1};
+				setUiTaskDisplays("Invalid", indices2);
 				Status._outcome = Status.Outcome.ERROR;
 				Status._errorCode = Status.ErrorCode.INVALID_COMMAND;
 				statusMessage = Status.getMessage(null, null, commandName);
@@ -743,6 +745,7 @@ class Logic {
 		}
 		//System.out.println(results);
 		int indices[] = {-1, -1};
+		storePreviousState(command, _taskDisplayLists, indices);
 		setUiTaskDisplays(command.getCommand(), indices);
 		Status._outcome = Status.Outcome.SUCCESS;
 		return getOperationStatus(command);
@@ -1129,6 +1132,7 @@ class Logic {
 				previous = new State(commandName);
 				previous.setState(taskLists);
 				previous.setIndices(oldIndices);
+				System.out.println("Storing previous state for " + previous.getCommand());
 				break;
 				
 			case SET :
@@ -1140,9 +1144,6 @@ class Logic {
 			  	break;
 
 			case UNDO :
-				previous = new State(commandName);
-				previous.setState(taskLists);
-				previous.setIndices(oldIndices);
 				break;
 
 			case HELP :
@@ -1173,7 +1174,7 @@ class Logic {
 			_taskDisplayLists = state.getState();
 			getInternalStorage();
 			_storage.writeSaveFile(_fullTaskList);
-			setUiTaskDisplays(state.getCommand(), state.getIndices());
+			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
 			Status._outcome = Status.Outcome.ERROR;
@@ -1192,7 +1193,7 @@ class Logic {
 			_taskDisplayLists = state.getState();
 			getInternalStorage();
 			_storage.writeSaveFile(_fullTaskList);
-			setUiTaskDisplays(state.getCommand(), state.getIndices());
+			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
 			Status._outcome = Status.Outcome.ERROR;
@@ -1211,7 +1212,7 @@ class Logic {
 			_taskDisplayLists = state.getState();
 			getInternalStorage();
 			_storage.writeSaveFile(_fullTaskList);
-			setUiTaskDisplays(state.getCommand(), state.getIndices());
+			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
 			Status._outcome = Status.Outcome.ERROR;
@@ -1230,7 +1231,7 @@ class Logic {
 			_taskDisplayLists = state.getState();
 			getInternalStorage();
 			_storage.writeSaveFile(_fullTaskList);
-			setUiTaskDisplays(state.getCommand(), state.getIndices());
+			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
 			Status._outcome = Status.Outcome.ERROR;
@@ -1249,7 +1250,7 @@ class Logic {
 			_taskDisplayLists = state.getState();
 			getInternalStorage();
 			_storage.writeSaveFile(_fullTaskList);
-			setUiTaskDisplays(state.getCommand(), state.getIndices());
+			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
 			Status._outcome = Status.Outcome.ERROR;
@@ -1262,7 +1263,7 @@ class Logic {
 			_taskDisplayLists = state.getState();
 			getInternalStorage();
 			_storage.writeSaveFile(_fullTaskList);
-			setUiTaskDisplays(state.getCommand(), state.getIndices());
+			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
 			Status._outcome = Status.Outcome.ERROR;
@@ -1276,7 +1277,7 @@ class Logic {
 			String filePath = state.getFilePath();
 			_config.setSavePath(filePath);
 			_storage.updateConfig(_config);
-			setUiTaskDisplays(state.getCommand(), state.getIndices());
+			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (InvalidPathException ipe) {
 			Status._outcome = Status.Outcome.ERROR;
