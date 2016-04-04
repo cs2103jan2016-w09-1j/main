@@ -344,7 +344,6 @@ public class UiMainController implements Initializable {
 			e.printStackTrace();
 		}
 
-		res = new UIResult();
 		initializeTabs(res);
 
 
