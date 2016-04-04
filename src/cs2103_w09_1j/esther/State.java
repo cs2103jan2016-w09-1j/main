@@ -17,11 +17,25 @@ public class State {
 	private String _command;
 	private String _filePath;
 	private String _sortOrder;
-	private ArrayList<ArrayList<Task>> _tasks = new ArrayList<ArrayList<Task>>();
+	private ArrayList<Task> overdue;
+	private ArrayList<Task> today;
+	private ArrayList<Task> tomorrow;
+	private ArrayList<Task> thisWeek;
+	private ArrayList<Task> remaining;
+	private ArrayList<Task> floating;
+	private ArrayList<Task> completed;
+	
 	private int _oldIndices[] = new int[2];
 	
 	public State(String command) {
 		_command = command;
+		overdue = new ArrayList<Task>();
+		today = new ArrayList<Task>();
+		tomorrow = new ArrayList<Task>();
+		thisWeek = new ArrayList<Task>();
+		remaining = new ArrayList<Task>();
+		floating = new ArrayList<Task>();
+		completed = new ArrayList<Task>();
 	}
 	
 	public void setSortOrder(String order) {
@@ -36,12 +50,14 @@ public class State {
 		return _sortOrder;
 	}
 	
-	public ArrayList<ArrayList<Task>> getState() {
-		return _tasks;
-	}
-	
 	public void setState(ArrayList<ArrayList<Task>> taskLists) {
-		_tasks = taskLists;
+		overdue.addAll(taskLists.get(0));
+		today.addAll(taskLists.get(1));
+		tomorrow.addAll(taskLists.get(2));
+		thisWeek.addAll(taskLists.get(3));
+		remaining.addAll(taskLists.get(4));
+		floating.addAll(taskLists.get(5));
+		completed.addAll(taskLists.get(6));
 	}
 	
 	public int[] getIndices() {
@@ -58,6 +74,34 @@ public class State {
 	
 	public void setFilePath(String filePath) {
 		_filePath = filePath;
+	}
+	
+	public ArrayList<Task> getOverdue() {
+		return overdue;
+	}
+	
+	public ArrayList<Task> getToday() {
+		return today;
+	}
+	
+	public ArrayList<Task> getTomorrow() {
+		return tomorrow;
+	}
+	
+	public ArrayList<Task> getThisWeek() {
+		return thisWeek;
+	}
+	
+	public ArrayList<Task> getRemaining() {
+		return remaining;
+	}
+	
+	public ArrayList<Task> getFloating() {
+		return floating;
+	}
+	
+	public ArrayList<Task> getCompleted() {
+		return completed;
 	}
 	
 }
