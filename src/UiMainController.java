@@ -8,9 +8,13 @@ import cs2103_w09_1j.esther.*;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
@@ -26,8 +30,12 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import javafx.util.Callback;
 
 public class UiMainController implements Initializable {
@@ -43,6 +51,8 @@ public class UiMainController implements Initializable {
 	public static void setRes(UIResult res) {
 		UiMainController.res = res;
 	}
+	
+	private ObservableList<TaskWrapper> sList, cList, odList, fList, aList, tdList, tmrList, wkList;
 
 	@FXML
 	private TabPane tabSum;
@@ -229,21 +239,98 @@ public class UiMainController implements Initializable {
 
 			String command = res.getCommandType();
 			if (command.equalsIgnoreCase("search")) {
-				Tab searchTab = new Tab();
-				searchTab.setText("Search");
-				tabSum.getTabs().add(searchTab);
 				
-				//searchTab
+				displaySearch();
+				commandLog.setText(logicOutput);
 				
 			} else if (command.equalsIgnoreCase("help")) {
 				
+				commandLog.setText("Help Menu Opened!");
+				secondController helpController = createSecondWindow(commandLog, "Help");
+				helpController.setResult("help");
+				
+			} else {
+				commandLog.setText(logicOutput);
 			}
 			
-			commandLog.setText(logicOutput);
 			input.clear();
 		}
 		
 	}	
+	
+	private secondController createSecondWindow(Label lb, String title) {
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("secondWindow.fxml"));
+		Pane secondWindow = null;
+		try {
+			secondWindow = (Pane) loader.load();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		secondController second = loader.getController();
+		second.setMainController(this);
+
+		Stage stage = new Stage();
+		stage.initModality(Modality.WINDOW_MODAL);
+		stage.initOwner(lb.getScene().getWindow());
+		Scene scene = new Scene(secondWindow);
+		scene.getStylesheets().add("cs2103_w09_1j/esther/Resources/UI.css");
+		stage.setScene(scene);
+		stage.setTitle(title);
+		stage.show();
+		scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
+			@Override
+			public void handle(KeyEvent event) {
+				if (event.getCode() == KeyCode.ESCAPE) {
+					stage.close();
+				}
+			}
+		});
+
+		return second;
+	}
+	
+	private void displaySearch() {
+		Tab searchTab = new Tab();
+		searchTab.setClosable(true);
+		searchTab.setText("Search");
+		tabSum.getTabs().add(searchTab);
+		
+		AnchorPane ap = new AnchorPane();
+		ArrayList<Task> searchBuffer = res.getSearchBuffer();
+
+		ArrayList<TaskWrapper> searchWrapper = new ArrayList<TaskWrapper>();
+		for (int i = 0; i < searchBuffer.size(); i++) {
+			TaskWrapper tw = new TaskWrapper(searchBuffer.get(i));
+			searchWrapper.add(tw);
+		}
+
+		sList = (ObservableList) FXCollections.observableArrayList(searchWrapper);
+
+		TableView<TaskWrapper> searchTable = new TableView<TaskWrapper>();
+		
+		TableColumn<TaskWrapper, String> STID = new TableColumn<TaskWrapper, String>();
+		TableColumn<TaskWrapper, String> STTask = new TableColumn<TaskWrapper, String>();
+		TableColumn<TaskWrapper, String> STDate = new TableColumn<TaskWrapper, String>();
+		TableColumn<TaskWrapper, String> STPriority = new TableColumn<TaskWrapper, String>();
+		
+		STID.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("id"));
+		STTask.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("taskName"));
+		STDate.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("date"));
+		STPriority.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("priority"));
+		
+		searchTable.getColumns().addAll(STID, STTask, STDate, STPriority);
+		
+		searchTable.setItems(sList);
+		
+		ap.getChildren().add(searchTable);
+		AnchorPane.setBottomAnchor(searchTable, 14.0);
+		AnchorPane.setRightAnchor(searchTable, 14.0);
+		AnchorPane.setTopAnchor(searchTable, 14.0);
+		AnchorPane.setLeftAnchor(searchTable, 14.0);
+		
+		searchTab.setContent(ap);
+		
+	}
 	
 	// initialize logic
 	@Override
@@ -257,10 +344,7 @@ public class UiMainController implements Initializable {
 			e.printStackTrace();
 		}
 
-		// TODO get UIResult from logic somehow
-		//res = new UIResult();
 		initializeTabs(res);
-
 
 	}
 
@@ -281,7 +365,27 @@ public class UiMainController implements Initializable {
 			overdueWrapper.add(tw);
 		}
 
-		ObservableList<TaskWrapper> odList = (ObservableList) FXCollections.observableArrayList(overdueWrapper);
+		odList = (ObservableList) FXCollections.observableArrayList(overdueWrapper);
+		odList.addListener(new ListChangeListener<TaskWrapper>() {
+
+			@Override
+			public void onChanged(Change c) {
+				ArrayList<Task> overdueBuffer = res.getOverdueBuffer();
+
+				ArrayList<TaskWrapper> overdueWrapper = new ArrayList<TaskWrapper>();
+				for (int i = 0; i < overdueBuffer.size(); i++) {
+					TaskWrapper tw = new TaskWrapper(overdueBuffer.get(i));
+					overdueWrapper.add(tw);
+				}
+
+				odList = (ObservableList) FXCollections.observableArrayList(overdueWrapper);
+				
+				overdueList.setItems(odList);
+				overdue.setItems(odList);
+				
+			}
+			
+		});
 
 		HOID.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("id"));
 		HOTask.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("taskName"));
@@ -303,10 +407,10 @@ public class UiMainController implements Initializable {
 		ArrayList<Task> tmrBuffer = res.getTomorrowBuffer();
 		ArrayList<Task> weekBuffer = res.getWeekBuffer();
 
-		// initialize all buffers of wrappers
-		/*ArrayList<TaskWrapper> todayWrapper = new ArrayList<TaskWrapper>();
+		// initialize all buffers of wrappers for listening purposes
+		ArrayList<TaskWrapper> todayWrapper = new ArrayList<TaskWrapper>();
 		ArrayList<TaskWrapper> tmrWrapper = new ArrayList<TaskWrapper>();
-		ArrayList<TaskWrapper> weekWrapper = new ArrayList<TaskWrapper>();*/
+		ArrayList<TaskWrapper> weekWrapper = new ArrayList<TaskWrapper>();
 
 		TreeItem<TaskWrapper> rootNode = new TreeItem<TaskWrapper>(new TaskWrapper("This is the root node for upcoming tab"));
 		TreeItem<TaskWrapper> todayNode = new TreeItem<TaskWrapper>(new TaskWrapper("Today"));
@@ -332,15 +436,60 @@ public class UiMainController implements Initializable {
 			//weekWrapper.add(tw);
 		}
 
+		tdList = (ObservableList) FXCollections.observableArrayList(todayWrapper);
+		tdList.addListener(new ListChangeListener<TaskWrapper>() {
+
+			@Override
+			public void onChanged(javafx.collections.ListChangeListener.Change<? extends TaskWrapper> c) {
+				ArrayList<Task> todayBuffer = res.getTodayBuffer();
+				ArrayList<TaskWrapper> todayWrapper = new ArrayList<TaskWrapper>();
+				todayNode.getChildren().clear();
+				for (int i = 0; i < todayBuffer.size(); i++) {
+					TaskWrapper tw = new TaskWrapper(todayBuffer.get(i));
+					todayNode.getChildren().add(new TreeItem<TaskWrapper>(tw));
+					//todayWrapper.add(tw);
+				}
+				tdList = (ObservableList) FXCollections.observableArrayList(todayWrapper);
+			}
+			
+		});
+		tmrList = (ObservableList) FXCollections.observableArrayList(tmrWrapper);
+		tmrList.addListener(new ListChangeListener<TaskWrapper>() {
+
+			@Override
+			public void onChanged(javafx.collections.ListChangeListener.Change<? extends TaskWrapper> c) {
+				ArrayList<Task> tmrBuffer = res.getTomorrowBuffer();
+				ArrayList<TaskWrapper> tmrWrapper = new ArrayList<TaskWrapper>();
+				todayNode.getChildren().clear();
+				for (int i = 0; i < tmrBuffer.size(); i++) {
+					TaskWrapper tw = new TaskWrapper(tmrBuffer.get(i));
+					tomorrowNode.getChildren().add(new TreeItem<TaskWrapper>(tw));
+					//todayWrapper.add(tw);
+				}
+				tmrList = (ObservableList) FXCollections.observableArrayList(tmrWrapper);
+			}
+			
+		});
+		wkList = (ObservableList) FXCollections.observableArrayList(weekWrapper);
+		wkList.addListener(new ListChangeListener<TaskWrapper>() {
+
+			@Override
+			public void onChanged(javafx.collections.ListChangeListener.Change<? extends TaskWrapper> c) {
+				ArrayList<Task> weekBuffer = res.getWeekBuffer();
+				ArrayList<TaskWrapper> wkWrapper = new ArrayList<TaskWrapper>();
+				weekNode.getChildren().clear();
+				for (int i = 0; i < weekBuffer.size(); i++) {
+					TaskWrapper tw = new TaskWrapper(weekBuffer.get(i));
+					weekNode.getChildren().add(new TreeItem<TaskWrapper>(tw));
+					//todayWrapper.add(tw);
+				}
+				wkList = (ObservableList) FXCollections.observableArrayList(wkWrapper);
+			}
+			
+		});
+
 		rootNode.getChildren().addAll(todayNode, tomorrowNode, weekNode);
-
-		/*ObservableList<TaskWrapper> tdList = (ObservableList) FXCollections.observableArrayList(todayWrapper);
-		 *ObservableList<TaskWrapper> tmList = (ObservableList) FXCollections.observableArrayList(tmrWrapper);
-		 *ObservableList<TaskWrapper> wkList = (ObservableList) FXCollections.observableArrayList(weekWrapper);
-		 */
-
-
-
+		
 		rootNode.setExpanded(true);
 		todayNode.setExpanded(true);
 		tomorrowNode.setExpanded(true);
@@ -419,8 +568,29 @@ public class UiMainController implements Initializable {
 			completedWrapper.add(tw);
 		}
 
-		ObservableList<TaskWrapper> cList = (ObservableList) FXCollections.observableArrayList(completedWrapper);
+		cList = (ObservableList) FXCollections.observableArrayList(completedWrapper);
+		cList.addListener(new ListChangeListener<TaskWrapper>() {
 
+			@Override
+			public void onChanged(Change c) {
+				ArrayList<Task> completedBuffer = res.getCompletedBuffer();
+
+				ArrayList<TaskWrapper> completedWrapper = new ArrayList<TaskWrapper>();
+				for (int i = 0; i < completedBuffer.size(); i++) {
+					TaskWrapper tw = new TaskWrapper(completedBuffer.get(i));
+					completedWrapper.add(tw);
+				}
+
+				cList = (ObservableList) FXCollections.observableArrayList(completedWrapper);
+				
+				completedContent.setItems(cList);
+				
+			}
+			
+		});
+
+		
+		
 		CTID.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("id"));
 		CTTask.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("taskName"));
 		CTDate.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("date"));
@@ -438,8 +608,26 @@ public class UiMainController implements Initializable {
 			floatingWrapper.add(tw);
 		}
 
-		ObservableList<TaskWrapper> fList = (ObservableList) FXCollections.observableArrayList(floatingWrapper);
+		fList = (ObservableList) FXCollections.observableArrayList(floatingWrapper);
+		fList.addListener(new ListChangeListener<TaskWrapper>() {
 
+			@Override
+			public void onChanged(Change c) {
+				ArrayList<Task> floatingBuffer = res.getFloatingBuffer();
+
+				ArrayList<TaskWrapper> floatingWrapper = new ArrayList<TaskWrapper>();
+				for (int i = 0; i < floatingBuffer.size(); i++) {
+					TaskWrapper tw = new TaskWrapper(floatingBuffer.get(i));
+					floatingWrapper.add(tw);
+				}
+
+				fList = (ObservableList) FXCollections.observableArrayList(floatingWrapper);
+				
+				floatingContent.setItems(fList);
+				
+			}
+			
+		});
 		FTID.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("id"));
 		FTTask.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("taskName"));
 		FTDate.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("date"));
@@ -449,26 +637,35 @@ public class UiMainController implements Initializable {
 	}
 	
 	private void initializeAllContent(UIResult res) {
-		ArrayList<Task> overdueBuffer = res.getOverdueBuffer();
-		ArrayList<Task> todayBuffer = res.getTodayBuffer();
-		ArrayList<Task> tomorrowBuffer = res.getTomorrowBuffer();
-		ArrayList<Task> weekBuffer = res.getWeekBuffer();
-		ArrayList<Task> floatingBuffer = res.getFloatingBuffer();
-		ArrayList<Task> allBuffer = new ArrayList<Task>();
-		allBuffer.addAll(overdueBuffer);
-		allBuffer.addAll(todayBuffer);
-		allBuffer.addAll(tomorrowBuffer);
-		allBuffer.addAll(weekBuffer);
-		allBuffer.addAll(floatingBuffer);
-
+		ArrayList<Task> allBuffer = res.getAllTaskBuffer();
+		
 		ArrayList<TaskWrapper> allWrapper = new ArrayList<TaskWrapper>();
 		for (int i = 0; i < allBuffer.size(); i++) {
 			TaskWrapper tw = new TaskWrapper(allBuffer.get(i));
 			allWrapper.add(tw);
 		}
 
-		ObservableList<TaskWrapper> aList = (ObservableList) FXCollections.observableArrayList(allWrapper);
+		aList = (ObservableList) FXCollections.observableArrayList(allWrapper);
+		aList.addListener(new ListChangeListener<TaskWrapper>() {
 
+			@Override
+			public void onChanged(Change c) {
+				ArrayList<Task> allBuffer = res.getAllTaskBuffer();
+
+				ArrayList<TaskWrapper> allWrapper = new ArrayList<TaskWrapper>();
+				for (int i = 0; i < allBuffer.size(); i++) {
+					TaskWrapper tw = new TaskWrapper(allBuffer.get(i));
+					allWrapper.add(tw);
+				}
+
+				aList = (ObservableList) FXCollections.observableArrayList(allWrapper);
+				
+				allContent.setItems(aList);
+				
+			}
+			
+		});
+		
 		ATID.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("id"));
 		ATTask.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("taskName"));
 		ATDate.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("date"));

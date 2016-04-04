@@ -27,7 +27,7 @@ public class TaskWrapper {
 			System.out.println("Task has start date!");
 			startDate.set(task.sDateToString());
 			System.out.println("Task start date is " + task.getStartDate());
-			date.set("from " + startDate + " to " + endDate);
+			date.set("from " + startDate.get() + " to " + endDate.get());
 			System.out.println("Task date is " + date.get());
 		} else {
 			date.set(task.eDateToString());
