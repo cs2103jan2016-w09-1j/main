@@ -42,7 +42,7 @@ public class UiMainController implements Initializable {
 
 	private Logic logic;
 
-	private static UIResult res;
+	private static UIResult res = new UIResult();
 
 	public static UIResult getRes() {
 		return res;
