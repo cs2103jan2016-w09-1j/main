@@ -242,15 +242,18 @@ public class UiMainController implements Initializable {
 				
 				displaySearch();
 				commandLog.setText(logicOutput);
+				initializeTabs(res);
 				
 			} else if (command.equalsIgnoreCase("help")) {
 				
 				commandLog.setText("Help Menu Opened!");
 				secondController helpController = createSecondWindow(commandLog, "Help");
 				helpController.setResult("help");
+				initializeTabs(res);
 				
 			} else {
 				commandLog.setText(logicOutput);
+				initializeTabs(res);
 			}
 			
 			input.clear();
@@ -366,7 +369,7 @@ public class UiMainController implements Initializable {
 		}
 
 		odList = (ObservableList) FXCollections.observableArrayList(overdueWrapper);
-		odList.addListener(new ListChangeListener<TaskWrapper>() {
+		/*odList.addListener(new ListChangeListener<TaskWrapper>() {
 
 			@Override
 			public void onChanged(Change c) {
@@ -385,7 +388,7 @@ public class UiMainController implements Initializable {
 				
 			}
 			
-		});
+		});*/
 
 		HOID.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("id"));
 		HOTask.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("taskName"));
@@ -437,7 +440,7 @@ public class UiMainController implements Initializable {
 		}
 
 		tdList = (ObservableList) FXCollections.observableArrayList(todayWrapper);
-		tdList.addListener(new ListChangeListener<TaskWrapper>() {
+		/*tdList.addListener(new ListChangeListener<TaskWrapper>() {
 
 			@Override
 			public void onChanged(javafx.collections.ListChangeListener.Change<? extends TaskWrapper> c) {
@@ -452,9 +455,9 @@ public class UiMainController implements Initializable {
 				tdList = (ObservableList) FXCollections.observableArrayList(todayWrapper);
 			}
 			
-		});
+		});*/
 		tmrList = (ObservableList) FXCollections.observableArrayList(tmrWrapper);
-		tmrList.addListener(new ListChangeListener<TaskWrapper>() {
+		/*tmrList.addListener(new ListChangeListener<TaskWrapper>() {
 
 			@Override
 			public void onChanged(javafx.collections.ListChangeListener.Change<? extends TaskWrapper> c) {
@@ -469,9 +472,9 @@ public class UiMainController implements Initializable {
 				tmrList = (ObservableList) FXCollections.observableArrayList(tmrWrapper);
 			}
 			
-		});
+		});*/
 		wkList = (ObservableList) FXCollections.observableArrayList(weekWrapper);
-		wkList.addListener(new ListChangeListener<TaskWrapper>() {
+		/*wkList.addListener(new ListChangeListener<TaskWrapper>() {
 
 			@Override
 			public void onChanged(javafx.collections.ListChangeListener.Change<? extends TaskWrapper> c) {
@@ -486,7 +489,7 @@ public class UiMainController implements Initializable {
 				wkList = (ObservableList) FXCollections.observableArrayList(wkWrapper);
 			}
 			
-		});
+		});*/
 
 		rootNode.getChildren().addAll(todayNode, tomorrowNode, weekNode);
 		
@@ -569,7 +572,7 @@ public class UiMainController implements Initializable {
 		}
 
 		cList = (ObservableList) FXCollections.observableArrayList(completedWrapper);
-		cList.addListener(new ListChangeListener<TaskWrapper>() {
+		/*cList.addListener(new ListChangeListener<TaskWrapper>() {
 
 			@Override
 			public void onChanged(Change c) {
@@ -587,7 +590,7 @@ public class UiMainController implements Initializable {
 				
 			}
 			
-		});
+		});*/
 
 		
 		
@@ -609,7 +612,7 @@ public class UiMainController implements Initializable {
 		}
 
 		fList = (ObservableList) FXCollections.observableArrayList(floatingWrapper);
-		fList.addListener(new ListChangeListener<TaskWrapper>() {
+		/*fList.addListener(new ListChangeListener<TaskWrapper>() {
 
 			@Override
 			public void onChanged(Change c) {
@@ -627,7 +630,7 @@ public class UiMainController implements Initializable {
 				
 			}
 			
-		});
+		});*/
 		FTID.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("id"));
 		FTTask.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("taskName"));
 		FTDate.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("date"));
@@ -646,7 +649,7 @@ public class UiMainController implements Initializable {
 		}
 
 		aList = (ObservableList) FXCollections.observableArrayList(allWrapper);
-		aList.addListener(new ListChangeListener<TaskWrapper>() {
+		/*aList.addListener(new ListChangeListener<TaskWrapper>() {
 
 			@Override
 			public void onChanged(Change c) {
@@ -664,7 +667,7 @@ public class UiMainController implements Initializable {
 				
 			}
 			
-		});
+		});*/
 		
 		ATID.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("id"));
 		ATTask.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("taskName"));
