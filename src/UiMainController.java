@@ -248,7 +248,7 @@ public class UiMainController implements Initializable {
 				
 				commandLog.setText("Help Menu Opened!");
 				secondController helpController = createSecondWindow(commandLog, "Help");
-				helpController.setResult("help");
+				helpController.setResult(res.getMessage());
 				initializeTabs(res);
 				
 			} else {
