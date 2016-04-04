@@ -1,4 +1,6 @@
+import java.io.IOException;
 import java.net.URL;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
@@ -231,7 +233,7 @@ public class UiMainController implements Initializable {
 				searchTab.setText("Search");
 				tabSum.getTabs().add(searchTab);
 				
-				searchTab
+				//searchTab
 				
 			} else if (command.equalsIgnoreCase("help")) {
 				
@@ -247,16 +249,16 @@ public class UiMainController implements Initializable {
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 
-		/*try {
+		try {
 			logic = new Logic();
 		} catch (ParseException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}*/
+		}
 
 		// TODO get UIResult from logic somehow
-		res = new UIResult();
+		//res = new UIResult();
 		initializeTabs(res);
 
 
