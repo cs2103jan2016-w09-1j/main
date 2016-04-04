@@ -1,6 +1,7 @@
 package cs2103_w09_1j.esther;
 
 import java.util.ArrayList;
+import cs2103_w09_1j.esther.Status;
 
 public class UIResult {
 
@@ -27,6 +28,7 @@ public class UIResult {
 	 */
 	private int[] index = new int[2];
 	private String commandType;
+	private static final String message = Status.MESSAGE_HELP;
 	
 	public UIResult() {
 		overdueBuffer = new ArrayList<Task>();
@@ -117,6 +119,10 @@ public class UIResult {
 	
 	public void setCommandType(String commandType) {
 		this.commandType = commandType;
+	}
+	
+	public String getMessage() {
+		return message;
 	}
 	
 }
