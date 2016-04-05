@@ -260,29 +260,51 @@ public class UiMainController implements Initializable {
 				commandLog.setText(logicOutput);
 				initializeTabs(res);
 				if (command.equalsIgnoreCase("sort") || command.equalsIgnoreCase("undo")) {
-					
+
 				} else {
 					int[] index = res.getIndex();
 					int line = index[1];
 					switch(index[0]) {
 					case(0):
 						//overdue
-						overdueList.getSelectionModel().select(line);
+						if (selectionModel.isSelected(0)) {
+							overdueList.getSelectionModel().select(line);
+						} else {
+							overdue.getSelectionModel().select(line);
+						}
 					case(1):
 						//today
-						homeTree.getSelectionModel().select(line+1);
+						if (selectionModel.isSelected(0)) {
+							homeTree.getSelectionModel().select(line+1);
+						} else {
+							upTabTree.getSelectionModel().select(line+1);
+						}
 					case(2):
 						//tomorrow
+						if (selectionModel.isSelected(0)) {
 						homeTree.getSelectionModel().select(res.getTodayBuffer().size() 
 								+ line + 2);
+						} else {
+							upTabTree.getSelectionModel().select(res.getTodayBuffer().size() 
+								+ line + 2);
+						}
 					case(3):
 						//week
-						homeTree.getSelectionModel().select(res.getTodayBuffer().size()
-								+ res.getTomorrowBuffer().size() + line + 3);
+						if (selectionModel.isSelected(0)) {
+							homeTree.getSelectionModel().select(res.getTodayBuffer().size()
+									+ res.getTomorrowBuffer().size() + line + 3);
+						} else {
+							upTabTree.getSelectionModel().select(res.getTodayBuffer().size()
+									+ res.getTomorrowBuffer().size() + line + 3);
+						}
+						
 					case(4):
-						//all
+						//all - nothing at all, should not even use this
 					case(5):
 						//floating
+						if (selectionModel.isSelected(3)) {
+							floatingContent.getSelectionModel().select(line);
+						}
 					case(6):
 						//completed
 					default:
@@ -291,7 +313,7 @@ public class UiMainController implements Initializable {
 				}
 
 
-				
+
 			}
 
 			input.clear();
