@@ -893,7 +893,10 @@ public class Task implements Comparable<Task> {
 	private int compareByName(Task task) {
 		if (_name.equals(task.getName())) {
 			if (_priority == task.getPriority()) {
-				if (_startDate != null && task.getStartDate() == null) { // compare event with task
+				if (_endDate == null && task.getEndDate() == null) { // comparing floating tasks
+					// do nothing
+					return 0;
+				} else if (_startDate != null && task.getStartDate() == null) { // compare event with task
 					return _startDate.compareTo(task.getEndDate());
 				} else if (_startDate == null && task.getStartDate() != null) { // compare task with event
 					return _endDate.compareTo(task.getStartDate());
@@ -944,25 +947,33 @@ public class Task implements Comparable<Task> {
 	private int compareByPriority(Task task) {
 		if (_priority == task.getPriority()) {
 			if (_startDate != null && task.getStartDate() == null) { // compare event with task
-				if (_startDate.equals(task.getEndDate())) {
+				if (_endDate == null || task.getEndDate() == null) {
+					return _name.compareTo(task.getName());
+				} else if (_startDate.equals(task.getEndDate())) {
 					return _name.compareTo(task.getName());
 				} else {
 					return _startDate.compareTo(task.getEndDate());
 				}
 			} else if (_startDate == null && task.getStartDate() != null) { // compare task with event
-				if (_endDate.equals(task.getStartDate())) {
+				if (_endDate == null || task.getEndDate() == null) {
+					return _name.compareTo(task.getName());
+				} else if (_endDate.equals(task.getStartDate())) {
 					return _name.compareTo(task.getName());
 				} else {
 					return _endDate.compareTo(task.getStartDate());
 				}
 			} else if (_startDate != null && task.getStartDate() != null) { // compare event with event
-				if (_startDate.equals(task.getStartDate())) {
+				if (_endDate == null || task.getEndDate() == null) {
+					return _name.compareTo(task.getName());
+				} else if (_startDate.equals(task.getStartDate())) {
 					return _name.compareTo(task.getName());
 				} else {
 					return _startDate.compareTo(task.getStartDate());
 				}
 			} else { // compare task with task
-				if (_endDate.equals(task.getEndDate())) {
+				if (_endDate == null || task.getEndDate() == null) {
+					return _name.compareTo(task.getName());
+				} else if (_endDate.equals(task.getEndDate())) {
 					return _name.compareTo(task.getName());
 				} else {
 					return _endDate.compareTo(task.getEndDate());
