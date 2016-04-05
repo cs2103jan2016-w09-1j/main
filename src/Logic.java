@@ -1325,13 +1325,13 @@ class Logic {
 		_taskDisplayLists.get(4).clear();
 		_taskDisplayLists.get(5).clear();
 		_taskDisplayLists.get(6).clear();
-		_taskDisplayLists.get(0).addAll(state.getOverdue());
-		_taskDisplayLists.get(1).addAll(state.getToday());
-		_taskDisplayLists.get(2).addAll(state.getTomorrow());
-		_taskDisplayLists.get(3).addAll(state.getThisWeek());
-		_taskDisplayLists.get(4).addAll(state.getRemaining());
-		_taskDisplayLists.get(5).addAll(state.getFloating());
-		_taskDisplayLists.get(6).addAll(state.getCompleted());
+		_taskDisplayLists.get(0).addAll(state.getOverdueTaskList());
+		_taskDisplayLists.get(1).addAll(state.getTodayTaskList());
+		_taskDisplayLists.get(2).addAll(state.getTomorrowTaskList());
+		_taskDisplayLists.get(3).addAll(state.getThisWeekTaskList());
+		_taskDisplayLists.get(4).addAll(state.getRemainingTaskList());
+		_taskDisplayLists.get(5).addAll(state.getFloatingTaskList());
+		_taskDisplayLists.get(6).addAll(state.getCompletedTaskList());
 	}
 	
 	/**
