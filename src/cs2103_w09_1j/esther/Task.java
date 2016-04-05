@@ -588,15 +588,7 @@ public class Task implements Comparable<Task> {
 		String startDate = null;
 		String startTime = null;
 		String endDate = null;
-		String endTime = null;
-
-		if (command.hasParameter(TaskField.NAME.getTaskKeyName())) {
-			this.setName(command.getSpecificParameter(TaskField.NAME.getTaskKeyName()));
-		}
-
-		if (command.hasParameter(TaskField.UPDATENAME.getTaskKeyName())) {
-			this.setName(command.getSpecificParameter(TaskField.UPDATENAME.getTaskKeyName()));
-		}
+		String endTime = null;		
 
 		// DATE AND TIME HANDLING
 		if (command.hasParameter(TaskField.STARTDATE.getTaskKeyName())) {
@@ -663,6 +655,14 @@ public class Task implements Comparable<Task> {
 			} else {
 				this.setPriority(newPriority);
 			}
+		}
+		
+		if (command.hasParameter(TaskField.NAME.getTaskKeyName())) {
+			this.setName(command.getSpecificParameter(TaskField.NAME.getTaskKeyName()));
+		}
+
+		if (command.hasParameter(TaskField.UPDATENAME.getTaskKeyName())) {
+			this.setName(command.getSpecificParameter(TaskField.UPDATENAME.getTaskKeyName()));
 		}
 
 		if (command.hasParameter(TaskField.ID.getTaskKeyName())) {
