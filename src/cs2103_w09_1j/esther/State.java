@@ -1,107 +1,126 @@
 package cs2103_w09_1j.esther;
 
+import java.util.ArrayList;
+import cs2103_w09_1j.esther.Task;
+
 /**
- * ========= [ STATE OBJECT DEFINITIONS ] =========
- * This class contains the representation of the
- * state object that will be used by the Logic
- * component of the program. This class is used to
- * support the undo functionality.
+ * The <code>State</code> class represents a internal memory state in the <code>Logic</code> component.
+ * This class is used alongside with <code>Logic</code> to support the <code>undo</code> functionality.
  * 
  * @@author A0130749A
  */
-
-import java.util.ArrayList;
-
 public class State {
 	
-	private String _command;
-	private String _filePath;
-	private String _sortOrder;
-	private ArrayList<Task> overdue;
-	private ArrayList<Task> today;
-	private ArrayList<Task> tomorrow;
-	private ArrayList<Task> thisWeek;
-	private ArrayList<Task> remaining;
-	private ArrayList<Task> floating;
-	private ArrayList<Task> completed;
+	private String command;
+	private String filePath;
+	private String sortOrder;
+	private ArrayList<Task> overdueTaskList;
+	private ArrayList<Task> todayTaskList;
+	private ArrayList<Task> tomorrowTaskList;
+	private ArrayList<Task> thisWeekTaskList;
+	private ArrayList<Task> remainingTaskList;
+	private ArrayList<Task> floatingTaskList;
+	private ArrayList<Task> completedTaskList;
 	
-	private int _oldIndices[] = new int[2];
+	/*
+	 * This special value for the indices indicate to the UI that it does not need to access any particular Task element
+	 * in the list of tasks displayed to the user for highlighting.
+	 */
+	private static final int NOT_APPLICABLE = -1;
+	
+	private int oldIndices[] = new int[2];	// the indices represent [buffer_index, task_position] for UI's reference
 	
 	public State(String command) {
-		_command = command;
-		overdue = new ArrayList<Task>();
-		today = new ArrayList<Task>();
-		tomorrow = new ArrayList<Task>();
-		thisWeek = new ArrayList<Task>();
-		remaining = new ArrayList<Task>();
-		floating = new ArrayList<Task>();
-		completed = new ArrayList<Task>();
+		this.command = command;
+		overdueTaskList = new ArrayList<Task>();
+		todayTaskList = new ArrayList<Task>();
+		tomorrowTaskList = new ArrayList<Task>();
+		thisWeekTaskList = new ArrayList<Task>();
+		remainingTaskList = new ArrayList<Task>();
+		floatingTaskList = new ArrayList<Task>();
+		completedTaskList = new ArrayList<Task>();
 	}
 	
 	public void setSortOrder(String order) {
-		_sortOrder = order;
+		sortOrder = order;
 	}
 	
 	public String getCommand() {
-		return _command;
+		return command;
 	}
 	
 	public String getSortOrder() {
-		return _sortOrder;
+		return sortOrder;
 	}
 	
 	public void setState(ArrayList<ArrayList<Task>> taskLists) {
-		overdue.addAll(taskLists.get(0));
-		today.addAll(taskLists.get(1));
-		tomorrow.addAll(taskLists.get(2));
-		thisWeek.addAll(taskLists.get(3));
-		remaining.addAll(taskLists.get(4));
-		floating.addAll(taskLists.get(5));
-		completed.addAll(taskLists.get(6));
+		overdueTaskList.addAll(taskLists.get(Task.OVERDUE_TASK_INDEX));
+		todayTaskList.addAll(taskLists.get(Task.TODAY_TASK_INDEX));
+		tomorrowTaskList.addAll(taskLists.get(Task.TOMORROW_TASK_INDEX));
+		thisWeekTaskList.addAll(taskLists.get(Task.THIS_WEEK_TASK_INDEX));
+		remainingTaskList.addAll(taskLists.get(Task.UNCODED_TASK_INDEX));
+		floatingTaskList.addAll(taskLists.get(Task.FLOATING_TASK_INDEX));
+		completedTaskList.addAll(taskLists.get(Task.COMPLETED_TASK_INDEX));
 	}
 	
 	public int[] getIndices() {
-		return _oldIndices;
+		return oldIndices;
+	}
+
+	/**
+	 * Sets the state of the indices to the default.
+	 * 
+	 * @see #setIndices(int[])
+	 */
+	public void setIndices() {
+		oldIndices[0] = NOT_APPLICABLE;
+		oldIndices[1] = NOT_APPLICABLE;
 	}
 	
+	/**
+	 * Sets the state of the indices with a supplied array of 2 indices.
+	 * 
+	 * @param indices	an array of 2 indices representing [buffer_index, item_position]
+	 * @see 			#setIndices()
+	 */
 	public void setIndices(int[] indices) {
-		_oldIndices = indices;
+		oldIndices = indices;
 	}
 	
 	public String getFilePath() {
-		return _filePath;
+		return filePath;
 	}
 	
 	public void setFilePath(String filePath) {
-		_filePath = filePath;
+		this.filePath = filePath;
 	}
 	
-	public ArrayList<Task> getOverdue() {
-		return overdue;
+	public ArrayList<Task> getOverdueTaskList() {
+		return overdueTaskList;
 	}
 	
-	public ArrayList<Task> getToday() {
-		return today;
+	public ArrayList<Task> getTodayTaskList() {
+		return todayTaskList;
 	}
 	
-	public ArrayList<Task> getTomorrow() {
-		return tomorrow;
+	public ArrayList<Task> getTomorrowTaskList() {
+		return tomorrowTaskList;
 	}
 	
-	public ArrayList<Task> getThisWeek() {
-		return thisWeek;
+	public ArrayList<Task> getThisWeekTaskList() {
+		return thisWeekTaskList;
 	}
 	
-	public ArrayList<Task> getRemaining() {
-		return remaining;
+	public ArrayList<Task> getRemainingTaskList() {
+		return remainingTaskList;
 	}
 	
-	public ArrayList<Task> getFloating() {
-		return floating;
+	public ArrayList<Task> getFloatingTaskList() {
+		return floatingTaskList;
 	}
 	
-	public ArrayList<Task> getCompleted() {
-		return completed;
+	public ArrayList<Task> getCompletedTaskList() {
+		return completedTaskList;
 	}
 	
 }
