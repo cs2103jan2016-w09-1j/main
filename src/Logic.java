@@ -104,7 +104,7 @@ class Logic {
 	 * 
 	 */
 	public Logic() throws ParseException, IOException {
-		initializeLogger();
+		//initializeLogger();
 		initializeStorageAndConfig();
 		initializeParser();
 		initializeLogicSystemVariables();
