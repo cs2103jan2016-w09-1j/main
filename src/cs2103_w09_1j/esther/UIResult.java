@@ -3,9 +3,15 @@ package cs2103_w09_1j.esther;
 import java.util.ArrayList;
 import cs2103_w09_1j.esther.Status;
 
+/**
+ * The <code>UIResult</code> class contains a view of tasks that will be shown to users via the
+ * <code>UserInterface</code> component. This view is created by the <code>Logic</code> component
+ * each time a user operation is performed and is updated into the <code>UserInterface</code>.
+ * 
+ * @author
+ */
 public class UIResult {
 
-	// buffers
 	private ArrayList<Task> overdueBuffer;
 	private ArrayList<Task> todayBuffer;
 	private ArrayList<Task> tomorrowBuffer;
@@ -14,21 +20,11 @@ public class UIResult {
 	private ArrayList<Task> floatingBuffer;
 	private ArrayList<Task> completedBuffer;
 	private ArrayList<Task> searchBuffer;
-	
-	/* buffer & position indicator
-	 * index[0] shows which buffer to use
-	 * 	0 - overdueBuffer
-	 * 	1 - todayBuffer
-	 * 	2 - tomorrowBuffer
-	 * 	3 - weekBuffer
-	 * 	4 - allTaskBuffer
-	 * 	5 - floatingBuffer
-	 * 	6 - completedBuffer
-	 * index[1] shows position of the task inside the buffer
-	 */
-	private int[] index = new int[2];
+
+	private int[] index = new int[NUM_INDICES];
 	private String commandType;
-	private static final String message = Status.MESSAGE_HELP;
+
+	private static final int NUM_INDICES = 2;
 	
 	public UIResult() {
 		overdueBuffer = new ArrayList<Task>();
@@ -121,8 +117,13 @@ public class UIResult {
 		this.commandType = commandType;
 	}
 	
+	/**
+	 * Retrieves the help message.
+	 * 
+	 * @return the help message
+	 */
 	public String getMessage() {
-		return message;
+		return Status.MESSAGE_HELP;
 	}
 	
 }
