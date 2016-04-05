@@ -1,28 +1,3 @@
-
-/**
- * ============= [LOGIC COMPONENT FOR ESTHER] =============
- * 
- * Logic handles all operations as requested by the user,
- * which are basically CRUD operations.
- * 
- * Generally, when these operations succeed or fail,
- * relevant messages confirming the statuses of these
- * operations shall be passed to the UI via the Parser,
- * which will then be shown to the user.
- * 
- * For certain operations, Task objects are returned and
- * these will be passed to the Parser, which will parse
- * them to human-readable format and forward these to the
- * UI to be displayed to the user.
- * 
- * 
- * =================== [CURRENT STATUS] ===================
- * Most of ESTHER is broken due to Task changes. When all
- * necessary fixes are done, will proceed to test.
- * 
- * @@author A0129660A
- */
-
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
 import java.text.ParseException;
@@ -44,6 +19,41 @@ import cs2103_w09_1j.esther.State;
 import cs2103_w09_1j.esther.Status;
 import cs2103_w09_1j.esther.InvalidInputException;
 
+/**
+ * ============= [LOGIC COMPONENT FOR ESTHER] =============
+ * <br>
+ * <br>
+ * Logic handles all operations as requested by the user.
+ * A list of operations that are supported are:
+ * <br>
+ * 1. CRUD
+ * <br>
+ * 2. Sort
+ * <br>
+ * 3. Search
+ * <br>
+ * 4. Set save file-path
+ * <br>
+ * <br>
+ * Generally, when these operations succeed or fail,
+ * relevant messages confirming the statuses of these
+ * operations shall be passed to the UI via the Parser,
+ * which will then be shown to the user.
+ * <br>
+ * <br>
+ * If operations succeed, <code>UIResult</code> is passed to UI for
+ * display to the user. Otherwise, an error message is
+ * shown to the user.
+ * <br>
+ * <br>
+ * =================== [CURRENT STATUS] ===================
+ * <br>
+ * <br>
+ * Most of ESTHER is broken due to Task changes. When all
+ * necessary fixes are done, will proceed to test.
+ * 
+ * @@author A0129660A
+ */
 class Logic {
 	
 	private static final int NOT_FOUND_INDEX = -1;
@@ -72,7 +82,7 @@ class Logic {
 	private Stack<State> _undoStack;
 	private Config _config;
 	private Date _today;
-	//private static Logger //logger = Logger.getLogger("Logic");
+	private static Logger logger = Logger.getLogger("Logic");
 
 	
 	// =========================================================================================== //
@@ -93,7 +103,7 @@ class Logic {
 	 * 
 	 */
 	public Logic() throws ParseException, IOException {
-		//initializeLogger();
+		initializeLogger();
 		initializeStorageAndConfig();
 		initializeParser();
 		initializeLogicSystemVariables();
@@ -113,23 +123,25 @@ class Logic {
 	// TODO: finalize implementation
 	// Note that Parser will throw exception in future, conditional should be modified
 	public String executeCommand(String userInput) {
-		//logger.logp(Level.INFO, "Logic", "executeCommand",
-					//"Parsing user input into Command object for execution.", userInput);
+		logger.logp(Level.INFO, "Logic", "executeCommand",
+					"Parsing user input into Command object for execution.", userInput);
+		int indices[] = {-1, -1};
 		try {
 			Command command = _parser.acceptUserInput(userInput);
 			if (command == null) {
-				//logger.log(Level.WARNING, "Error from Parser: encountered null Command object.");
+				logger.log(Level.WARNING, "Error from Parser: encountered null Command object.");
+				setUiTaskDisplays("Invalid", indices);
 				Status._outcome = Status.Outcome.ERROR;
 				Status._errorCode = Status.ErrorCode.INVALID_COMMAND;
 				return Status.getMessage(null, null, null);
 			}
 			return executeCommand(command);
 		} catch (InvalidInputException iie) {
-			//logger.log(Level.WARNING, "Invalid input supplied by user.");
+			logger.log(Level.WARNING, "Invalid input supplied by user.");
+			setUiTaskDisplays("Invalid", indices);
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.INVALID_COMMAND;
 			return iie.getMessage();
-			//return Status.getMessage(null, null, null);
 		}
 	}
 	
@@ -150,8 +162,8 @@ class Logic {
 		assert command != null;
 		String commandName = command.getCommand();
 		CommandKey commandType = CommandKey.get(commandName);
-		//logger.logp(Level.INFO, "Logic", "executeCommand(Command command)",
-					//"Executing on Command object.", commandType);
+		logger.logp(Level.INFO, "Logic", "executeCommand(Command command)",
+					"Executing on Command object.", commandType);
 		String statusMessage;
 		switch (commandType) {
 			case ADD : 
@@ -187,14 +199,18 @@ class Logic {
 			  	break;
 				
 			case HELP :
+				int indices[] = {-1, -1};
+				setUiTaskDisplays(command.getCommand(), indices);
 				Status._outcome = Status.Outcome.SUCCESS;
 				statusMessage = Status.getMessage(null, null, commandName);
 				break;
 				
 			default :
 				assert commandType != null;
-				//logger.logp(Level.INFO, "Logic", "executeCommand(Command command)",
-							//"Unrecognized command.");
+				logger.logp(Level.INFO, "Logic", "executeCommand(Command command)",
+							"Unrecognized command.");
+				int indices2[] = {-1, -1};
+				setUiTaskDisplays("Invalid", indices2);
 				Status._outcome = Status.Outcome.ERROR;
 				Status._errorCode = Status.ErrorCode.INVALID_COMMAND;
 				statusMessage = Status.getMessage(null, null, commandName);
@@ -231,6 +247,26 @@ class Logic {
 			_fullTaskList.addAll(_taskDisplayLists.get(i));
 		}
 		return _fullTaskList;
+	}
+	
+	protected ArrayList<Task> getOverdueBuffer() {
+		return _taskDisplayLists.get(Task.OVERDUE_TASK_INDEX);
+	}
+	
+	protected ArrayList<Task> getTodayBuffer() {
+		return _taskDisplayLists.get(Task.TODAY_TASK_INDEX);
+	}
+	
+	protected ArrayList<Task> getTomorrowBuffer() {
+		return _taskDisplayLists.get(Task.TOMORROW_TASK_INDEX);
+	}
+	
+	protected ArrayList<Task> getThisWeekBuffer() {
+		return _taskDisplayLists.get(Task.THIS_WEEK_TASK_INDEX);
+	}
+	
+	protected ArrayList<Task> getRemainingBuffer() {
+		return _taskDisplayLists.get(Task.OVERDUE_TASK_INDEX);
 	}
 	
 	/**
@@ -277,20 +313,20 @@ class Logic {
 	 */
 	private void initializeLogger() {
 		try {
-			//logger.setLevel(Level.WARNING);
+			logger.setLevel(Level.SEVERE);
 			// TODO: change log file path in future, upon release.
 			FileHandler fh = new FileHandler("C:/Users/Tay/Documents/GitHub/main/Logic.log");
-			//logger.addHandler(fh);
+			logger.addHandler(fh);
 			SimpleFormatter formatter = new SimpleFormatter();  
 			fh.setFormatter(formatter);
-			//logger.logp(Level.CONFIG, "Logic", "initializeLogger()", "Initializing //logger.");
+			logger.logp(Level.CONFIG, "Logic", "initializeLogger()", "Initializing logger.");
 		} catch (SecurityException se) {
-			//logger.logp(Level.SEVERE, "Logic", "initializeLogger()",
-						//"Not granted permission for logging.", se);
+			logger.logp(Level.SEVERE, "Logic", "initializeLogger()",
+						"Not granted permission for logging.", se);
 			//System.exit(1);
 		} catch (IOException ioe) {
-			//logger.logp(Level.SEVERE, "Logic", "initializeLogger()",
-						//"Cannot create file for logging.", ioe);
+			logger.logp(Level.SEVERE, "Logic", "initializeLogger()",
+						"Cannot create file for logging.", ioe);
 			//System.exit(1);
 		}
 	}
@@ -304,10 +340,10 @@ class Logic {
 	 */
 	private void initializeStorageAndConfig() throws ParseException, IOException {
 		_storage = new Storage();
-		//logger.logp(Level.CONFIG, "Storage", "Storage()", "Initializing Storage.");
+		logger.logp(Level.CONFIG, "Storage", "Storage()", "Initializing Storage.");
 		assert _storage != null;
 		_config = _storage.getConfig();
-		//logger.logp(Level.CONFIG, "Storage", "getConfig()", "Initializing Config.");
+		logger.logp(Level.CONFIG, "Storage", "getConfig()", "Initializing Config.");
 		assert _config != null;
 		//System.out.println(_config.getReferenceID());
 		Task.setGlobalId(_config.getReferenceID());
@@ -320,7 +356,7 @@ class Logic {
 	 * 
 	 */
 	private void initializeParser() {
-		//logger.logp(Level.CONFIG, "Parser", "Parser()", "Initializing Parser.");
+		logger.logp(Level.CONFIG, "Parser", "Parser()", "Initializing Parser.");
 		HashMap<String, String> fieldNameAliases = _config.getFieldNameAliases();
 		_parser = new Parser(fieldNameAliases);
 		assert _parser != null;
@@ -336,10 +372,10 @@ class Logic {
 	 */
 	private void initializeLogicSystemVariables() throws ParseException, IOException {
 		initializeBuffers();
+		logger.logp(Level.CONFIG, "Logic", "updateInternalStorage()",
+					"Reading tasks into inner memory upon initialization.");
 		updateInternalStorage();
 		_undoStack = new Stack<State>();
-		//logger.logp(Level.CONFIG, "Logic", "updateInternalStorage",
-					//"Reading tasks into inner memory upon initialization.");
 		//System.out.println("Inner variables initialized.");
 		setUiTaskDisplays("initialize", new int[2]);
 	}
@@ -368,13 +404,13 @@ class Logic {
 	        public void run() {
 	        	//System.out.println("Saving current system configurations.");
 	            try {
-	            	//logger.logp(Level.INFO, "Logic", "addTask(Command command)",
-	            				  //"Updating Config file in Logic and Storage.");
+	            	logger.logp(Level.INFO, "Logic", "addTask(Command command)",
+	            				  "Updating Config file in Logic and Storage.");
 	            	_config.setReferenceID(Task.getGlobalId());
 	            	_storage.updateConfig(_config);
 	            } catch (IOException ioe) {
-	            	//logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
-	            				  //"Cannot update Config file in Logic and Storage.", ioe);
+	            	logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
+	            				  "Cannot update Config file in Logic and Storage.", ioe);
 	                System.out.println("Error updating Config file in both Logic and Storage.");
 	            }
 	        }   
@@ -390,15 +426,15 @@ class Logic {
 	// TODO: finalize implementation, error handling
 	// current implementation is to terminate program, for now
 	public void updateInternalStorage() {
-		//logger.logp(Level.INFO, "Logic", "updateInternalStorage()", "Retrieving tasks list from Storage.");
+		logger.logp(Level.INFO, "Logic", "updateInternalStorage()", "Retrieving tasks list from Storage.");
 		try {
 			_fullTaskList = _storage.readSaveFile();
 			assert _fullTaskList != null;
 			filterTasksToLists(DEFAULT_TASKS_SORT_ORDER, true, true);
 		} catch (Exception e) {
 			// TODO: error handling
-			//logger.logp(Level.SEVERE, "Storage", "readSaveFile()",
-						//"Cannot read from save file in Storage.", e);
+			logger.logp(Level.SEVERE, "Storage", "readSaveFile()",
+						"Cannot read from save file in Storage.", e);
 			e.printStackTrace();
 			System.exit(1);
 		}
@@ -474,7 +510,9 @@ class Logic {
 				Task.setSortCriterion(Task.SORT_BY_DATE_KEYWORD);
 				for (int i = 0; i < NUM_TASK_BUFFERS; i++) {
 					// do not sort floating or completed tasks by date
-					if (i != Task.FLOATING_TASK_INDEX || i != Task.COMPLETED_TASK_INDEX) {
+					if (i == Task.FLOATING_TASK_INDEX || i == Task.COMPLETED_TASK_INDEX) {
+						
+					} else {
 						Collections.sort(_taskDisplayLists.get(i));
 					}
 				}
@@ -484,7 +522,9 @@ class Logic {
 			} else if (sortOrder.equals(Task.SORT_BY_NAME_KEYWORD)) {
 				// specialized sorting for floating and completed tasks to be done separately
 				for (int i = 0; i < NUM_TASK_BUFFERS; i++) {
-					if (i != Task.FLOATING_TASK_INDEX || i != Task.COMPLETED_TASK_INDEX) {
+					if (i == Task.FLOATING_TASK_INDEX || i == Task.COMPLETED_TASK_INDEX) {
+						
+					} else {
 						Collections.sort(_taskDisplayLists.get(i));
 					}
 				}
@@ -495,7 +535,9 @@ class Logic {
 			} else if (sortOrder.equals(Task.SORT_BY_PRIORITY_KEYWORD)) {
 				// specialized sorting for floating and completed tasks to be done separately
 				for (int i = 0; i < NUM_TASK_BUFFERS; i++) {
-					if (i != Task.FLOATING_TASK_INDEX) {
+					if (i == Task.FLOATING_TASK_INDEX || i == Task.COMPLETED_TASK_INDEX) {
+						
+					} else {
 						Collections.sort(_taskDisplayLists.get(i));
 					}
 				}
@@ -542,8 +584,7 @@ class Logic {
 	 * 
 	 */
 	private String addTask(Command command) {		
-		//logger.logp(Level.INFO, "Logic", "addTask(Command command)",
-					//"Adding a task.", taskName);
+		logger.logp(Level.INFO, "Logic", "addTask(Command command)", "Adding a task.");
 		createAndAddTaskToFile(command);
 		return getOperationStatus(command);
 	}
@@ -556,6 +597,7 @@ class Logic {
 	 * 
 	 */
 	private String removeTask(Command command) {
+		logger.logp(Level.INFO, "Logic", "removeTask(Command command)", "Removing a task.");
 		removeTaskAndUpdateFile(command);
 		return getOperationStatus(command);
 	}
@@ -568,7 +610,7 @@ class Logic {
 	 * 
 	 */
 	private String updateTask(Command command) {
-		//logger.log(Level.INFO, "Updating a task.");
+		logger.logp(Level.INFO, "Logic", "updateTask(Command command)", "Updating a task.");
 		updateTaskInFile(command);
 		return getOperationStatus(command);
 	}
@@ -581,7 +623,7 @@ class Logic {
 	 * 
 	 */
 	private String completeTask(Command command) {
-		//logger.logp(Level.INFO, "Logic", "completeTask(Command command)", "Completing a task.", params);
+		logger.logp(Level.INFO, "Logic", "completeTask(Command command)", "Completing a task.");
 		completeTaskInFile(command);
 		return getOperationStatus(command);
 	}
@@ -633,8 +675,8 @@ class Logic {
 			Status._errorCode = Status.ErrorCode.SEARCH_INVALID;
 			return getOperationStatus(command);
 		}
-		//logger.logp(Level.INFO, "Logic", "searchFile(Command command)",
-				  	  //"Searching tasks in file.", searchKey);
+		logger.logp(Level.INFO, "Logic", "searchFile(Command command)",
+				  	  "Searching tasks in file.", searchKeyword);
 		if (searchKeyword != null) {
 			for (Task entry: _fullTaskList) {
 				String taskNameCopy = entry.getName();
@@ -695,12 +737,15 @@ class Logic {
 				} else {
 					Status._outcome = Status.Outcome.ERROR;
 					Status._errorCode = Status.ErrorCode.SEARCH_INVALID;
+					int indices[] = {-1, -1};
+					setUiTaskDisplays(command.getCommand(), indices);
 					return getOperationStatus(command);
 				}
 			}
 		}
 		//System.out.println(results);
 		int indices[] = {-1, -1};
+		storePreviousState(command, _taskDisplayLists, indices);
 		setUiTaskDisplays(command.getCommand(), indices);
 		Status._outcome = Status.Outcome.SUCCESS;
 		return getOperationStatus(command);
@@ -712,15 +757,15 @@ class Logic {
 			_storage.updateConfig(_config);
 			updateInternalStorage(); // refresh internal memory due to different file specified
 			Status._outcome = Status.Outcome.SUCCESS;
-			int indices[] = {-1, -1};
-			updateUndoStack(command, indices);
 		} catch (InvalidPathException ipe) {
 		 	Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SET_SAVEPATH;
-		 } catch (IOException ioe) {
+		} catch (IOException ioe) {
 		 	Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SET_SAVEPATH;
-		 }
+		}
+		int indices[] = {-1, -1};
+		updateUndoStack(command, indices);
 		return getOperationStatus(command);
 	}
 	
@@ -733,7 +778,7 @@ class Logic {
 	 */
 	private String undo(Command command) {
 		if (_undoStack.size() == 0) {
-			//logger.logp(Level.INFO, "Logic", "undo()", "User cannot undo any further.");
+			logger.logp(Level.INFO, "Logic", "undo()", "User cannot undo any further.");
 			//System.out.println("Undo not successful.");
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.UNDO;
@@ -741,7 +786,7 @@ class Logic {
 			State previousState = _undoStack.pop();
 			//System.out.println(previousState.getCommand());
 			CommandKey commandType = CommandKey.get(previousState.getCommand());
-			//logger.logp(Level.INFO, "Logic", "undo()", "Undoing a previous operation.", commandType);
+			logger.logp(Level.INFO, "Logic", "undo()", "Undoing a previous operation.", commandType);
 			switch (commandType) {
 				case ADD :
 					undoAdd(previousState);
@@ -764,17 +809,18 @@ class Logic {
 					break;
 					
 				case SEARCH :
+					undoSearch(previousState);
 					break;
 					
 				case SET :
-					undoSetSaveFilePath(previousState.getFilePath());
+					undoSetSaveFilePath(previousState);
 					break;
 					
 				case HELP :
 					break;
 			
 				default :
-					//logger.logp(Level.INFO, "Logic", "undo()", "Dummy State encountered.");
+					logger.logp(Level.INFO, "Logic", "undo()", "Dummy State encountered.");
 					Status._outcome = Status.Outcome.ERROR;
 					Status._errorCode = Status.ErrorCode.SYSTEM;
 					return getOperationStatus(command);
@@ -802,28 +848,28 @@ class Logic {
 	 */
 	private void createAndAddTaskToFile(Command command) {
 		Task addedTask = null;
+		int indices[] = {-1, -1};
 		try {
-			int indices[] = {-1, -1};
 			addedTask = new Task(command);
 			_taskDisplayLists.get(addedTask.getTaskCode(_today)).add(addedTask);
 			updateTextFile();
 			updateUndoStack(command, indices);
 			indices[TASK_LIST_POSITION] = addedTask.getTaskCode(_today);
 			indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(addedTask.getTaskCode(_today)).size() - 1;
-			setUiTaskDisplays(command.getCommand(), indices);
 			//System.out.println(_undoStack.size());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (ParseException pe) {
-			//logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
-						//"Add task: Inappropriate date format passed into Task.", pe);
+			logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
+						"Add task: Inappropriate date format passed into Task.", pe);
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.ADD_INVALID_FORMAT;
 		} catch (IOException ioe) {
-			//logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
-					//"Add task: Error in writing to file.", ioe);
+			logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
+					"Add task: Error in writing to file.", ioe);
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
+		setUiTaskDisplays(command.getCommand(), indices);
 	}
 	
 	/**
@@ -846,7 +892,7 @@ class Logic {
 						: String.valueOf(NOT_FOUND_INDEX);
 		//System.out.println(taskID);
 		String[] params = {taskName, command.getSpecificParameter(TaskField.ID.getTaskKeyName())};
-		//logger.logp(Level.INFO, "Logic", "removeTask(Command command)",	"Removing a task.", params);
+		logger.logp(Level.INFO, "Logic", "removeTask(Command command)",	"Removing a task.", params);
 		for (int i = 0; i < NUM_TASK_BUFFERS; i++) {
 			//System.out.println("Current task accessed is " + _tasks.get(i).getName());
 			for (int j = 0; j < _taskDisplayLists.get(i).size(); j++) {
@@ -884,24 +930,24 @@ class Logic {
 				updateTextFile();
 				updateUndoStack(command, taskIndex);
 				//System.out.println(_undoStack.size());
-				int indices[] = {-1, -1};
-				setUiTaskDisplays(command.getCommand(), indices);
 				Status._outcome = Status.Outcome.SUCCESS;
 			} else if (taskIndex[TASK_LIST_POSITION] == DUPLICATE_TASK_INDEX) {
 				Status._outcome = Status.Outcome.ERROR;
 				Status._errorCode = Status.ErrorCode.DELETE_DUPLICATES_PRESENT;
 			} else {
-				//logger.logp(Level.WARNING, "Logic", "removeTask(Command command)",
-							//"Delete task: Task not found. Possible user-side error or no name/ID matching.");
+				logger.logp(Level.WARNING, "Logic", "removeTask(Command command)",
+							"Delete task: Task not found. Possible user-side error or no name/ID matching.");
 				Status._outcome = Status.Outcome.ERROR;
 				Status._errorCode = Status.ErrorCode.DELETE_NOT_FOUND;
 			}
 		} catch (IOException ioe) {
-			//logger.logp(Level.SEVERE, "Logic", "removeTask(Command command)",
-						//"Delete task: cannot write to file.", ioe);
+			logger.logp(Level.SEVERE, "Logic", "removeTask(Command command)",
+						"Delete task: cannot write to file.", ioe);
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
+		int indices[] = {-1, -1};
+		setUiTaskDisplays(command.getCommand(), indices);
 	}
 	
 	/**
@@ -914,6 +960,7 @@ class Logic {
 		Task toUpdate = null;
 		int taskIndex[] = getTaskIndex(command);
 		//System.out.println(taskIndex);
+		int indices[] = {-1, -1};
 		
 		try {
 			if (taskIndex[TASK_LIST_POSITION] != NOT_FOUND_INDEX &&
@@ -929,9 +976,8 @@ class Logic {
 					updateUndoStack(command, taskIndex);
 					//System.out.println(_undoStack.size());
 					//System.out.println("Old name: " + old + " New name: " + _tasks.get(updateIndex).getName());
-					int indices[] = {toUpdate.getTaskCode(_today),
-									 _taskDisplayLists.get(toUpdate.getTaskCode(_today)).size()};
-					setUiTaskDisplays(command.getCommand(), indices);
+					indices[TASK_LIST_POSITION] = toUpdate.getTaskCode(_today);
+					indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(toUpdate.getTaskCode(_today)).size() - 1;
 					Status._outcome = Status.Outcome.SUCCESS;
 				} else {
 					Status._outcome = Status.Outcome.ERROR;
@@ -940,22 +986,23 @@ class Logic {
 				Status._outcome = Status.Outcome.ERROR;
 				Status._errorCode = Status.ErrorCode.UPDATE_DUPLICATES_PRESENT;
 			} else {
-				//logger.logp(Level.WARNING, "Logic", "updateTask(Command command)",
-							//"Update task: Task not found. Possible user-side error or no name/ID matching.");
+				logger.logp(Level.WARNING, "Logic", "updateTask(Command command)",
+							"Update task: Task not found. Possible user-side error or no name/ID matching.");
 				Status._outcome = Status.Outcome.ERROR;
 				Status._errorCode = Status.ErrorCode.UPDATE_NOT_FOUND;
 			}
 		} catch (ParseException pe) {
-			//logger.logp(Level.SEVERE, "Logic", "updateTask(Command command)",
-						//"Update task: Inappropriate date formated passed into Task.", pe);
+			logger.logp(Level.SEVERE, "Logic", "updateTask(Command command)",
+						"Update task: Inappropriate date formated passed into Task.", pe);
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.UPDATE_INVALID_FIELD;
 		} catch (IOException ioe) {
-			//logger.logp(Level.SEVERE, "Logic", "updateTask(Command command)",
-						//"Update task: cannot write to file.", ioe);
+			logger.logp(Level.SEVERE, "Logic", "updateTask(Command command)",
+						"Update task: cannot write to file.", ioe);
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
+		setUiTaskDisplays(command.getCommand(), indices);
 	}
 	
 	/**
@@ -967,7 +1014,7 @@ class Logic {
 	private void completeTaskInFile(Command command) {
 		Task toUpdate = null;
 		int taskIndex[] = getTaskIndex(command);
-
+		int indices[] = {-1, -1};
 		try {
 			if (taskIndex[TASK_LIST_POSITION] != NOT_FOUND_INDEX &&
 				taskIndex[TASK_LIST_POSITION] != DUPLICATE_TASK_INDEX) {
@@ -983,9 +1030,8 @@ class Logic {
 					_taskDisplayLists.get(toUpdate.getTaskCode(_today)).add(toUpdate);
 					updateTextFile();
 					updateUndoStack(command, taskIndex);
-					int indices[] = {toUpdate.getTaskCode(_today),
-									 _taskDisplayLists.get(toUpdate.getTaskCode(_today)).size()};
-					setUiTaskDisplays(command.getCommand(), indices);
+					indices[TASK_LIST_POSITION] = toUpdate.getTaskCode(_today);
+					indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(toUpdate.getTaskCode(_today)).size() - 1;
 					//System.out.println(_undoStack.size());
 					Status._outcome = Status.Outcome.SUCCESS;
 				}
@@ -993,25 +1039,26 @@ class Logic {
 				Status._outcome = Status.Outcome.ERROR;
 				Status._errorCode = Status.ErrorCode.COMPLETED_DUPLICATES_PRESENT;
 			} else {
-				//logger.logp(Level.WARNING, "Logic", "completeTask(Command command)",
-							//"Complete task: Task not found. Possible user-side error or no name/ID matching.");
+				logger.logp(Level.WARNING, "Logic", "completeTask(Command command)",
+							"Complete task: Task not found. Possible user-side error or no name/ID matching.");
 				Status._outcome = Status.Outcome.ERROR;
 				Status._errorCode = Status.ErrorCode.COMPLETED_NOT_FOUND;
 			}
 		} catch (IOException ioe) {
-			//logger.logp(Level.SEVERE, "Logic", "completeTask(Command command)",
-						//"Complete task: cannot write to file.", ioe);
+			logger.logp(Level.SEVERE, "Logic", "completeTask(Command command)",
+						"Complete task: cannot write to file.", ioe);
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
+		setUiTaskDisplays(command.getCommand(), indices);
 	}
 	
 	private void sortAndUpdateFile(Command command) {
 		String sortOrder = command.getSpecificParameter(TaskField.SORT.getTaskKeyName());
 		//System.out.println(sortOrder);
 		try {
-			//logger.logp(Level.INFO, "Logic", "sortFile(Command command)",
-						//"Sorting all tasks by user-specified order.", sortOrder);
+			logger.logp(Level.INFO, "Logic", "sortFile(Command command)",
+						"Sorting all tasks by user-specified order.", sortOrder);
 			if (sortOrder == null) {
 				sortOrder = DEFAULT_TASKS_SORT_ORDER;
 			}
@@ -1019,8 +1066,8 @@ class Logic {
 			updateTextFile();
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
-			//logger.logp(Level.SEVERE, "Logic", "sortFile(Command command)",
-						//"Sort file: cannot write to file.", ioe);
+			logger.logp(Level.SEVERE, "Logic", "sortFile(Command command)",
+						"Sort file: cannot write to file.", ioe);
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
@@ -1035,8 +1082,8 @@ class Logic {
 	 * 
 	 */
 	private State storePreviousState(Command command, ArrayList<ArrayList<Task>> taskLists, int[] oldIndices) {
-		//logger.logp(Level.INFO, "Logic", "storePreviousState(Command command, Task original)",
-					//"Storing previous program memory state.");
+		logger.logp(Level.INFO, "Logic", "storePreviousState(Command command, Task original)",
+					"Storing previous program memory state.");
 		String commandName = command.getCommand();
 		CommandKey commandType = CommandKey.get(commandName);
 		State previous = null;
@@ -1082,27 +1129,35 @@ class Logic {
 				break;
 				
 			case SEARCH :
-				previous = new State(EMPTY_STATE);
+				previous = new State(commandName);
+				previous.setState(taskLists);
+				previous.setIndices(oldIndices);
+				System.out.println("Storing previous state for " + previous.getCommand());
 				break;
 				
 			case SET :
 			  	previous = new State(commandName);
 			  	String oldFilePath = _config.getSavePath().toString();
 			  	previous.setFilePath(oldFilePath);
+				previous.setState(taskLists);
+				previous.setIndices(oldIndices);
 			  	break;
 
 			case UNDO :
-				previous = new State(EMPTY_STATE);
 				break;
 
 			case HELP :
-				previous = new State(EMPTY_STATE);
+				previous = new State(commandName);
+				previous.setState(taskLists);
+				previous.setIndices(oldIndices);
 				break;
 				
 			default :
 				previous = new State(EMPTY_STATE);
-				//logger.logp(Level.INFO, "Logic", "storePreviousState(Command command, Task original)",
-							//"Dummy state is created.");
+				previous.setState(taskLists);
+				previous.setIndices(oldIndices);
+				logger.logp(Level.INFO, "Logic", "storePreviousState(Command command, Task original)",
+							"Dummy state is created.");
 				break;
 		}
 		return previous;
@@ -1119,7 +1174,7 @@ class Logic {
 			_taskDisplayLists = state.getState();
 			getInternalStorage();
 			_storage.writeSaveFile(_fullTaskList);
-			setUiTaskDisplays(state.getCommand(), state.getIndices());
+			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
 			Status._outcome = Status.Outcome.ERROR;
@@ -1138,7 +1193,7 @@ class Logic {
 			_taskDisplayLists = state.getState();
 			getInternalStorage();
 			_storage.writeSaveFile(_fullTaskList);
-			setUiTaskDisplays(state.getCommand(), state.getIndices());
+			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
 			Status._outcome = Status.Outcome.ERROR;
@@ -1157,7 +1212,7 @@ class Logic {
 			_taskDisplayLists = state.getState();
 			getInternalStorage();
 			_storage.writeSaveFile(_fullTaskList);
-			setUiTaskDisplays(state.getCommand(), state.getIndices());
+			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
 			Status._outcome = Status.Outcome.ERROR;
@@ -1176,7 +1231,7 @@ class Logic {
 			_taskDisplayLists = state.getState();
 			getInternalStorage();
 			_storage.writeSaveFile(_fullTaskList);
-			setUiTaskDisplays(state.getCommand(), state.getIndices());
+			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
 			Status._outcome = Status.Outcome.ERROR;
@@ -1195,7 +1250,7 @@ class Logic {
 			_taskDisplayLists = state.getState();
 			getInternalStorage();
 			_storage.writeSaveFile(_fullTaskList);
-			setUiTaskDisplays(state.getCommand(), state.getIndices());
+			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
 			Status._outcome = Status.Outcome.ERROR;
@@ -1203,11 +1258,26 @@ class Logic {
 		}
 	}
 	
-	private void undoSetSaveFilePath(String filePath) {
-		// TODO: set back to old filePath
+	private void undoSearch(State state) {
 		try {
+			_taskDisplayLists = state.getState();
+			getInternalStorage();
+			_storage.writeSaveFile(_fullTaskList);
+			setUiTaskDisplays("undo", state.getIndices());
+			Status._outcome = Status.Outcome.SUCCESS;
+		} catch (IOException ioe) {
+			Status._outcome = Status.Outcome.ERROR;
+			Status._errorCode = Status.ErrorCode.SYSTEM;
+		}
+	}
+	
+	private void undoSetSaveFilePath(State state) {
+		try {
+			_taskDisplayLists = state.getState();
+			String filePath = state.getFilePath();
 			_config.setSavePath(filePath);
 			_storage.updateConfig(_config);
+			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (InvalidPathException ipe) {
 			Status._outcome = Status.Outcome.ERROR;

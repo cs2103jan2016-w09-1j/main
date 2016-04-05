@@ -65,7 +65,8 @@ public class Status {
 	static final String MESSAGE_ERROR_UNDO = "Cannot undo any further.\n";
 	
 	static final String MESSAGE_ERROR_UNKNOWN_STATE = "ESTHER has encountered an unknown error. Please restart this application.\n";
-	static final String MESSAGE_HELP = "Help:\n"
+	static final String MESSAGE_SUCCESS_HELP = "Showing help message in new window.\n";
+	public static final String MESSAGE_HELP = "Help:\n"
 			+ "List of commands are:\n1. add\n2. delete\n3. update\n"
 			+ "4. complete\n5. search\n6. sort\n7. undo\n\n" + "Note that for these commands, "
 			+ "_value_ indicates that these fields are compulsory and\n"

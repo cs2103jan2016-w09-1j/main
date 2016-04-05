@@ -745,13 +745,13 @@ public class Task implements Comparable<Task> {
 				   _endDate.compareTo(today) < 0) { // overdue event or task
 			return OVERDUE_TASK_INDEX;
 		} else if ((isEvent() && _startDate.compareTo(today) >= 0 && _startDate.compareTo(tomorrow) < 0) ||
-				   (_endDate.compareTo(today) < 0 && _endDate.compareTo(tomorrow) < 0)) { // today's event or task
+				   (_endDate.compareTo(today) >= 0 && _endDate.compareTo(tomorrow) < 0)) { // today's event or task
 			return TODAY_TASK_INDEX;
 		} else if ((isEvent() && _startDate.compareTo(tomorrow) >= 0 && _startDate.compareTo(afterTomorrow) < 0) ||
-				   (_endDate.compareTo(tomorrow) < 0 && _endDate.compareTo(afterTomorrow) < 0)) { // tomorrow's event or task
+				   (_endDate.compareTo(tomorrow) >= 0 && _endDate.compareTo(afterTomorrow) < 0)) { // tomorrow's event or task
 			return TOMORROW_TASK_INDEX;
 		} else if ((isEvent() && _startDate.compareTo(afterTomorrow) >= 0 && _startDate.compareTo(thisWeek) < 0) ||
-				   (_endDate.compareTo(afterTomorrow) < 0 && _endDate.compareTo(thisWeek) < 0)) {
+				   (_endDate.compareTo(afterTomorrow) >= 0 && _endDate.compareTo(thisWeek) < 0)) {
 			return THIS_WEEK_TASK_INDEX;
 		} else {
 			return UNCODED_TASK_INDEX;
