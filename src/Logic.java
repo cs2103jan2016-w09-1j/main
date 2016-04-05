@@ -988,6 +988,7 @@ class Logic {
 		Task toUpdate = null;
 		int taskIndex[] = getTaskIndex(command);
 		//System.out.println(taskIndex);
+		updateUndoStack(command, taskIndex);
 		int indices[] = {-1, -1};
 		
 		try {
@@ -996,16 +997,17 @@ class Logic {
 				//String old = toUpdate.getName();
 				toUpdate = _taskDisplayLists.get(taskIndex[TASK_LIST_POSITION]).get(taskIndex[TASK_ITEM_POSITION]);
 				Task copyOfOldTask = toUpdate.clone();
-				boolean isUpdated = toUpdate.updateTask(command);
+				boolean isUpdated = copyOfOldTask.updateTask(command);
 				if (isUpdated) {
-					updateUndoStack(command, taskIndex);
 					_taskDisplayLists.get(taskIndex[TASK_LIST_POSITION]).remove(taskIndex[TASK_ITEM_POSITION]);
-					_taskDisplayLists.get(toUpdate.getTaskCode(_today)).add(toUpdate);
+					_taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).add(copyOfOldTask);
 					updateTextFile();
 					//System.out.println(_undoStack.size());
 					//System.out.println("Old name: " + old + " New name: " + _tasks.get(updateIndex).getName());
-					indices[TASK_LIST_POSITION] = toUpdate.getTaskCode(_today);
-					indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(toUpdate.getTaskCode(_today)).size() - 1;
+					indices[TASK_LIST_POSITION] = copyOfOldTask.getTaskCode(_today);
+					System.out.println(indices[TASK_LIST_POSITION]);
+					indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).size() - 1;
+					System.out.println(indices[TASK_ITEM_POSITION]);
 					Status._outcome = Status.Outcome.SUCCESS;
 				} else {
 					Status._outcome = Status.Outcome.ERROR;
@@ -1054,12 +1056,12 @@ class Logic {
 				else {
 					updateUndoStack(command, taskIndex);
 					Task copyOfOldTask = toUpdate.clone();
-					toUpdate.setCompleted(true);
+					copyOfOldTask.setCompleted(true);
 					_taskDisplayLists.get(taskIndex[TASK_LIST_POSITION]).remove(taskIndex[TASK_ITEM_POSITION]);
-					_taskDisplayLists.get(toUpdate.getTaskCode(_today)).add(toUpdate);
+					_taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).add(copyOfOldTask);
 					updateTextFile();
-					indices[TASK_LIST_POSITION] = toUpdate.getTaskCode(_today);
-					indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(toUpdate.getTaskCode(_today)).size() - 1;
+					indices[TASK_LIST_POSITION] = copyOfOldTask.getTaskCode(_today);
+					indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).size() - 1;
 					//System.out.println(_undoStack.size());
 					Status._outcome = Status.Outcome.SUCCESS;
 				}
