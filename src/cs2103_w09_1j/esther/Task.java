@@ -733,12 +733,28 @@ public class Task implements Comparable<Task> {
 	 * @return an Integer representing the status of the task/event.
 	 */
 	public int getTaskCode(Date today) {
+		//System.out.println(today);
+		Date todayEnd = (Date) today.clone();
+		todayEnd.setHours(23);
+		todayEnd.setMinutes(59);
+		//System.out.println(todayEnd);
 		Date tomorrow = (Date) today.clone();
 		tomorrow.setDate(today.getDate() + 1);
+		tomorrow.setHours(0);
+		tomorrow.setMinutes(0);
+		Date tomorrowEnd = (Date) tomorrow.clone();
+		tomorrowEnd.setHours(23);
+		tomorrowEnd.setMinutes(59);
+		//System.out.println(tomorrow);
 		Date afterTomorrow = (Date) today.clone();
 		afterTomorrow.setDate(today.getDate() + 2);
+		afterTomorrow.setHours(0);
+		afterTomorrow.setMinutes(0);
+		//System.out.println(afterTomorrow);
 		Date thisWeek = (Date) today.clone();
 		thisWeek.setDate(today.getDate() + 7);
+		thisWeek.setHours(23);
+		thisWeek.setMinutes(59);
 		if (isCompleted()) { // is completed task
 			return COMPLETED_TASK_INDEX;
 		} else if (isFloatingTask()) { // is floating task
@@ -746,11 +762,11 @@ public class Task implements Comparable<Task> {
 		} else if ((isEvent() && _startDate.compareTo(today) < 0) ||
 				   _endDate.compareTo(today) < 0) { // overdue event or task
 			return OVERDUE_TASK_INDEX;
-		} else if ((isEvent() && _startDate.compareTo(today) >= 0 && _startDate.compareTo(tomorrow) < 0) ||
-				   (_endDate.compareTo(today) >= 0 && _endDate.compareTo(tomorrow) < 0)) { // today's event or task
+		} else if ((isEvent() && _startDate.compareTo(today) >= 0 && _startDate.compareTo(todayEnd) < 0) ||
+				   (_endDate.compareTo(today) >= 0 && _endDate.compareTo(todayEnd) < 0)) { // today's event or task
 			return TODAY_TASK_INDEX;
-		} else if ((isEvent() && _startDate.compareTo(tomorrow) >= 0 && _startDate.compareTo(afterTomorrow) < 0) ||
-				   (_endDate.compareTo(tomorrow) >= 0 && _endDate.compareTo(afterTomorrow) < 0)) { // tomorrow's event or task
+		} else if ((isEvent() && _startDate.compareTo(tomorrow) >= 0 && _startDate.compareTo(tomorrowEnd) < 0) ||
+				   (_endDate.compareTo(tomorrow) >= 0 && _endDate.compareTo(tomorrowEnd) < 0)) { // tomorrow's event or task
 			return TOMORROW_TASK_INDEX;
 		} else if ((isEvent() && _startDate.compareTo(afterTomorrow) >= 0 && _startDate.compareTo(thisWeek) < 0) ||
 				   (_endDate.compareTo(afterTomorrow) >= 0 && _endDate.compareTo(thisWeek) < 0)) {
