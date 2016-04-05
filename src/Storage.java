@@ -138,6 +138,7 @@ public class Storage {
 	 */
 	public void writeConfigFile(Config config) throws IOException {
 		storageLogger.info("Writing config file");
+		currentConfig = config;
 		String configString = config.toString();
 		writeFile(configString, configPath);
 	}
@@ -170,8 +171,20 @@ public class Storage {
 		flushFileAtLocation(savePath);
 	}
 
+	/**
+	 * Return stored Configuration
+	 * @return
+	 */
 	public Config getConfig() {
 		return currentConfig;
+	}
+	
+	/**
+	 * returns stored tasks. For testing purposes
+	 * @return
+	 */
+	ArrayList<Task> getTasks() {
+		return tasksBuffer;
 	}
 
 	// ===========PRIVATE METHODS BELOW==================
@@ -301,5 +314,10 @@ public class Storage {
 	 */
 	private boolean isValidFile(Path filePath) {
 		return filePath.toFile().exists();
+	}
+
+	public void flushFileAtLocation(String string) throws IOException {
+		flushFileAtLocation(Paths.get(string));
+		return;
 	}
 }
