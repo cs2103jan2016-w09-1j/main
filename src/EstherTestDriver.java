@@ -11,7 +11,8 @@ import cs2103_w09_1j.esther.TaskTest;
 	LogicTest.class, 
 	ParserTest.class, 
 	DateParserTest.class,
-	TaskTest.class
+	TaskTest.class,
+	StorageTest.class
 })
 
 public class EstherTestDriver {
