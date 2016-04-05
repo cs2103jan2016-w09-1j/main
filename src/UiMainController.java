@@ -17,10 +17,13 @@ import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableSelectionModel;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TableView.TableViewSelectionModel;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
@@ -51,12 +54,14 @@ public class UiMainController implements Initializable {
 	public static void setRes(UIResult res) {
 		UiMainController.res = res;
 	}
-	
+
+	private SingleSelectionModel<Tab> selectionModel;
+
 	private ObservableList<TaskWrapper> sList, cList, odList, fList, aList, tdList, tmrList, wkList;
 
 	@FXML
 	private TabPane tabSum;
-	
+
 	/*
 	 * This section is for reference to
 	 * Home Tab content
@@ -224,11 +229,11 @@ public class UiMainController implements Initializable {
 
 	// handle user input
 	@FXML
-    private TextField input;
+	private TextField input;
 
 	@FXML
 	private Label commandLog;
-	
+
 	@FXML
 	void ENTER(KeyEvent event) throws Exception {
 		if (event.getCode() == KeyCode.ENTER) {
@@ -239,29 +244,62 @@ public class UiMainController implements Initializable {
 
 			String command = res.getCommandType();
 			if (command.equalsIgnoreCase("search")) {
-				
+
 				displaySearch();
 				commandLog.setText(logicOutput);
 				initializeTabs(res);
-				
+
 			} else if (command.equalsIgnoreCase("help")) {
-				
+
 				commandLog.setText("Help Menu Opened!");
-				secondController helpController = createSecondWindow(commandLog, "Help");
+				UiSecondController helpController = createSecondWindow(commandLog, "Help");
 				helpController.setResult(res.getMessage());
 				initializeTabs(res);
-				
+
 			} else {
 				commandLog.setText(logicOutput);
 				initializeTabs(res);
+				if (command.equalsIgnoreCase("sort") || command.equalsIgnoreCase("undo")) {
+					
+				} else {
+					int[] index = res.getIndex();
+					int line = index[1];
+					switch(index[0]) {
+					case(0):
+						//overdue
+						overdueList.getSelectionModel().select(line);
+					case(1):
+						//today
+						homeTree.getSelectionModel().select(line+1);
+					case(2):
+						//tomorrow
+						homeTree.getSelectionModel().select(res.getTodayBuffer().size() 
+								+ line + 2);
+					case(3):
+						//week
+						homeTree.getSelectionModel().select(res.getTodayBuffer().size()
+								+ res.getTomorrowBuffer().size() + line + 3);
+					case(4):
+						//all
+					case(5):
+						//floating
+					case(6):
+						//completed
+					default:
+						//default
+					}
+				}
+
+
+				
 			}
-			
+
 			input.clear();
 		}
-		
+
 	}	
-	
-	private secondController createSecondWindow(Label lb, String title) {
+
+	private UiSecondController createSecondWindow(Label lb, String title) {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("secondWindow.fxml"));
 		Pane secondWindow = null;
 		try {
@@ -269,7 +307,7 @@ public class UiMainController implements Initializable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		secondController second = loader.getController();
+		UiSecondController second = loader.getController();
 		second.setMainController(this);
 
 		Stage stage = new Stage();
@@ -291,13 +329,13 @@ public class UiMainController implements Initializable {
 
 		return second;
 	}
-	
+
 	private void displaySearch() {
 		Tab searchTab = new Tab();
-		searchTab.setClosable(true);
+
 		searchTab.setText("Search");
 		tabSum.getTabs().add(searchTab);
-		
+
 		AnchorPane ap = new AnchorPane();
 		ArrayList<Task> searchBuffer = res.getSearchBuffer();
 
@@ -310,31 +348,33 @@ public class UiMainController implements Initializable {
 		sList = (ObservableList) FXCollections.observableArrayList(searchWrapper);
 
 		TableView<TaskWrapper> searchTable = new TableView<TaskWrapper>();
-		
-		TableColumn<TaskWrapper, String> STID = new TableColumn<TaskWrapper, String>();
-		TableColumn<TaskWrapper, String> STTask = new TableColumn<TaskWrapper, String>();
-		TableColumn<TaskWrapper, String> STDate = new TableColumn<TaskWrapper, String>();
-		TableColumn<TaskWrapper, String> STPriority = new TableColumn<TaskWrapper, String>();
-		
+
+		TableColumn<TaskWrapper, String> STID = new TableColumn<TaskWrapper, String>("ID");
+		TableColumn<TaskWrapper, String> STTask = new TableColumn<TaskWrapper, String>("Task");
+		TableColumn<TaskWrapper, String> STDate = new TableColumn<TaskWrapper, String>("Date & Time");
+		TableColumn<TaskWrapper, String> STPriority = new TableColumn<TaskWrapper, String>("Priority");
+
 		STID.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("id"));
 		STTask.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("taskName"));
 		STDate.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("date"));
 		STPriority.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("priority"));
-		
+
 		searchTable.getColumns().addAll(STID, STTask, STDate, STPriority);
-		
+
 		searchTable.setItems(sList);
-		
+
 		ap.getChildren().add(searchTable);
 		AnchorPane.setBottomAnchor(searchTable, 14.0);
 		AnchorPane.setRightAnchor(searchTable, 14.0);
 		AnchorPane.setTopAnchor(searchTable, 14.0);
 		AnchorPane.setLeftAnchor(searchTable, 14.0);
-		
+
 		searchTab.setContent(ap);
-		
+
+		selectionModel.select(searchTab);
+
 	}
-	
+
 	// initialize logic
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -346,6 +386,8 @@ public class UiMainController implements Initializable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+		selectionModel = tabSum.getSelectionModel();
 
 		initializeTabs(res);
 
@@ -382,12 +424,12 @@ public class UiMainController implements Initializable {
 				}
 
 				odList = (ObservableList) FXCollections.observableArrayList(overdueWrapper);
-				
+
 				overdueList.setItems(odList);
 				overdue.setItems(odList);
-				
+
 			}
-			
+
 		});*/
 
 		HOID.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("id"));
@@ -454,7 +496,7 @@ public class UiMainController implements Initializable {
 				}
 				tdList = (ObservableList) FXCollections.observableArrayList(todayWrapper);
 			}
-			
+
 		});*/
 		tmrList = (ObservableList) FXCollections.observableArrayList(tmrWrapper);
 		/*tmrList.addListener(new ListChangeListener<TaskWrapper>() {
@@ -471,7 +513,7 @@ public class UiMainController implements Initializable {
 				}
 				tmrList = (ObservableList) FXCollections.observableArrayList(tmrWrapper);
 			}
-			
+
 		});*/
 		wkList = (ObservableList) FXCollections.observableArrayList(weekWrapper);
 		/*wkList.addListener(new ListChangeListener<TaskWrapper>() {
@@ -488,11 +530,11 @@ public class UiMainController implements Initializable {
 				}
 				wkList = (ObservableList) FXCollections.observableArrayList(wkWrapper);
 			}
-			
+
 		});*/
 
 		rootNode.getChildren().addAll(todayNode, tomorrowNode, weekNode);
-		
+
 		rootNode.setExpanded(true);
 		todayNode.setExpanded(true);
 		tomorrowNode.setExpanded(true);
@@ -585,15 +627,15 @@ public class UiMainController implements Initializable {
 				}
 
 				cList = (ObservableList) FXCollections.observableArrayList(completedWrapper);
-				
+
 				completedContent.setItems(cList);
-				
+
 			}
-			
+
 		});*/
 
-		
-		
+
+
 		CTID.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("id"));
 		CTTask.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("taskName"));
 		CTDate.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("date"));
@@ -601,7 +643,7 @@ public class UiMainController implements Initializable {
 
 		completedContent.setItems(cList);
 	}
-	
+
 	private void initializeFloatingContent(UIResult res) {
 		ArrayList<Task> floatingBuffer = res.getFloatingBuffer();
 
@@ -625,11 +667,11 @@ public class UiMainController implements Initializable {
 				}
 
 				fList = (ObservableList) FXCollections.observableArrayList(floatingWrapper);
-				
+
 				floatingContent.setItems(fList);
-				
+
 			}
-			
+
 		});*/
 		FTID.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("id"));
 		FTTask.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("taskName"));
@@ -638,10 +680,10 @@ public class UiMainController implements Initializable {
 
 		floatingContent.setItems(fList);
 	}
-	
+
 	private void initializeAllContent(UIResult res) {
 		ArrayList<Task> allBuffer = res.getAllTaskBuffer();
-		
+
 		ArrayList<TaskWrapper> allWrapper = new ArrayList<TaskWrapper>();
 		for (int i = 0; i < allBuffer.size(); i++) {
 			TaskWrapper tw = new TaskWrapper(allBuffer.get(i));
@@ -662,13 +704,13 @@ public class UiMainController implements Initializable {
 				}
 
 				aList = (ObservableList) FXCollections.observableArrayList(allWrapper);
-				
+
 				allContent.setItems(aList);
-				
+
 			}
-			
+
 		});*/
-		
+
 		ATID.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("id"));
 		ATTask.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("taskName"));
 		ATDate.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("date"));

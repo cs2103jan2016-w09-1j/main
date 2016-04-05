@@ -7,7 +7,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-public class secondController {
+public class UiSecondController {
 
 	private UiMainController mainController;
 

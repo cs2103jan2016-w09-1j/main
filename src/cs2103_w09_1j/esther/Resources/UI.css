@@ -3,6 +3,11 @@
  * @@A0130749A
  */
 
+/* .table-row-cell:selected-row {
+    -fx-background-color: lightskyblue ;
+}
+*/
+
 .main {
 	-fx-border-width: 2px; 
 	-fx-border-color: #2F75BF;
