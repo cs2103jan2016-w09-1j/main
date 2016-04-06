@@ -200,7 +200,7 @@ public class Task implements Comparable<Task> {
 		for (int i = 0; i < regexArray.length; i++) {
 			resultsArray[i] = findMatch(regexArray[i], matcherInput[i]);
 			if (resultsArray[i] == null) {
-				taskLogger.warning("Task builder could not parse " + i + "th element for task " + resultsArray[0]);
+				//taskLogger.warning("Task builder could not parse " + i + "th element for task " + resultsArray[0]);
 				resultsArray[i] = "";
 			}
 		}
