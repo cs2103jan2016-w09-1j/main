@@ -282,7 +282,7 @@ public class UiMainController implements Initializable {
 			} else {
 				commandLog.setText(logicOutput);
 				initializeTabs(res);
-				if (command.equalsIgnoreCase("sort") || command.equalsIgnoreCase("undo")) {
+				if (command.equalsIgnoreCase("sort")) {
 
 				} else {
 					int[] index = res.getIndex();
