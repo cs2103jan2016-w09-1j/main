@@ -83,7 +83,7 @@ class Logic {
 	private Stack<State> _undoStack;
 	private Config _config;
 	private Date _today;
-	private static Logger logger = Logger.getLogger("Logic");
+	private static Logger logger;
 
 	
 	// =========================================================================================== //
@@ -104,7 +104,7 @@ class Logic {
 	 * 
 	 */
 	public Logic() throws ParseException, IOException {
-		//initializeLogger();
+		initializeLogger();
 		initializeStorageAndConfig();
 		initializeParser();
 		initializeLogicSystemVariables();
@@ -236,11 +236,9 @@ class Logic {
 	
 	/**
 	 * Retrieves the internal memory that is used by Logic.
-	 * Used only for internal testing.
 	 * 
 	 * @return the internal memory representation of the
 	 * 		   contents stored in the text file.
-	 * 
 	 */
 	protected ArrayList<Task> getInternalStorage() {
 		_fullTaskList = new ArrayList<Task>();
@@ -278,15 +276,6 @@ class Logic {
 		return _taskDisplayLists.get(Task.COMPLETED_TASK_INDEX);
 	}
 	
-	/**
-	 * Retrieves the internal memory that is used by Logic.
-	 * This internal memory is represented in a whole String.
-	 * 
-	 * @return the internal memory representation of the
-	 * 		   contents stored in the text file, in String
-	 * 		   form.
-	 * 
-	 */
 	public void setUiTaskDisplays(String commandType, int[] indices) {
 		UIResult displayResult = createDisplayResult(commandType, indices);
 		UiMainController.setRes(displayResult);
@@ -329,9 +318,10 @@ class Logic {
 	 */
 	private void initializeLogger() {
 		try {
+			 logger = Logger.getLogger("Logic");
 			logger.setLevel(Level.SEVERE);
 			// TODO: change log file path in future, upon release.
-			FileHandler fh = new FileHandler("C:/Users/Tay/Documents/GitHub/main/Logic.log");
+			FileHandler fh = new FileHandler("Logic.log");
 			logger.addHandler(fh);
 			SimpleFormatter formatter = new SimpleFormatter();  
 			fh.setFormatter(formatter);
@@ -498,8 +488,9 @@ class Logic {
 	 * @param task a Task object representing the task that was operated on
 	 * 
 	 */
-	private void updateUndoStack(Command command, int[] indices) {
-		_undoStack.push(storePreviousState(command, _taskDisplayLists, indices));
+	private void updateUndoStack(State state) {
+		//_undoStack.push(createPreviousState(command, _taskDisplayLists, indices));
+		_undoStack.push(state);
 	}
 	
 	/**
@@ -666,7 +657,9 @@ class Logic {
 	 */
 	private String sortFile(Command command) {
 		int indices[] = {-1, -1};
-		updateUndoStack(command, indices);
+		System.out.println("Buffer pos: " + indices[0] + "Task pos: " + indices[1]);
+		State oldState = createPreviousState(command, indices);
+		updateUndoStack(oldState);
 		//System.out.println(_undoStack.size());
 		sortAndUpdateFile(command);
 		setUiTaskDisplays(command.getCommand(), indices);
@@ -685,6 +678,10 @@ class Logic {
 	 * 
 	 */
 	private String searchFile(Command command) {
+		int indices[] = {-1, -1};
+		System.out.println("Buffer pos: " + indices[0] + "Task pos: " + indices[1]);
+		//State oldState = createPreviousState(command, indices);
+		//updateUndoStack(oldState);
 		getInternalStorage();
 		_searchList = new ArrayList<Task>();
 		String searchKeyword = command.getSpecificParameter(Task.TaskField.NAME.getTaskKeyName());
@@ -761,21 +758,23 @@ class Logic {
 				} else {
 					Status._outcome = Status.Outcome.ERROR;
 					Status._errorCode = Status.ErrorCode.SEARCH_INVALID;
-					int indices[] = {-1, -1};
+					indices[0] = -1;
+					indices[1] = -1;
 					setUiTaskDisplays(command.getCommand(), indices);
 					return getOperationStatus(command);
 				}
 			}
 		}
 		//System.out.println(results);
-		int indices[] = {-1, -1};
-		storePreviousState(command, _taskDisplayLists, indices);
 		setUiTaskDisplays(command.getCommand(), indices);
 		Status._outcome = Status.Outcome.SUCCESS;
 		return getOperationStatus(command);
 	}
 	
 	private String setSaveFilePath(Command command) {
+		int indices[] = {-1, -1};
+		State oldState = createPreviousState(command, indices);
+		updateUndoStack(oldState);
 		try {
 			_config.setSavePath(command.getSpecificParameter(Task.TaskField.PATH.getTaskKeyName()));
 			_storage.updateConfig(_config);
@@ -788,8 +787,6 @@ class Logic {
 		 	Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SET_SAVEPATH;
 		}
-		int indices[] = {-1, -1};
-		updateUndoStack(command, indices);
 		return getOperationStatus(command);
 	}
 	
@@ -873,10 +870,10 @@ class Logic {
 	private void createAndAddTaskToFile(Command command) {
 		Task addedTask = null;
 		int indices[] = {-1, -1};
+		State oldState = createPreviousState(command, indices);
 		try {
 			getInternalStorage();
 			//System.out.println("Task list now has " + _fullTaskList.size() + " items.");
-			updateUndoStack(command, indices);
 			addedTask = new Task(command);
 			System.out.println(addedTask.getTaskCode(_today));
 			_taskDisplayLists.get(addedTask.getTaskCode(_today)).add(addedTask);
@@ -884,6 +881,7 @@ class Logic {
 			//System.out.println("Task list now has " + _fullTaskList.size() + " items.");
 			indices[TASK_LIST_POSITION] = addedTask.getTaskCode(_today);
 			indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(addedTask.getTaskCode(_today)).size() - 1;
+			updateUndoStack(oldState);
 			//System.out.println(_undoStack.size());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (ParseException pe) {
@@ -897,6 +895,7 @@ class Logic {
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
+		System.out.println("Buffer pos: " + indices[0] + "Task pos: " + indices[1]);
 		setUiTaskDisplays(command.getCommand(), indices);
 	}
 	
@@ -950,10 +949,13 @@ class Logic {
 	private void removeTaskAndUpdateFile(Command command) {
 		Task removed = null;
 		int taskIndex[] = getTaskIndex(command);
+		System.out.println("Buffer pos: " + taskIndex[0] + "Task pos: " + taskIndex[1]);
+		State oldState = createPreviousState(command, taskIndex);
+		updateUndoStack(oldState);
+		int indices[] = {-1, -1};
 		try {
 			if (taskIndex[TASK_LIST_POSITION] != NOT_FOUND_INDEX &&
 				taskIndex[TASK_LIST_POSITION] != DUPLICATE_TASK_INDEX) {
-				updateUndoStack(command, taskIndex);
 				removed = _taskDisplayLists.get(taskIndex[TASK_LIST_POSITION]).get(taskIndex[TASK_ITEM_POSITION]);
 				_taskDisplayLists.get(taskIndex[0]).remove(removed);
 				updateTextFile();
@@ -974,7 +976,6 @@ class Logic {
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
-		int indices[] = {-1, -1};
 		setUiTaskDisplays(command.getCommand(), indices);
 	}
 	
@@ -987,8 +988,10 @@ class Logic {
 	private void updateTaskInFile(Command command) {
 		Task toUpdate = null;
 		int taskIndex[] = getTaskIndex(command);
+		System.out.println("Buffer pos: " + taskIndex[0] + "Task pos: " + taskIndex[1]);
 		//System.out.println(taskIndex);
-		updateUndoStack(command, taskIndex);
+		State oldState = createPreviousState(command, taskIndex); 
+		updateUndoStack(oldState);
 		int indices[] = {-1, -1};
 		
 		try {
@@ -1044,6 +1047,9 @@ class Logic {
 	private void completeTaskInFile(Command command) {
 		Task toUpdate = null;
 		int taskIndex[] = getTaskIndex(command);
+		System.out.println("Buffer pos: " + taskIndex[0] + "Task pos: " + taskIndex[1]);
+		State oldState = createPreviousState(command, taskIndex);
+		updateUndoStack(oldState);
 		int indices[] = {-1, -1};
 		try {
 			if (taskIndex[TASK_LIST_POSITION] != NOT_FOUND_INDEX &&
@@ -1054,7 +1060,6 @@ class Logic {
 					Status._errorCode = Status.ErrorCode.COMPLETED_ALREADY_COMPLETED;
 				}
 				else {
-					updateUndoStack(command, taskIndex);
 					Task copyOfOldTask = toUpdate.clone();
 					copyOfOldTask.setCompleted(true);
 					_taskDisplayLists.get(taskIndex[TASK_LIST_POSITION]).remove(taskIndex[TASK_ITEM_POSITION]);
@@ -1111,8 +1116,8 @@ class Logic {
 	 * 		   performed on it, where applicable.
 	 * 
 	 */
-	private State storePreviousState(Command command, ArrayList<ArrayList<Task>> taskLists, int[] oldIndices) {
-		logger.logp(Level.INFO, "Logic", "storePreviousState(Command command, Task original)",
+	private State createPreviousState(Command command, int[] oldIndices) {
+		logger.logp(Level.INFO, "Logic", "createPreviousState(Command command, Task original)",
 					"Storing previous program memory state.");
 		String commandName = command.getCommand();
 		CommandKey commandType = CommandKey.get(commandName);
@@ -1120,56 +1125,56 @@ class Logic {
 		switch (commandType) {
 			case ADD :
 				previous = new State(commandName);
-				previous.setState(taskLists);
+				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
 				break;
 
 			case DELETE :
 				previous = new State(commandName);
-				previous.setState(taskLists);
+				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
 				break;
 
 			case UPDATE :
 				previous = new State(commandName);
-				previous.setState(taskLists);
+				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
 				break;
 				
 			case COMPLETE :
 				previous = new State(commandName);
-				previous.setState(taskLists);
+				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
 				break;
 
 			case SHOW :
-				previous = new State(commandName);
+				/*previous = new State(commandName);
 				assert command.getSpecificParameter(TaskField.SHOW.getTaskKeyName()) != null;
 				previous.setSortOrder(command.getSpecificParameter(TaskField.SHOW.getTaskKeyName()));
 				previous.setState(taskLists);
-				previous.setIndices(oldIndices);
+				previous.setIndices(oldIndices);*/
 				break;
 
 			case SORT :
 				previous = new State(commandName);
 				assert command.getSpecificParameter(TaskField.SORT.getTaskKeyName()) != null;
 				previous.setSortOrder(command.getSpecificParameter(TaskField.SORT.getTaskKeyName()));
-				previous.setState(taskLists);
+				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
 				break;
 				
 			case SEARCH :
 				previous = new State(commandName);
-				previous.setState(taskLists);
+				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
-				System.out.println("Storing previous state for " + previous.getCommand());
+				//System.out.println("Storing previous state for " + previous.getCommand());
 				break;
 				
 			case SET :
 			  	previous = new State(commandName);
 			  	String oldFilePath = _config.getSavePath().toString();
 			  	previous.setFilePath(oldFilePath);
-				previous.setState(taskLists);
+				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
 			  	break;
 
@@ -1178,15 +1183,15 @@ class Logic {
 
 			case HELP :
 				previous = new State(commandName);
-				previous.setState(taskLists);
+				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
 				break;
 				
 			default :
 				previous = new State(EMPTY_STATE);
-				previous.setState(taskLists);
+				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
-				logger.logp(Level.INFO, "Logic", "storePreviousState(Command command, Task original)",
+				logger.logp(Level.INFO, "Logic", "createPreviousState(Command command, Task original)",
 							"Dummy state is created.");
 				break;
 		}
@@ -1205,6 +1210,7 @@ class Logic {
 			getInternalStorage();
 			//System.out.println("Undo: task list now has " + _fullTaskList.size() + " items.");
 			_storage.writeSaveFile(_fullTaskList);
+			System.out.println("Buffer pos: " + state.getIndices()[0] + "Task pos: " + state.getIndices()[1]);
 			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
@@ -1224,6 +1230,7 @@ class Logic {
 			restoreOldState(state);
 			getInternalStorage();
 			_storage.writeSaveFile(_fullTaskList);
+			System.out.println("Buffer pos: " + state.getIndices()[0] + "Task pos: " + state.getIndices()[1]);
 			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
@@ -1243,6 +1250,7 @@ class Logic {
 			restoreOldState(state);
 			getInternalStorage();
 			_storage.writeSaveFile(_fullTaskList);
+			System.out.println("Buffer pos: " + state.getIndices()[0] + "Task pos: " + state.getIndices()[1]);
 			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
@@ -1262,6 +1270,7 @@ class Logic {
 			restoreOldState(state);
 			getInternalStorage();
 			_storage.writeSaveFile(_fullTaskList);
+			System.out.println("Buffer pos: " + state.getIndices()[0] + "Task pos: " + state.getIndices()[1]);
 			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
@@ -1281,6 +1290,7 @@ class Logic {
 			restoreOldState(state);
 			getInternalStorage();
 			_storage.writeSaveFile(_fullTaskList);
+			System.out.println("Buffer pos: " + state.getIndices()[0] + "Task pos: " + state.getIndices()[1]);
 			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
@@ -1294,6 +1304,7 @@ class Logic {
 			restoreOldState(state);
 			getInternalStorage();
 			_storage.writeSaveFile(_fullTaskList);
+			System.out.println("Buffer pos: " + state.getIndices()[0] + "Task pos: " + state.getIndices()[1]);
 			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
