@@ -200,6 +200,9 @@ public class Parser {
 		case HELP:
 			parseHelp();
 			break;
+		case SET:
+			parseSet(commandInput);
+			break;
 		default:
 			throw new InvalidInputException(ERROR_UNKNOWN);
 		}

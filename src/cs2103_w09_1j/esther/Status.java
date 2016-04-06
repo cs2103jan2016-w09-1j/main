@@ -1,18 +1,19 @@
 package cs2103_w09_1j.esther;
 
-/**
- * ========= [ STATUS CLASS DEFINITIONS ] =========
- * This class contains the representation of the
- * Status class that will be used by the Logic
- * component of the program. This class is used to
- * convey messages to the user about the status of
- * the user operations being carried out.
- * 
- * @@author A0130749A
- */
-
 import cs2103_w09_1j.esther.Command.CommandKey;
 
+/**
+ * The <code>Status</code> class contains all necessary implementations for conveying success or
+ * error messages to the user of <code>ESTHER</code>.
+ * 
+ * There are two <code>Outcome</code>s of a user operation: success or error.<br><br>
+ * If the user operation was performed successfully, the relevant success messages will be returned to UI
+ * for display to the user. If an error was encountered, the specific error type will be identified in
+ * <code>ErrorCode</code> and the relevant error messages will be returned to UI for display to the user.
+ * 
+ * @author Guo Mingxuan
+ * @@author A0130749A
+ */
 public class Status {
 
 	public enum ErrorCode {
@@ -26,158 +27,201 @@ public class Status {
 		SUCCESS, ERROR
 	}
 
-	public static Outcome _outcome;
-	public static ErrorCode _errorCode;
+	public static Outcome _outcome;			// controls the Outcome logical flow
+	public static ErrorCode _errorCode;		// controls the ErrorCode logical flow
 
-	static final String MESSAGE_ERROR_SYSTEM = "A system error has occured in ESTHER. Please restart this application.\n";
-	static final String MESSAGE_ERROR_INVALID_COMMAND = "Command is not recognized. Type 'help' to see the list of commands that can be used in ESTHER.\n";
+	// ========== [TASK-ADDING MESSAGES] ========== //	
 	static final String MESSAGE_SUCCESS_ADD = "%1$s is successfully added to file.\n";
 	static final String MESSAGE_ERROR_ADD_INVALID_FORMAT = "Unable to add task: Please check that your input is of the correct format.\n"; 
-															//"[ERROR] Failed to add %1$s to file.\n";
 	static final String MESSAGE_ERROR_ADD_MISSING_NAME = "Unable to add task: Task name is required.\n";
+
+	// ========== [TASK-DELETING MESSAGES] ========== //
 	static final String MESSAGE_SUCCESS_DELETE = "%1$s is successfully deleted from file.\n";
 	static final String MESSAGE_ERROR_DELETE_NOT_FOUND = "Unable to delete task: Please supply a proper task name or task ID.\n";
-														 //"[ERROR] Failed to delete %1$s from file.\n";
 	static final String MESSAGE_ERROR_DELETE_DUPLICATES_PRESENT = "There are multiple tasks sharing the same name '%1$s'. Please delete by ID instead.\n";
+	
+	// ========== [TASK-UPDATING MESSAGES] ========== //
 	static final String MESSAGE_SUCCESS_UPDATE = "%1$s is successfully updated.\n";
 	static final String MESSAGE_ERROR_UPDATE_NOT_FOUND = "Unable to update task: Please supply a proper task name or task ID.\n";
-														 //"[ERROR] Task with supplied name or ID not found.\n";
 	static final String MESSAGE_ERROR_UPDATE_DUPLICATES_PRESENT = "There are multiple tasks sharing the same name '%1$s'. Please update by ID instead.\n";
 	static final String MESSAGE_ERROR_UPDATE_INVALID_FIELD = "Unable to update task: The field you have specified does not exist.\n";
 	static final String MESSAGE_ERROR_UPDATE_START_END_VIOLATE = "Unable to update task: Start date/time is not before end date/time.\n";
 	static final String MESSAGE_ERROR_UPDATE_INVALID_PRIORITY = "Unable to update task: Priority is not within 1 to 5.\n";
 
+	// ========== [TASK-COMPLETING MESSAGES] ========== //
 	static final String MESSAGE_SUCCESS_COMPLETED = "%1$s is successfully marked as completed.\n";
 	static final String MESSAGE_ERROR_COMPLETED_NOT_FOUND = "Unable to complete task: Please supply a proper task name or task ID.\n";
-														    //"[ERROR] Failed to mark %1$s as completed.\n";
 	static final String MESSAGE_ERROR_COMPLETED_DUPLICATES_PRESENT = "There are multiple tasks sharing the same name '%1$s'. Please complete by ID instead.\n";
 	static final String MESSAGE_ERROR_COMPLETED_ALREADY_COMPLETED = "%1$s is already completed.\n";
+	
+	// ========== [TASK-SORTING MESSAGES] ========== //
 	static final String MESSAGE_SUCCESS_SORT = "File is successfully sorted.\n";
 	static final String MESSAGE_ERROR_SORT_INVALID_CRITERION = "Unable to sort file: Please specify a recognized criterion to sort the file by.\n";
 	
-	static final String MESSAGE_ERROR_SEARCH_INVALID = "Search keyword or date-time not present.\n";
+	// ========== [TASK-SEARCHING MESSAGES] ========== //
+	static final String MESSAGE_SUCCESS_SEARCH = "Search is successful.\n";
+	static final String MESSAGE_ERROR_SEARCH_INVALID = "Search keyword or date-time is either not specified, or not recognized.\n";
+	
+	// ========== [SETTING SAVE FILE FILEPATH MESSAGES] ========== //
 	static final String MESSAGE_SUCCESS_SET_SAVEPATH = "Successfully set file path.\n";
 	static final String MESSAGE_ERROR_SET_SAVEPATH = "Unable to set file path.\n";
+	
+	// ========== [UNDOING MESSAGES] ========== //
 	static final String MESSAGE_SUCCESS_UNDO = "Undo is successful.\n";
 	static final String MESSAGE_ERROR_UNDO = "Cannot undo any further.\n";
+	
+	// ========== [GENERIC ERROR MESSAGES] ========== //
+	static final String MESSAGE_ERROR_SYSTEM = "A system error has occured in ESTHER. Please restart this application.\n";
+	static final String MESSAGE_ERROR_INVALID_COMMAND = "Command is not recognized. Type 'help' to see the list of commands that can be used in ESTHER.\n";
 	static final String MESSAGE_ERROR_UNKNOWN_STATE = "ESTHER has encountered an unknown error. Please restart this application.\n";
-	static final String MESSAGE_HELP = "Help:\n"
-			+ "List of commands are:\n1. add\n2. delete\n3. update\n"
-			+ "4. complete\n5. search\n6. sort\n7. undo\n\n" + "Note that for these commands, "
-			+ "_value_ indicates that these fields are compulsory and\n"
-			+ "need to be substituted with the relevant values.\n"
-			+ "[optional] indicates optional fields to input.\n\n"
-			+ "Using the 'add' command:\n"
-			+ "General usage:\n1. add _task name_ [on _date/time_]\n2. add _task name_ [from _date/time_ to _date/time_]\n"
-			+ "-> 'add something on this date or time'\n"
-			+ "add _task name_ (adds a task with the specified task name)\n"
-			+ "add _task name_ on _date/time_ (adds task with deadline)\n"
-			+ "add _task name_ from _date/time_ to _date/time_\n\n"
-			+ "Using the 'delete' command:\n"
-			+ "General usage: delete _task name/task ID_\n"
-			+ "-> 'delete something'\n"
-			+ "delete _task name_ (deletes a task with exact matching name)\n"
-			+ "delete _task ID_ (deletes a task with exact matching ID)\n\n"
-			+ "Using the 'update' command:\n"
-			+ "General usage: update _task name/task ID_ _field name_ to _value_\n"
-			+ "-> 'update something in task to something else'\n"
-			+ "update _task name/task ID_ name to _name_ (changes the name of task)\n"
-			+ "update _task name/task ID_ startDate to _date_ (updates starting date for the task)\n"
-			+ "update _task name/task ID_ startTime to _time_ (updates starting time for the task)\n"
-			+ "update _task name/task ID_ endDate to _date_ (updates ending date for the task)\n"
-			+ "update _task name/task ID_ endTime to _time_ (updates ending time for the task)\n"
-			+ "update _task name/task ID_ priority to _priority_ (changes the priority of task)\n\n"
-			+ "Using the 'complete' command:\n"
-			+ "General usage: complete _task name/task ID_\n"
-			+ "-> 'complete something'\n\n"
-			+ "Using the 'search' command:\n"
-			+ "General usage: search _keyword_\n"
-			+ "-> 'search for any tasks containing the keyword'\n\n"
-			+ "Using the 'sort' command:\n"
-			+ "-> 'sort tasks by something'\n"
-			+ "sort by date/name/priority (sorts your tasks by date/name/priority)\n\n"
-			+ "Using the 'undo' command:\n"
-			+ "General usage: undo\n" + "Undo one step back to previous state.\n";
+	
+	// ========== [HELP MESSAGES] ========== //
+	static final String MESSAGE_SUCCESS_HELP = "Showing help message in new window.\n";
+	public static final String MESSAGE_HELP = "Help:\n"
+											   + "List of commands are:\n1. add\n2. delete\n3. update\n"
+											   + "4. complete\n5. search\n6. sort\n7. undo\n\n" + "Note that for these commands, "
+											   + "_value_ indicates that these fields are compulsory and\n"
+											   + "need to be substituted with the relevant values.\n"
+											   + "[optional] indicates optional fields to input.\n\n"
+											   + "Using the 'add' command:\n"
+											   + "General usage:\n1. add _task name_ [on _date/time_]\n2. add _task name_ [from _date/time_ to _date/time_]\n"
+											   + "-> 'add something on this date or time'\n"
+											   + "add _task name_ (adds a task with the specified task name)\n"
+											   + "add _task name_ on _date/time_ (adds task with deadline)\n"
+											   + "add _task name_ from _date/time_ to _date/time_\n\n"
+											   + "Using the 'delete' command:\n"
+											   + "General usage: delete _task name/task ID_\n"
+											   + "-> 'delete something'\n"
+											   + "delete _task name_ (deletes a task with exact matching name)\n"
+											   + "delete _task ID_ (deletes a task with exact matching ID)\n\n"
+											   + "Using the 'update' command:\n"
+											   + "General usage: update _task name/task ID_ _field name_ to _value_\n"
+											   + "-> 'update something in task to something else'\n"
+											   + "update _task name/task ID_ name to _name_ (changes the name of task)\n"
+											   + "update _task name/task ID_ startDate to _date_ (updates starting date for the task)\n"
+											   + "update _task name/task ID_ startTime to _time_ (updates starting time for the task)\n"
+											   + "update _task name/task ID_ endDate to _date_ (updates ending date for the task)\n"
+											   + "update _task name/task ID_ endTime to _time_ (updates ending time for the task)\n"
+											   + "update _task name/task ID_ priority to _priority_ (changes the priority of task)\n\n"
+											   + "Using the 'complete' command:\n"
+											   + "General usage: complete _task name/task ID_\n"
+											   + "-> 'complete something'\n\n"
+											   + "Using the 'search' command:\n"
+											   + "General usage: search _keyword_\n"
+											   + "-> 'search for any tasks containing the keyword'\n\n"
+											   + "Using the 'sort' command:\n"
+											   + "-> 'sort tasks by something'\n"
+											   + "sort by date/name/priority (sorts your tasks by date/name/priority)\n\n"
+											   + "Using the 'undo' command:\n"
+											   + "General usage: undo\n" + "Undo one step back to previous state.\n";
 
+	/**
+	 * Retrieves the message depending on the outcome of a user operation.
+	 * 
+	 * @param taskName		the name of a task
+	 * @param taskID		the ID of a task
+	 * @param commandType	the type of command executed in Logic
+	 * @return				a success message if the user operation was carried out successfully;
+	 * 						an error message otherwise
+	 */
 	public static String getMessage(String taskName, String taskID, String commandType) {
 		String message;
-
+		
 		switch(_outcome) {
-		case SUCCESS :
-			message = successCall(taskName, taskID, commandType);
-			break;
-		case ERROR :
-			message = errorCall(taskName, taskID, commandType);
-			break;
-		default :
-			message = MESSAGE_ERROR_UNKNOWN_STATE;
-			break;
+			case SUCCESS :
+				message = successCall(taskName, taskID, commandType);
+				break;
+			case ERROR :
+				message = errorCall(taskName, taskID, commandType);
+				break;
+			default :
+				message = MESSAGE_ERROR_UNKNOWN_STATE;
+				break;
 		}
+		
 		return message;
 	}
 
+	/**
+	 * Retrieves the success message when the user operation is successfully carried out.
+	 * 
+	 * @param taskName		the name of a task
+	 * @param taskID		the ID of a task
+	 * @param commandType	the type of command executed in Logic
+	 * @return				the success message related to the type of user operation carried out
+	 */
 	private static String successCall(String taskName, String taskID, String commandType) {
 		String message = null;
 		CommandKey command = CommandKey.get(commandType);
 
 		switch(command) {
-		case ADD :
-			message = String.format(MESSAGE_SUCCESS_ADD, taskName);
-			break;
+			case ADD :
+				message = String.format(MESSAGE_SUCCESS_ADD, taskName);
+				break;
 
-		case DELETE :
-			if (taskName != null) {
-				message = String.format(MESSAGE_SUCCESS_DELETE, taskName);
-			} else {
-				message = String.format(MESSAGE_SUCCESS_DELETE, taskID);
-			}
-			break;
+			case DELETE :
+				if (taskName != null) {
+					message = String.format(MESSAGE_SUCCESS_DELETE, taskName);
+				} else {
+					message = String.format(MESSAGE_SUCCESS_DELETE, taskID);
+				}
+				break;
 
-		case UPDATE :
-			if (taskName != null) {
-				message = String.format(MESSAGE_SUCCESS_UPDATE, taskName);
-			} else {
-				message = String.format(MESSAGE_SUCCESS_UPDATE, taskID);
-			}
-			break;
+			case UPDATE :
+				if (taskName != null) {
+					message = String.format(MESSAGE_SUCCESS_UPDATE, taskName);
+				} else {
+					message = String.format(MESSAGE_SUCCESS_UPDATE, taskID);
+				}
+				break;
 
-		case COMPLETE :
-			if (taskName != null) {
-				message = String.format(MESSAGE_SUCCESS_COMPLETED, taskName);
-			} else {
-				message = String.format(MESSAGE_SUCCESS_COMPLETED, taskID);
-			}
-			break;
-			
-		case SORT :
-			message = MESSAGE_SUCCESS_SORT;
-			break;
+			case COMPLETE :
+				if (taskName != null) {
+					message = String.format(MESSAGE_SUCCESS_COMPLETED, taskName);
+				} else {
+					message = String.format(MESSAGE_SUCCESS_COMPLETED, taskID);
+				}
+				break;
 
-		case UNDO :
-			message = MESSAGE_SUCCESS_UNDO;
-			break;
-			
-		// TODO: adjust w.r.t. CommandKey enum			
-		/*case SET_FILEPATH :
-		    message = MESSAGE_SUCCESS_SET_FILEPATH;
-		    break;
-		 */
+			case SORT :
+				message = MESSAGE_SUCCESS_SORT;
+				break;
 
-		case HELP :
-			message = MESSAGE_HELP;
-			break;
-			
-		default :
-			message = MESSAGE_ERROR_UNKNOWN_STATE;
-			break;
+			case UNDO :
+				message = MESSAGE_SUCCESS_UNDO;
+				break;
 
+			case SET :
+				message = MESSAGE_SUCCESS_SET_SAVEPATH;
+				break;
+
+			case SEARCH :
+				message = MESSAGE_SUCCESS_SEARCH;
+				break;
+
+			case HELP :
+				message = MESSAGE_HELP;
+				break;
+
+			default :
+				message = MESSAGE_ERROR_UNKNOWN_STATE;
+				break;
 		}
 
 		return message;
 	}
-	
+
+	/**
+	 * Retrieves the error message when the user operation being carried out encounters an error.
+	 * 
+	 * @param taskName		the name of a task
+	 * @param taskID		the ID of a task
+	 * @param commandType	the type of command executed in Logic
+	 * @return				the error message related to the type of user operation carried out
+	 */
 	private static String errorCall(String taskName, String taskID, String commandType) {
 		String message;
+		
 		if (_errorCode == ErrorCode.SYSTEM) {
 			message = MESSAGE_ERROR_SYSTEM;
 			return message;
@@ -191,52 +235,58 @@ public class Status {
 		CommandKey command = CommandKey.get(commandType);
 		
 		switch(command) {
-		case ADD :
-			message = getAddErrorMessage(taskName, taskID);
-			break;
+			case ADD :
+				message = getAddErrorMessage(taskName, taskID);
+				break;
 
-		case DELETE :
-			message = getDeleteErrorMessage(taskName, taskID);
-			break;
-			
-		case UPDATE :
-			message = getUpdateErrorMessage(taskName, taskID);
-			break;
-			
-		case COMPLETE :
-			message = getCompleteErrorMessage(taskName, taskID);
-			break;
-			
-		case SORT :
-			message = MESSAGE_ERROR_SORT_INVALID_CRITERION;
-			break;
-		
-		case SEARCH :
-			message = MESSAGE_ERROR_SEARCH_INVALID;
-			break;
-			
-		// TODO: adjust w.r.t. CommandKey enum
-		/*case SET_FILEPATH :
-		    message = MESSAGE_ERROR_SET_FILEPATH;
-		    break;
-		 */
+			case DELETE :
+				message = getDeleteErrorMessage(taskName, taskID);
+				break;
 
-		case UNDO :
-			message = MESSAGE_ERROR_UNDO;
-			break;
+			case UPDATE :
+				message = getUpdateErrorMessage(taskName, taskID);
+				break;
 
-		case HELP :
-			message = MESSAGE_HELP;
-			break;
-			
-		default :
-			message = MESSAGE_ERROR_UNKNOWN_STATE;
-			break;
+			case COMPLETE :
+				message = getCompleteErrorMessage(taskName, taskID);
+				break;
+
+			case SORT :
+				message = MESSAGE_ERROR_SORT_INVALID_CRITERION;
+				break;
+
+			case SEARCH :
+				message = MESSAGE_ERROR_SEARCH_INVALID;
+				break;
+
+			case SET :
+				message = MESSAGE_ERROR_SET_SAVEPATH;
+				break;
+
+			case UNDO :
+				message = MESSAGE_ERROR_UNDO;
+				break;
+
+			case HELP :
+				message = MESSAGE_HELP;
+				break;
+
+			default :
+				message = MESSAGE_ERROR_UNKNOWN_STATE;
+				break;
 		}
 		
 		return message;
 	}
 	
+	/**
+	 * Retrieves the error message related to task-adding user operations.
+	 * 
+	 * @param taskName		the name of a task
+	 * @param taskID		the ID of a task
+	 * @param commandType	the type of command executed in Logic
+	 * @return				the error message related to task-adding user operations
+	 */
 	private static String getAddErrorMessage(String taskName, String taskID) {
 		String message = null;
 		
@@ -257,6 +307,14 @@ public class Status {
 		return message;
 	}
 	
+	/**
+	 * Retrieves the error message related to task-deleting user operations.
+	 * 
+	 * @param taskName		the name of a task
+	 * @param taskID		the ID of a task
+	 * @param commandType	the type of command executed in Logic
+	 * @return				the error message related to task-deleting user operations
+	 */
 	private static String getDeleteErrorMessage(String taskName, String taskID) {
 		String message = null;
 		
@@ -277,6 +335,14 @@ public class Status {
 		return message;
 	}
 	
+	/**
+	 * Retrieves the error message related to task-updating user operations.
+	 * 
+	 * @param taskName		the name of a task
+	 * @param taskID		the ID of a task
+	 * @param commandType	the type of command executed in Logic
+	 * @return				the error message related to task-updating user operations
+	 */
 	private static String getUpdateErrorMessage(String taskName, String taskID) {
 		String message = null;
 		
@@ -309,6 +375,14 @@ public class Status {
 		return message;
 	}
 	
+	/**
+	 * Retrieves the error message related to task-completing user operations.
+	 * 
+	 * @param taskName		the name of a task
+	 * @param taskID		the ID of a task
+	 * @param commandType	the type of command executed in Logic
+	 * @return				the error message related to task-completing user operations
+	 */
 	private static String getCompleteErrorMessage(String taskName, String taskID) {
 		String message = null;
 		

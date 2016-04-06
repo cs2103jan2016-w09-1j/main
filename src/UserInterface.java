@@ -34,13 +34,13 @@ public class UserInterface extends Application {
 		
 		Pane mainPane = null;
 		try {
-			mainPane = (Pane) FXMLLoader.load(getClass().getResource("mainUI.fxml"));
+			mainPane = (Pane) FXMLLoader.load(getClass().getResource("tabView.fxml"));
 		} catch (IOException e) {
 			logger.log(Level.SEVERE, e.toString(), e);
 		}
 		
 		Scene scene = new Scene(mainPane);
-		scene.getStylesheets().add("cs2103_w09_1j/esther/UI.css");
+		scene.getStylesheets().add("cs2103_w09_1j/esther/Resources/UI.css");
 		scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
 
 			@Override
