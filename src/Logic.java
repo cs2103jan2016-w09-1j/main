@@ -953,7 +953,6 @@ class Logic {
 		int taskIndex[] = getTaskIndex(command);
 		System.out.println("Buffer pos: " + taskIndex[0] + "Task pos: " + taskIndex[1]);
 		State oldState = createPreviousState(command, taskIndex);
-		updateUndoStack(oldState);
 		int indices[] = {-1, -1};
 		try {
 			if (taskIndex[TASK_LIST_POSITION] != NOT_FOUND_INDEX &&
@@ -961,6 +960,7 @@ class Logic {
 				removed = _taskDisplayLists.get(taskIndex[TASK_LIST_POSITION]).get(taskIndex[TASK_ITEM_POSITION]);
 				_taskDisplayLists.get(taskIndex[0]).remove(removed);
 				updateTextFile();
+				updateUndoStack(oldState);
 				//System.out.println(_undoStack.size());
 				Status._outcome = Status.Outcome.SUCCESS;
 			} else if (taskIndex[TASK_LIST_POSITION] == DUPLICATE_TASK_INDEX) {
@@ -993,7 +993,6 @@ class Logic {
 		System.out.println("Buffer pos: " + taskIndex[0] + "Task pos: " + taskIndex[1]);
 		//System.out.println(taskIndex);
 		State oldState = createPreviousState(command, taskIndex); 
-		updateUndoStack(oldState);
 		int indices[] = {-1, -1};
 		
 		try {
@@ -1007,6 +1006,7 @@ class Logic {
 					_taskDisplayLists.get(taskIndex[TASK_LIST_POSITION]).remove(taskIndex[TASK_ITEM_POSITION]);
 					_taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).add(copyOfOldTask);
 					updateTextFile();
+					updateUndoStack(oldState);
 					//System.out.println(_undoStack.size());
 					//System.out.println("Old name: " + old + " New name: " + _tasks.get(updateIndex).getName());
 					indices[TASK_LIST_POSITION] = copyOfOldTask.getTaskCode(_today);
@@ -1051,7 +1051,6 @@ class Logic {
 		int taskIndex[] = getTaskIndex(command);
 		System.out.println("Buffer pos: " + taskIndex[0] + "Task pos: " + taskIndex[1]);
 		State oldState = createPreviousState(command, taskIndex);
-		updateUndoStack(oldState);
 		int indices[] = {-1, -1};
 		try {
 			if (taskIndex[TASK_LIST_POSITION] != NOT_FOUND_INDEX &&
@@ -1067,6 +1066,7 @@ class Logic {
 					_taskDisplayLists.get(taskIndex[TASK_LIST_POSITION]).remove(taskIndex[TASK_ITEM_POSITION]);
 					_taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).add(copyOfOldTask);
 					updateTextFile();
+					updateUndoStack(oldState);
 					indices[TASK_LIST_POSITION] = copyOfOldTask.getTaskCode(_today);
 					indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).size() - 1;
 					//System.out.println(_undoStack.size());
