@@ -23,14 +23,18 @@ public class StorageTest {
 	private DateTimeTester default1HTester = new DateTimeTester(oneHrFromNow, "dd/MM/yy", "HH:mm");
 
 	private String filePath = "estherTest.txt";
+	private boolean setupDone = false;
 
 	@Before
 	public void init() {
-		try {
-			logic = new Logic();
-			storage = new Storage();
-		} catch (Exception e) {
-			e.printStackTrace();
+		if (!setupDone) {
+			try {
+				logic = new Logic();
+				storage = new Storage();
+				setupDone = true;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -96,6 +100,7 @@ public class StorageTest {
 		try {
 			storage.flushSaveFile();
 			storage.flushFileAtLocation("estherconfig.txt");
+			storage.flushSaveFile();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
