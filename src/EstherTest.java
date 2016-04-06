@@ -14,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import cs2103_w09_1j.esther.Task;
+import cs2103_w09_1j.esther.UIResult;
 
 /**
  * 
@@ -43,17 +44,23 @@ public class EstherTest {
 
 	private DateTimeTester defaultTester = new DateTimeTester(now, dateFormats[1], timeFormats[1]);
 	private DateTimeTester default1HTester = new DateTimeTester(nowOneHr, dateFormats[1], timeFormats[1]);
+	
+	private boolean setupDone = false;
+
+	private Logic logic;
+	private UiMainController UI = new UiMainController();
 
 	private final boolean DEBUG = false;
 	private final boolean EXHAUSTIVE = false;
-
-	private Logic logic;
-
+	
 	@Before
 	public void init() throws ParseException, IOException {
-		logic = new Logic();
-		cleanUp();
-		generateTesterLists();
+		if(!setupDone){
+			logic = new Logic();
+			cleanUp();
+			generateTesterLists();
+			setupDone = true;
+		}
 	}
 
 	/**
@@ -159,8 +166,8 @@ public class EstherTest {
 	public void deleteNameTest() {
 		// equivalence partition for delete based on name
 		int tasks = logic.getInternalStorage().size();
-		tryCommand("add deltask");
-		tryCommand("delete deltask");
+		tryAddTask();
+		tryCommand("delete task");
 		assertEquals(tasks, logic.getInternalStorage().size());
 	}
 
@@ -503,21 +510,7 @@ public class EstherTest {
 
 	@After
 	public void cleanUp() {
-		if (DEBUG) {
-			System.out.println("Contents in esther.txt:");
-			System.out.println("-----------------------");
-			BufferedReader reader;
-			try {
-				reader = Files.newBufferedReader(saveLoc);
-				while (reader.ready()) {
-					System.out.println((reader.readLine()));
-				}
-				reader.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		deleteFile();
+		logic.flushInternalStorage();
 	}
 
 	/**
@@ -565,12 +558,12 @@ public class EstherTest {
 	}
 
 	private boolean verifyStartDate(DateTimeTester dateTimeTester) {
-		Date date = getLastElement(logic.getInternalStorage()).getStartDate();
+		Date date = getLastModifiedTask().getStartDate();
 		return verifyDate(dateTimeTester, date);
 	}
 
 	private boolean verifyEndDate(DateTimeTester dateTimeTester) {
-		Date date = getLastElement(logic.getInternalStorage()).getEndDate();
+		Date date = getLastModifiedTask().getEndDate();
 		return verifyDate(dateTimeTester, date);
 	}
 
@@ -587,19 +580,19 @@ public class EstherTest {
 	}
 
 	private boolean verifyName(String name) {
-		return getLastElement(logic.getInternalStorage()).getName().equals(name);
+		return getLastModifiedTask().getName().equals(name);
 	}
 
 	private boolean verifyPriority(int priority) {
-		return getLastElement(logic.getInternalStorage()).getPriority() == priority;
+		return getLastModifiedTask().getPriority() == priority;
 	}
 
 	private boolean verifyComplete() {
-		return getLastElement(logic.getInternalStorage()).isCompleted();
+		return getLastModifiedTask().isCompleted();
 	}
-
-	private <E> E getLastElement(ArrayList<E> list) {
-		return list.get(list.size() - 1);
+	
+	private Task getLastModifiedTask() {
+		return UI.getRes().getModifiedTask();
 	}
 
 	private void deleteFile() {
