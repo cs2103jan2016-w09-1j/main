@@ -172,7 +172,9 @@ public class Storage {
 	 *             when an IO error occurs when accessing files
 	 */
 	public void flushFileAtLocation(Path filePath) throws IOException {
-		Files.delete(filePath);
+		if(Files.exists(filePath)){
+			Files.delete(filePath);
+		}
 	}
 
 	/**
