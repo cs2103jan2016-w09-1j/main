@@ -5,7 +5,11 @@ import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 import cs2103_w09_1j.esther.*;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -23,12 +27,14 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableSelectionModel;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TableView.ResizeFeatures;
 import javafx.scene.control.TableView.TableViewSelectionModel;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableColumn.CellDataFeatures;
 import javafx.scene.control.TreeTableView;
+import javafx.scene.control.TreeTableView.TreeTableViewSelectionModel;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -47,6 +53,12 @@ public class UiMainController implements Initializable {
 
 	private static UIResult res = new UIResult();
 
+	private BooleanProperty ctrlPressed = new SimpleBooleanProperty(false);
+	private BooleanProperty leftPressed = new SimpleBooleanProperty(false);
+	private BooleanProperty rightPressed = new SimpleBooleanProperty(false);
+	private BooleanBinding switchLeft = ctrlPressed.and(leftPressed);
+	private BooleanBinding switchRight = ctrlPressed.and(rightPressed);
+
 	public static UIResult getRes() {
 		return res;
 	}
@@ -56,7 +68,6 @@ public class UiMainController implements Initializable {
 	}
 
 	private SingleSelectionModel<Tab> selectionModel;
-
 	private ObservableList<TaskWrapper> sList, cList, odList, fList, aList, tdList, tmrList, wkList;
 
 	@FXML
@@ -93,11 +104,6 @@ public class UiMainController implements Initializable {
 
 	@FXML
 	private TableColumn<TaskWrapper, String> HOPriority;
-
-	@FXML
-	void overdueClick(MouseEvent event) {
-
-	}
 
 	// home tab's upcoming list
 	@FXML
@@ -235,8 +241,25 @@ public class UiMainController implements Initializable {
 	private Label commandLog;
 
 	@FXML
+	void overdueClick(MouseEvent event) {
+
+		selectionModel.select(1);
+	}
+
+	@FXML
+	void upcomingClick(MouseEvent event) {
+		selectionModel.select(2);
+	}
+
+	@FXML
 	void ENTER(KeyEvent event) throws Exception {
-		if (event.getCode() == KeyCode.ENTER) {
+		if (event.getCode() == KeyCode.CONTROL) {
+			ctrlPressed.set(true);
+		} else if (event.getCode() == KeyCode.RIGHT) {
+			rightPressed.set(true);
+		} else if (event.getCode() == KeyCode.LEFT) {
+			leftPressed.set(true);
+		} else if (event.getCode() == KeyCode.ENTER) {
 			String userInput = input.getText();
 			System.out.println(userInput);
 
@@ -259,11 +282,12 @@ public class UiMainController implements Initializable {
 			} else {
 				commandLog.setText(logicOutput);
 				initializeTabs(res);
-				if (command.equalsIgnoreCase("sort") || command.equalsIgnoreCase("undo")) {
+				if (command.equalsIgnoreCase("sort")) {
 
 				} else {
 					int[] index = res.getIndex();
 					int line = index[1];
+					ArrayList<Task> todayList = res.getTodayBuffer();
 					switch(index[0]) {
 					case(0):
 						//overdue
@@ -272,6 +296,7 @@ public class UiMainController implements Initializable {
 						} else {
 							overdue.getSelectionModel().select(line);
 						}
+					break;
 					case(1):
 						//today
 						if (selectionModel.isSelected(0)) {
@@ -279,15 +304,17 @@ public class UiMainController implements Initializable {
 						} else {
 							upTabTree.getSelectionModel().select(line+1);
 						}
+					break;
 					case(2):
 						//tomorrow
 						if (selectionModel.isSelected(0)) {
-						homeTree.getSelectionModel().select(res.getTodayBuffer().size() 
-								+ line + 2);
+							homeTree.getSelectionModel().select(res.getTodayBuffer().size() 
+									+ line + 2);
 						} else {
 							upTabTree.getSelectionModel().select(res.getTodayBuffer().size() 
-								+ line + 2);
+									+ line + 2);
 						}
+					break;
 					case(3):
 						//week
 						if (selectionModel.isSelected(0)) {
@@ -297,22 +324,24 @@ public class UiMainController implements Initializable {
 							upTabTree.getSelectionModel().select(res.getTodayBuffer().size()
 									+ res.getTomorrowBuffer().size() + line + 3);
 						}
-						
+					break;
 					case(4):
 						//all - nothing at all, should not even use this
+						break;
 					case(5):
 						//floating
 						if (selectionModel.isSelected(3)) {
 							floatingContent.getSelectionModel().select(line);
 						}
+					break;
 					case(6):
-						//completed
+						//completed - nothing here as it is not needed
+						break;
 					default:
 						//default
+						break;
 					}
 				}
-
-
 
 			}
 
@@ -397,7 +426,7 @@ public class UiMainController implements Initializable {
 
 	}
 
-	// initialize logic
+	// initialize logic and other tabs
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 
@@ -410,6 +439,44 @@ public class UiMainController implements Initializable {
 		}
 
 		selectionModel = tabSum.getSelectionModel();
+
+		input.setOnKeyReleased(new EventHandler<KeyEvent>() {
+
+			@Override
+			public void handle(KeyEvent arg0) {
+				if (arg0.getCode() == KeyCode.CONTROL) {
+					ctrlPressed.set(false);
+				} else if (arg0.getCode() == KeyCode.RIGHT) {
+					rightPressed.set(false);
+				} else if (arg0.getCode() == KeyCode.LEFT) {
+					leftPressed.set(false);
+				}
+
+			}
+
+		});
+
+		switchRight.addListener(new ChangeListener<Boolean>() {
+
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+				if (selectionModel.getSelectedIndex() != tabSum.getTabs().size() - 1) {
+					selectionModel.select(selectionModel.getSelectedIndex() + 1);
+				}
+			}
+
+		});
+
+		switchLeft.addListener(new ChangeListener<Boolean>() {
+
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+				if (selectionModel.getSelectedIndex() != 0) {
+					selectionModel.select(selectionModel.getSelectedIndex() - 1);
+				}
+			}
+
+		});
 
 		initializeTabs(res);
 
@@ -466,6 +533,7 @@ public class UiMainController implements Initializable {
 
 		overdueList.setItems(odList);
 		overdue.setItems(odList);
+
 	}
 
 	private void initializeUpcomingList(UIResult res) {
