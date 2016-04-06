@@ -778,6 +778,7 @@ class Logic {
 		try {
 			_config.setSavePath(command.getSpecificParameter(Task.TaskField.PATH.getTaskKeyName()));
 			_storage.updateConfig(_config);
+			initializeBuffers();
 			updateInternalStorage(); // refresh internal memory due to different file specified
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (InvalidPathException ipe) {
@@ -787,6 +788,7 @@ class Logic {
 		 	Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SET_SAVEPATH;
 		}
+		setUiTaskDisplays(command.getCommand(), indices);
 		return getOperationStatus(command);
 	}
 	
