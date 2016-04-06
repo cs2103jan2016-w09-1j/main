@@ -395,7 +395,6 @@ public class EstherTest {
 	@Test
 	public void searchFailFor() {
 		tryAddEvent();
-		failCommand("search for blah");
 		failCommand("search for ");
 		// search for name that doesn't exist
 	}
