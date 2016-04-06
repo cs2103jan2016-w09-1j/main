@@ -287,55 +287,72 @@ public class UiMainController implements Initializable {
 				} else {
 					int[] index = res.getIndex();
 					int line = index[1];
+					
 					switch(index[0]) {
+					
 					case(0):
 						//overdue
-						if (selectionModel.isSelected(0)) {
-							overdueList.getSelectionModel().select(line);
-						} else {
+						if (selectionModel.isSelected(1)) {
 							overdue.getSelectionModel().select(line);
+						} else {
+							selectionModel.select(0);
+							overdueList.getSelectionModel().select(line);
 						}
-					break;
+						break;
+
 					case(1):
 						//today
-						if (selectionModel.isSelected(0)) {
-							homeTree.getSelectionModel().select(line+1);
-						} else {
+						if (selectionModel.isSelected(2)) {
 							upTabTree.getSelectionModel().select(line+1);
+						} else {
+							selectionModel.select(0);
+							homeTree.getSelectionModel().select(line+1);
 						}
-					break;
+						break;
+
 					case(2):
 						//tomorrow
-						if (selectionModel.isSelected(0)) {
-							homeTree.getSelectionModel().select(res.getTodayBuffer().size() 
-									+ line + 2);
-						} else {
+						if (selectionModel.isSelected(2)) {
 							upTabTree.getSelectionModel().select(res.getTodayBuffer().size() 
 									+ line + 2);
+						} else {
+							selectionModel.select(0);
+							homeTree.getSelectionModel().select(res.getTodayBuffer().size() 
+									+ line + 2);
 						}
-					break;
+						break;
+
 					case(3):
 						//week
-						if (selectionModel.isSelected(0)) {
-							homeTree.getSelectionModel().select(res.getTodayBuffer().size()
-									+ res.getTomorrowBuffer().size() + line + 3);
-						} else {
+						if (selectionModel.isSelected(2)) {
 							upTabTree.getSelectionModel().select(res.getTodayBuffer().size()
 									+ res.getTomorrowBuffer().size() + line + 3);
+						} else {
+							selectionModel.select(0);
+							homeTree.getSelectionModel().select(res.getTodayBuffer().size()
+									+ res.getTomorrowBuffer().size() + line + 3);
 						}
-					break;
+						break;
+
 					case(4):
 						//all - nothing at all, should not even use this
+						selectionModel.select(5);
+						allContent.getSelectionModel().select(line);
+						System.out.println("the line is " + line);
 						break;
+
 					case(5):
 						//floating
-						if (selectionModel.isSelected(3)) {
-							floatingContent.getSelectionModel().select(line);
-						}
-					break;
-					case(6):
-						//completed - nothing here as it is not needed
+						selectionModel.select(3);
+						floatingContent.getSelectionModel().select(line);
 						break;
+						
+					case(6):
+						//completed
+						selectionModel.select(4);
+						completedContent.getSelectionModel().select(line);
+						break;
+						
 					default:
 						//default
 						break;
@@ -550,9 +567,9 @@ public class UiMainController implements Initializable {
 		tdList = (ObservableList) FXCollections.observableArrayList(todayWrapper);
 
 		tmrList = (ObservableList) FXCollections.observableArrayList(tmrWrapper);
-		
+
 		wkList = (ObservableList) FXCollections.observableArrayList(weekWrapper);
-		
+
 		rootNode.getChildren().addAll(todayNode, tomorrowNode, weekNode);
 
 		rootNode.setExpanded(true);
@@ -634,7 +651,7 @@ public class UiMainController implements Initializable {
 		}
 
 		cList = (ObservableList) FXCollections.observableArrayList(completedWrapper);
-		
+
 		CTID.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("id"));
 		CTTask.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("taskName"));
 		CTDate.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("date"));
@@ -653,7 +670,7 @@ public class UiMainController implements Initializable {
 		}
 
 		fList = (ObservableList) FXCollections.observableArrayList(floatingWrapper);
-	
+
 		FTID.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("id"));
 		FTTask.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("taskName"));
 		FTDate.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("date"));
@@ -672,7 +689,7 @@ public class UiMainController implements Initializable {
 		}
 
 		aList = (ObservableList) FXCollections.observableArrayList(allWrapper);
-		
+
 		ATID.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("id"));
 		ATTask.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("taskName"));
 		ATDate.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("date"));
