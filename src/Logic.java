@@ -370,7 +370,7 @@ class Logic {
 	            	//logger.logp(Level.INFO, "Logic", "addTask(Command command)",
 	            				  //"Updating Config file in Logic and Storage.");
 	            	_config.setReferenceID(Task.getGlobalId());
-	            	_storage.updateConfig(_config);
+	            	_storage.setConfig(_config);
 	            } catch (IOException ioe) {
 	            	//logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
 	            				  //"Cannot update Config file in Logic and Storage.", ioe);
@@ -417,7 +417,7 @@ class Logic {
 		 * this method can just be removed totally. 
 		 */
 		try {
-			_storage.flushFile();
+			_storage.flushSaveFile();
 		} catch (IOException ioe) {
 			// TODO: handle exception
 		}
@@ -768,7 +768,7 @@ class Logic {
 	private String setSaveFilePath(Command command) {
 		try {
 			_config.setSavePath(command.getSpecificParameter(Task.TaskField.PATH.getTaskKeyName()));
-			_storage.updateConfig(_config);
+			_storage.setConfig(_config);
 			updateInternalStorage(); // refresh internal memory due to different file specified
 			Status._outcome = Status.Outcome.SUCCESS;
 			updateUndoStack(command, null);
@@ -1278,7 +1278,7 @@ class Logic {
 		// TODO: set back to old filePath
 		try {
 			_config.setSavePath(filePath);
-			_storage.updateConfig(_config);
+			_storage.setConfig(_config);
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (InvalidPathException ipe) {
 			Status._outcome = Status.Outcome.ERROR;

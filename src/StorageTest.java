@@ -69,7 +69,7 @@ public class StorageTest {
 		ArrayList<Task> tasks = new ArrayList<>();
 		try {
 			storage.writeSaveFile(tasks);
-			storage.flushFile();
+			storage.flushSaveFile();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -80,10 +80,10 @@ public class StorageTest {
 	public void changeConfig() {
 		Config testCfg = new Config();
 		try {
-			storage.updateConfig(testCfg);
+			storage.setConfig(testCfg);
 			testCfg.setReferenceID(13);
 			testCfg.setSavePath(filePath);
-			storage.updateConfig(testCfg);
+			storage.setConfig(testCfg);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -94,7 +94,7 @@ public class StorageTest {
 	@After
 	public void cleanUp() {
 		try {
-			storage.flushFile();
+			storage.flushSaveFile();
 			storage.flushFileAtLocation("estherconfig.txt");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

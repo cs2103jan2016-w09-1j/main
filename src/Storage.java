@@ -14,24 +14,25 @@ import cs2103_w09_1j.esther.Config;
 import cs2103_w09_1j.esther.Task;
 
 /**
+ * Storage class for saving and loading tasks to file, as well as program
+ * configuration
  * 
  * @author Jeremy Hon
  * @@author A0127572A
- *
  */
 public class Storage {
+	// global attributes used in multiple methods
 	private Path savePath;
 	private ArrayList<Task> tasksBuffer = new ArrayList<Task>();
 	private Config currentConfig = new Config();
 
+	// global constants
 	private static final String BY_NEXTLINE = "\\n";
 	private static final String configName = "estherconfig.txt";
 	private static final Path configPath = Paths.get(configName);
-	/**
-	 * STOP COMMENTING OUT MY LOGGER LINES. SEE STORAGE() AND SET TO WARNING OR
-	 * SEVERE.
-	 */
 	private static final Logger storageLogger = Logger.getLogger("storageLogger");
+
+	// ===================PUBLIC METHODS=======================
 
 	/**
 	 * Constructor for Storage class
@@ -40,13 +41,15 @@ public class Storage {
 	 * save location correspondingly Loads file contents into task buffer
 	 * 
 	 * @throws ParseException
+	 *             when loading tasks or config file that are wrongly formatted
 	 * @throws IOException
+	 *             when an IO error occurs when accessing files
 	 */
 	public Storage() throws ParseException, IOException {
 		storageLogger.setLevel(Level.SEVERE);
 		storageLogger.info("Initializing Storage");
 		currentConfig = readConfigFile();
-		processConfig();
+		setSavePathWithCurrentConfig();
 	}
 
 	/**
@@ -57,7 +60,9 @@ public class Storage {
 	 *            Path to load the file from
 	 * @return ArrayList of tasks as loaded from the file if successful
 	 * @throws ParseException
+	 *             when loading tasks that are wrongly formatted
 	 * @throws IOException
+	 *             when an IO error occurs when accessing files
 	 */
 	public ArrayList<Task> readSaveFile(Path filePath) throws ParseException, IOException {
 		storageLogger.info("Checking if save file is valid");
@@ -76,8 +81,9 @@ public class Storage {
 	 * 
 	 * @return ArrayList of tasks as loaded from the file if successful
 	 * @throws ParseException
+	 *             when loading tasks that are wrongly formatted
 	 * @throws IOException
-	 *             if an IO error occurs during loading
+	 *             when an IO error occurs when accessing files
 	 */
 	public ArrayList<Task> readSaveFile() throws ParseException, IOException {
 		storageLogger.info("Loading saved file");
@@ -91,7 +97,7 @@ public class Storage {
 	 * @param tasks
 	 *            Array list containing tasks to write
 	 * @throws IOException
-	 *             if an IO error occurs during writing
+	 *             when an IO error occurs when accessing files
 	 */
 	public void writeSaveFile(ArrayList<Task> tasks) throws IOException {
 		assert (tasks != null);
@@ -102,13 +108,17 @@ public class Storage {
 	}
 
 	/**
+	 * Takes in a file path and reads a config file at that location
 	 * 
 	 * @param filePath
-	 * @return
-	 * @throws IOException
+	 *            path to look for config file
+	 * @return a Config object containing attributes found in the file
 	 * @throws ParseException
+	 *             when loading tasks that are wrongly formatted
+	 * @throws IOException
+	 *             when an IO error occurs when accessing files
 	 */
-	public Config readConfigFile(Path filePath) throws IOException, ParseException {
+	public Config readConfigFile(Path filePath) throws ParseException, IOException {
 		storageLogger.info("Checking if config file is valid");
 		if (isValidFile(configPath)) {
 			storageLogger.info("File Valid. Proceeding to load");
@@ -122,19 +132,29 @@ public class Storage {
 	}
 
 	/**
+	 * Calls the {@link #readConfigFile(Path) readConfigFile(Path)} method with
+	 * the {@link #configPath default Config path}
 	 * 
-	 * @return
-	 * @throws IOException
+	 * @param filePath
+	 *            path to look for config file
+	 * @return a Config object containing attributes found in the file
 	 * @throws ParseException
+	 *             when loading tasks that are wrongly formatted
+	 * @throws IOException
+	 *             when an IO error occurs when accessing files
 	 */
 	public Config readConfigFile() throws IOException, ParseException {
 		return readConfigFile(configPath);
 	}
 
 	/**
+	 * Writes the given Config object into the {@link #configPath default Config
+	 * path}
 	 * 
 	 * @param config
+	 *            Config object to write to file
 	 * @throws IOException
+	 *             when an IO error occurs when accessing files
 	 */
 	public void writeConfigFile(Config config) throws IOException {
 		storageLogger.info("Writing config file");
@@ -144,44 +164,56 @@ public class Storage {
 	}
 
 	/**
-	 * Method to update config if logic or an external component changes it.
-	 * 
-	 * @param newConfig
-	 * @throws IOException
-	 */
-	public void updateConfig(Config newConfig) throws IOException {
-		currentConfig = newConfig;
-		processConfig();
-		writeConfigFile(newConfig);
-	}
-
-	/**
+	 * Deletes the file at the given location
 	 * 
 	 * @param filePath
+	 *            file to delete
 	 * @throws IOException
+	 *             when an IO error occurs when accessing files
 	 */
 	public void flushFileAtLocation(Path filePath) throws IOException {
 		Files.delete(filePath);
 	}
 
 	/**
+	 * Deletes the file at the default save location
+	 * 
 	 * @throws IOException
+	 *             when an IO error occurs when accessing files
 	 */
-	public void flushFile() throws IOException {
+	public void flushSaveFile() throws IOException {
 		flushFileAtLocation(savePath);
 	}
 
 	/**
-	 * Return stored Configuration
-	 * @return
+	 * Method to get stored Config object
+	 * 
+	 * @return stored Config object
 	 */
 	public Config getConfig() {
 		return currentConfig;
 	}
-	
+
 	/**
-	 * returns stored tasks. For testing purposes
-	 * @return
+	 * Method to set internal stored Config object
+	 * 
+	 * @param newConfig
+	 *            new Config object to replace the stored Config
+	 * @throws IOException
+	 *             when an IO error occurs when accessing files
+	 */
+	public void setConfig(Config newConfig) throws IOException {
+		currentConfig = newConfig;
+		setSavePathWithCurrentConfig();
+		writeConfigFile(newConfig);
+	}
+
+	// =============TESTING METHODS====================
+
+	/**
+	 * Get list of storred tasks
+	 * 
+	 * @return list of internally stored tasks
 	 */
 	ArrayList<Task> getTasks() {
 		return tasksBuffer;
@@ -266,7 +298,7 @@ public class Storage {
 	/**
 	 * 
 	 */
-	private void processConfig() {
+	private void setSavePathWithCurrentConfig() {
 		assert (currentConfig != null);
 		storageLogger.info("Retreiving save path from current Config");
 		savePath = currentConfig.getSavePath();
