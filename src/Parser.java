@@ -438,6 +438,8 @@ public class Parser {
 				throw new InvalidInputException(ERROR_SEARCHFORMAT);
 			}
 			String[] keywordTermArray = input.split(WHITESPACE, 2);
+				throw new InvalidInputException(ERROR_SEARCHFORMAT);
+			}
 			String keyword = keywordTermArray[0];
 			String term = keywordTermArray[1];
 			if (Arrays.asList(dateKeywords).contains(keyword.toLowerCase())) {
