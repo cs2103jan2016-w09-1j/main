@@ -531,6 +531,16 @@ public class Parser {
 		currentCommand.addFieldToMap(TaskField.HELP.getTaskKeyName(), "");
 	}
 
+	private void parseSet(String input) throws InvalidInputException {
+		if (input.isEmpty()) {
+			throw new InvalidInputException(ERROR_SETFORMAT);
+		}
+		if (input.charAt(0) == QUOTE) {
+			input = input.substring(1, input.length() - 1);
+		}
+		currentCommand.addFieldToMap(TaskField.PATH.getTaskKeyName(), input);
+	}
+
 	private int isNameOrID(String givenInput) {
 		try {
 			Integer.parseInt(givenInput);
