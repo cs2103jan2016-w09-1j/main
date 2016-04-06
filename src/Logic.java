@@ -882,7 +882,15 @@ class Logic {
 			updateTextFile();
 			//System.out.println("Task list now has " + _fullTaskList.size() + " items.");
 			indices[TASK_LIST_POSITION] = addedTask.getTaskCode(_today);
-			indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(addedTask.getTaskCode(_today)).size() - 1;
+			if (indices[TASK_LIST_POSITION] != Task.UNCODED_TASK_INDEX) {
+				indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(addedTask.getTaskCode(_today)).size() - 1;
+			} else {
+				indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(Task.OVERDUE_TASK_INDEX).size()
+											  + _taskDisplayLists.get(Task.TODAY_TASK_INDEX).size()
+											  + _taskDisplayLists.get(Task.TOMORROW_TASK_INDEX).size()
+											  + _taskDisplayLists.get(Task.THIS_WEEK_TASK_INDEX).size()
+											  + _taskDisplayLists.get(addedTask.getTaskCode(_today)).size() - 1;
+			}
 			updateUndoStack(oldState);
 			//System.out.println(_undoStack.size());
 			Status._outcome = Status.Outcome.SUCCESS;
@@ -1011,7 +1019,15 @@ class Logic {
 					//System.out.println("Old name: " + old + " New name: " + _tasks.get(updateIndex).getName());
 					indices[TASK_LIST_POSITION] = copyOfOldTask.getTaskCode(_today);
 					System.out.println(indices[TASK_LIST_POSITION]);
-					indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).size() - 1;
+					if (indices[TASK_LIST_POSITION] != Task.UNCODED_TASK_INDEX) {
+						indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).size() - 1;
+					} else {
+						indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(Task.OVERDUE_TASK_INDEX).size()
+													  + _taskDisplayLists.get(Task.TODAY_TASK_INDEX).size()
+													  + _taskDisplayLists.get(Task.TOMORROW_TASK_INDEX).size()
+													  + _taskDisplayLists.get(Task.THIS_WEEK_TASK_INDEX).size()
+													  + _taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).size() - 1;
+					}
 					System.out.println(indices[TASK_ITEM_POSITION]);
 					Status._outcome = Status.Outcome.SUCCESS;
 				} else {
@@ -1068,7 +1084,15 @@ class Logic {
 					updateTextFile();
 					updateUndoStack(oldState);
 					indices[TASK_LIST_POSITION] = copyOfOldTask.getTaskCode(_today);
-					indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).size() - 1;
+					if (indices[TASK_LIST_POSITION] != Task.UNCODED_TASK_INDEX) {
+						indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).size() - 1;
+					} else {
+						indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(Task.OVERDUE_TASK_INDEX).size()
+													  + _taskDisplayLists.get(Task.TODAY_TASK_INDEX).size()
+													  + _taskDisplayLists.get(Task.TOMORROW_TASK_INDEX).size()
+													  + _taskDisplayLists.get(Task.THIS_WEEK_TASK_INDEX).size()
+													  + _taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).size() - 1;
+					}
 					//System.out.println(_undoStack.size());
 					Status._outcome = Status.Outcome.SUCCESS;
 				}
