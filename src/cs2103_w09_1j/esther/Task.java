@@ -152,8 +152,9 @@ public class Task implements Comparable<Task> {
 				: null;
 
 		String startTimeString = command.hasParameter(TaskField.STARTTIME.getTaskKeyName())
-								 ? command.getSpecificParameter(TaskField.STARTTIME.getTaskKeyName())
-								 : null;
+				? command.getSpecificParameter(TaskField.STARTTIME.getTaskKeyName())
+				: null;
+				
 		startDate = parseDateTimeToString(today, startDateString, startTimeString, true);
 
 		String endDateString = command.hasParameter(TaskField.ENDDATE.getTaskKeyName())
@@ -161,8 +162,9 @@ public class Task implements Comparable<Task> {
 				: null;
 
 		String endTimeString = command.hasParameter(TaskField.ENDTIME.getTaskKeyName())
-							   ? command.getSpecificParameter(TaskField.ENDTIME.getTaskKeyName())
-							   : null;
+				? command.getSpecificParameter(TaskField.ENDTIME.getTaskKeyName())
+				: null;
+
 		endDate = parseDateTimeToString(today, endDateString, endTimeString, false);
 
 		int priority = command.hasParameter(TaskField.PRIORITY.getTaskKeyName())
@@ -362,8 +364,10 @@ public class Task implements Comparable<Task> {
 	 * @throws ParseException
 	 * @@author A0127572A
 	 */
-	public static Date parseDateTimeToString(Date today, String dateString, String timeString, boolean start)
-			throws ParseException {
+	public static Date parseDateTimeToString(Date today, String dateString, String timeString, boolean start) throws ParseException
+
+	//private Date parseDateTimeToString(Date today, String dateString, String timeString, boolean start) throws ParseException 
+	{
 		Date date = null;
 		if (dateString != null && timeString != null) {
 			//System.out.println("Date and time parts are modified.");
