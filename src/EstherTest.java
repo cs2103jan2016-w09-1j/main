@@ -1,12 +1,15 @@
 import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 
 import org.junit.After;
@@ -44,18 +47,17 @@ public class EstherTest {
 
 	private DateTimeTester defaultTester = new DateTimeTester(now, dateFormats[1], timeFormats[1]);
 	private DateTimeTester default1HTester = new DateTimeTester(nowOneHr, dateFormats[1], timeFormats[1]);
-	
-	private boolean setupDone = false;
 
+	private boolean setupDone = false;
+	
 	private Logic logic;
-	private UiMainController UI = new UiMainController();
 
 	private final boolean DEBUG = false;
 	private final boolean EXHAUSTIVE = false;
-	
+
 	@Before
 	public void init() throws ParseException, IOException {
-		if(!setupDone){
+		if (!setupDone) {
 			logic = new Logic();
 			cleanUp();
 			generateTesterLists();
@@ -383,7 +385,7 @@ public class EstherTest {
 	@Test
 	public void searchFor() {
 		tryAddTask();
-		tryCommand("search for "+taskName);
+		tryCommand("search for " + taskName);
 	}
 
 	@Test
@@ -429,7 +431,7 @@ public class EstherTest {
 		tryCommand("add btask");
 		tryCommand("add atask");
 		tryCommand("sort by name");
-		assertTrue(verifyName("btask"));
+		assertTrue(getUIRes().getBuffer(getUIRes().ALL_INDEX).get(0).getName().equals("atask"));
 	}
 
 	@Test
@@ -437,7 +439,7 @@ public class EstherTest {
 		tryCommand("add task on " + default1HTester.getDTString());
 		tryCommand("add task2 on " + defaultTester.getDTString());
 		tryCommand("sort by date");
-		assertTrue(verifyName("task"));
+		assertTrue(getUIRes().getBuffer(getUIRes().ALL_INDEX).get(0).getName().equals("task2"));
 	}
 
 	@Test
@@ -448,7 +450,7 @@ public class EstherTest {
 		tryCommand("update 0 pr to 4");
 		tryCommand("update 1 pr to 3");
 		tryCommand("sort by priority");
-		assertTrue(verifyPriority(4));
+		assertTrue(getUIRes().getBuffer(getUIRes().FLOATING_INDEX).get(0).getPriority() == 3);
 	}
 
 	@Test
@@ -511,6 +513,10 @@ public class EstherTest {
 	public void cleanUp() {
 		logic.flushInternalStorage();
 	}
+	
+	private UIResult getUIRes(){
+		return UiMainController.getRes();
+	}
 
 	/**
 	 * 
@@ -543,7 +549,7 @@ public class EstherTest {
 	 * @@A0127572A
 	 */
 	private void tryAddEvent() {
-		tryCommand("add "+taskName+" from " + defaultTester.getDTString() + " to " + default1HTester.getDTString());
+		tryCommand("add " + taskName + " from " + defaultTester.getDTString() + " to " + default1HTester.getDTString());
 	}
 
 	private void failCommand(String command) {
@@ -589,9 +595,17 @@ public class EstherTest {
 	private boolean verifyComplete() {
 		return getLastModifiedTask().isCompleted();
 	}
-	
+
 	private Task getLastModifiedTask() {
-		return UI.getRes().getModifiedTask();
+		return getUIRes().getModifiedTask();
+	}
+
+	private Task getLastTaskInBuffer(int whichBuffer) {
+		if (whichBuffer < 0 || whichBuffer > getUIRes().NUM_BUFFERS - 1) {
+			return getUIRes().getTask(whichBuffer, getUIRes().getBuffer(whichBuffer).size() - 1);
+		}
+		System.out.println("Fail buffer: " + whichBuffer);
+		return null;
 	}
 
 	private void deleteFile() {
