@@ -104,7 +104,7 @@ class Logic {
 	 * 
 	 */
 	public Logic() throws ParseException, IOException {
-		//initializeLogger();
+		initializeLogger();
 		initializeStorageAndConfig();
 		initializeParser();
 		initializeLogicSystemVariables();
@@ -330,8 +330,7 @@ class Logic {
 	private void initializeLogger() {
 		try {
 			logger.setLevel(Level.SEVERE);
-			// TODO: change log file path in future, upon release.
-			FileHandler fh = new FileHandler("C:/Users/Tay/Documents/GitHub/main/Logic.log");
+			FileHandler fh = new FileHandler("logs/Logic.log");
 			logger.addHandler(fh);
 			SimpleFormatter formatter = new SimpleFormatter();  
 			fh.setFormatter(formatter);
@@ -878,7 +877,7 @@ class Logic {
 			//System.out.println("Task list now has " + _fullTaskList.size() + " items.");
 			updateUndoStack(command, indices);
 			addedTask = new Task(command);
-			System.out.println(addedTask.getTaskCode(_today));
+			//System.out.println(addedTask.getTaskCode(_today));
 			_taskDisplayLists.get(addedTask.getTaskCode(_today)).add(addedTask);
 			updateTextFile();
 			//System.out.println("Task list now has " + _fullTaskList.size() + " items.");
@@ -1005,9 +1004,9 @@ class Logic {
 					//System.out.println(_undoStack.size());
 					//System.out.println("Old name: " + old + " New name: " + _tasks.get(updateIndex).getName());
 					indices[TASK_LIST_POSITION] = copyOfOldTask.getTaskCode(_today);
-					System.out.println(indices[TASK_LIST_POSITION]);
+					//System.out.println(indices[TASK_LIST_POSITION]);
 					indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).size() - 1;
-					System.out.println(indices[TASK_ITEM_POSITION]);
+					//System.out.println(indices[TASK_ITEM_POSITION]);
 					Status._outcome = Status.Outcome.SUCCESS;
 				} else {
 					Status._outcome = Status.Outcome.ERROR;
@@ -1162,7 +1161,7 @@ class Logic {
 				previous = new State(commandName);
 				previous.setState(taskLists);
 				previous.setIndices(oldIndices);
-				System.out.println("Storing previous state for " + previous.getCommand());
+				//System.out.println("Storing previous state for " + previous.getCommand());
 				break;
 				
 			case SET :
