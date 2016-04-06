@@ -39,7 +39,7 @@
       											</rowConstraints>
       											<children>
       												<Button fx:id="overdueButton" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onMouseClicked="#overdueClick" text="Overdue" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS" />
-      												<Button fx:id="upcomingButton" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Upcoming" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS" />
+      												<Button fx:id="upcomingButton" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onMouseClicked="#upcomingClick" text="Upcoming" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS" />
       												<TableView fx:id="overdueList" stylesheets="@cs2103_w09_1j/esther/Resources/UI.css" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.rowSpan="2" GridPane.vgrow="ALWAYS">
       													<columns>
       														<TableColumn fx:id="HOID" minWidth="-1.0" prefWidth="-1.0" text="ID" />
