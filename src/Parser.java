@@ -438,6 +438,7 @@ public class Parser {
 				throw new InvalidInputException(ERROR_SEARCHFORMAT);
 			}
 			String[] keywordTermArray = input.split(WHITESPACE, 2);
+			if (keywordTermArray.length < 3) {
 				throw new InvalidInputException(ERROR_SEARCHFORMAT);
 			}
 			String keyword = keywordTermArray[0];
