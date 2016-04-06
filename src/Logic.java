@@ -79,6 +79,7 @@ class Logic {
 	private ArrayList<Task> _fullTaskList;
 	private ArrayList<ArrayList<Task>> _taskDisplayLists;
 	private ArrayList<Task> _searchList;
+	private ArrayList<Task> _temporarySortList;
 	private Stack<State> _undoStack;
 	private Config _config;
 	private Date _today;
@@ -266,7 +267,15 @@ class Logic {
 	}
 	
 	protected ArrayList<Task> getRemainingBuffer() {
-		return _taskDisplayLists.get(Task.OVERDUE_TASK_INDEX);
+		return _taskDisplayLists.get(Task.UNCODED_TASK_INDEX);
+	}
+	
+	protected ArrayList<Task> getFloatingBuffer() {
+		return _taskDisplayLists.get(Task.FLOATING_TASK_INDEX);
+	}
+	
+	protected ArrayList<Task> getCompletedBuffer() {
+		return _taskDisplayLists.get(Task.COMPLETED_TASK_INDEX);
 	}
 	
 	/**
@@ -291,13 +300,20 @@ class Logic {
 		result.setWeekBuffer(_taskDisplayLists.get(Task.THIS_WEEK_TASK_INDEX));
 		result.setFloatingBuffer(_taskDisplayLists.get(Task.FLOATING_TASK_INDEX));
 		result.setCompletedBuffer(_taskDisplayLists.get(Task.COMPLETED_TASK_INDEX));
-		ArrayList<Task> allTasks = new ArrayList<Task>();
-		allTasks.addAll(_taskDisplayLists.get(Task.OVERDUE_TASK_INDEX));
-		allTasks.addAll(_taskDisplayLists.get(Task.TODAY_TASK_INDEX));
-		allTasks.addAll(_taskDisplayLists.get(Task.TOMORROW_TASK_INDEX));
-		allTasks.addAll(_taskDisplayLists.get(Task.UNCODED_TASK_INDEX));
-		allTasks.addAll(_taskDisplayLists.get(Task.FLOATING_TASK_INDEX));
-		result.setAllTaskBuffer(allTasks);
+		if (_temporarySortList == null) {
+			ArrayList<Task> allTasks = new ArrayList<Task>();
+			allTasks.addAll(_taskDisplayLists.get(Task.OVERDUE_TASK_INDEX));
+			allTasks.addAll(_taskDisplayLists.get(Task.TODAY_TASK_INDEX));
+			allTasks.addAll(_taskDisplayLists.get(Task.TOMORROW_TASK_INDEX));
+			allTasks.addAll(_taskDisplayLists.get(Task.THIS_WEEK_TASK_INDEX));
+			allTasks.addAll(_taskDisplayLists.get(Task.UNCODED_TASK_INDEX));
+			allTasks.addAll(_taskDisplayLists.get(Task.FLOATING_TASK_INDEX));
+			result.setAllTaskBuffer(allTasks);
+		} else {
+			Collections.sort(_temporarySortList);
+			result.setAllTaskBuffer(_temporarySortList);
+			_temporarySortList = null;
+		}
 		result.setCommandType(commandType);
 		result.setIndex(indices);
 		if (commandType.equals("search")) {
@@ -521,30 +537,38 @@ class Logic {
 				Collections.sort(_taskDisplayLists.get(Task.COMPLETED_TASK_INDEX));
 			} else if (sortOrder.equals(Task.SORT_BY_NAME_KEYWORD)) {
 				// specialized sorting for floating and completed tasks to be done separately
+				_temporarySortList = new ArrayList<Task>();
 				for (int i = 0; i < NUM_TASK_BUFFERS; i++) {
-					if (i == Task.FLOATING_TASK_INDEX || i == Task.COMPLETED_TASK_INDEX) {
+					/*if (i == Task.FLOATING_TASK_INDEX || i == Task.COMPLETED_TASK_INDEX) {
 						
-					} else {
+					} else {*/
+					if (i != Task.COMPLETED_TASK_INDEX) {
+						_temporarySortList.addAll(_taskDisplayLists.get(i));
 						Collections.sort(_taskDisplayLists.get(i));
 					}
+					//}
 				}
-				Task.setSortCriterion(Task.SORT_FLOATING_BY_NAME_KEYWORD);
-				Collections.sort(_taskDisplayLists.get(Task.FLOATING_TASK_INDEX));
-				Task.setSortCriterion(DEFAULT_FLOATING_TASKS_SORT_ORDER);
-				Collections.sort(_taskDisplayLists.get(Task.COMPLETED_TASK_INDEX));
+				//Task.setSortCriterion(Task.SORT_FLOATING_BY_NAME_KEYWORD);
+				//Collections.sort(_taskDisplayLists.get(Task.FLOATING_TASK_INDEX));
+				//Task.setSortCriterion(DEFAULT_FLOATING_TASKS_SORT_ORDER);
+				//Collections.sort(_taskDisplayLists.get(Task.COMPLETED_TASK_INDEX));
 			} else if (sortOrder.equals(Task.SORT_BY_PRIORITY_KEYWORD)) {
+				_temporarySortList = new ArrayList<Task>();
 				// specialized sorting for floating and completed tasks to be done separately
 				for (int i = 0; i < NUM_TASK_BUFFERS; i++) {
-					if (i == Task.FLOATING_TASK_INDEX || i == Task.COMPLETED_TASK_INDEX) {
+					/*if (i == Task.FLOATING_TASK_INDEX || i == Task.COMPLETED_TASK_INDEX) {
 						
-					} else {
+					} else {*/
+					if (i != Task.COMPLETED_TASK_INDEX) {
+						_temporarySortList.addAll(_taskDisplayLists.get(i));
 						Collections.sort(_taskDisplayLists.get(i));
 					}
+					//}
 				}
-				Task.setSortCriterion(Task.SORT_FLOATING_BY_PRIORITY_KEYWORD);
-				Collections.sort(_taskDisplayLists.get(Task.FLOATING_TASK_INDEX));
-				Task.setSortCriterion(DEFAULT_FLOATING_TASKS_SORT_ORDER);
-				Collections.sort(_taskDisplayLists.get(Task.COMPLETED_TASK_INDEX));
+				//Task.setSortCriterion(Task.SORT_FLOATING_BY_PRIORITY_KEYWORD);
+				//Collections.sort(_taskDisplayLists.get(Task.FLOATING_TASK_INDEX));
+				//Task.setSortCriterion(DEFAULT_FLOATING_TASKS_SORT_ORDER);
+				//Collections.sort(_taskDisplayLists.get(Task.COMPLETED_TASK_INDEX));
 			} else {
 				// do nothing
 			}
@@ -850,10 +874,14 @@ class Logic {
 		Task addedTask = null;
 		int indices[] = {-1, -1};
 		try {
+			getInternalStorage();
+			//System.out.println("Task list now has " + _fullTaskList.size() + " items.");
+			updateUndoStack(command, indices);
 			addedTask = new Task(command);
+			System.out.println(addedTask.getTaskCode(_today));
 			_taskDisplayLists.get(addedTask.getTaskCode(_today)).add(addedTask);
 			updateTextFile();
-			updateUndoStack(command, indices);
+			//System.out.println("Task list now has " + _fullTaskList.size() + " items.");
 			indices[TASK_LIST_POSITION] = addedTask.getTaskCode(_today);
 			indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(addedTask.getTaskCode(_today)).size() - 1;
 			//System.out.println(_undoStack.size());
@@ -925,10 +953,10 @@ class Logic {
 		try {
 			if (taskIndex[TASK_LIST_POSITION] != NOT_FOUND_INDEX &&
 				taskIndex[TASK_LIST_POSITION] != DUPLICATE_TASK_INDEX) {
+				updateUndoStack(command, taskIndex);
 				removed = _taskDisplayLists.get(taskIndex[TASK_LIST_POSITION]).get(taskIndex[TASK_ITEM_POSITION]);
 				_taskDisplayLists.get(taskIndex[0]).remove(removed);
 				updateTextFile();
-				updateUndoStack(command, taskIndex);
 				//System.out.println(_undoStack.size());
 				Status._outcome = Status.Outcome.SUCCESS;
 			} else if (taskIndex[TASK_LIST_POSITION] == DUPLICATE_TASK_INDEX) {
@@ -960,6 +988,7 @@ class Logic {
 		Task toUpdate = null;
 		int taskIndex[] = getTaskIndex(command);
 		//System.out.println(taskIndex);
+		updateUndoStack(command, taskIndex);
 		int indices[] = {-1, -1};
 		
 		try {
@@ -968,16 +997,17 @@ class Logic {
 				//String old = toUpdate.getName();
 				toUpdate = _taskDisplayLists.get(taskIndex[TASK_LIST_POSITION]).get(taskIndex[TASK_ITEM_POSITION]);
 				Task copyOfOldTask = toUpdate.clone();
-				boolean isUpdated = toUpdate.updateTask(command);
+				boolean isUpdated = copyOfOldTask.updateTask(command);
 				if (isUpdated) {
 					_taskDisplayLists.get(taskIndex[TASK_LIST_POSITION]).remove(taskIndex[TASK_ITEM_POSITION]);
-					_taskDisplayLists.get(toUpdate.getTaskCode(_today)).add(toUpdate);
+					_taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).add(copyOfOldTask);
 					updateTextFile();
-					updateUndoStack(command, taskIndex);
 					//System.out.println(_undoStack.size());
 					//System.out.println("Old name: " + old + " New name: " + _tasks.get(updateIndex).getName());
-					indices[TASK_LIST_POSITION] = toUpdate.getTaskCode(_today);
-					indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(toUpdate.getTaskCode(_today)).size() - 1;
+					indices[TASK_LIST_POSITION] = copyOfOldTask.getTaskCode(_today);
+					System.out.println(indices[TASK_LIST_POSITION]);
+					indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).size() - 1;
+					System.out.println(indices[TASK_ITEM_POSITION]);
 					Status._outcome = Status.Outcome.SUCCESS;
 				} else {
 					Status._outcome = Status.Outcome.ERROR;
@@ -1024,14 +1054,14 @@ class Logic {
 					Status._errorCode = Status.ErrorCode.COMPLETED_ALREADY_COMPLETED;
 				}
 				else {
-					Task copyOfOldTask = toUpdate.clone();
-					toUpdate.setCompleted(true);
-					_taskDisplayLists.get(taskIndex[TASK_LIST_POSITION]).remove(taskIndex[TASK_ITEM_POSITION]);
-					_taskDisplayLists.get(toUpdate.getTaskCode(_today)).add(toUpdate);
-					updateTextFile();
 					updateUndoStack(command, taskIndex);
-					indices[TASK_LIST_POSITION] = toUpdate.getTaskCode(_today);
-					indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(toUpdate.getTaskCode(_today)).size() - 1;
+					Task copyOfOldTask = toUpdate.clone();
+					copyOfOldTask.setCompleted(true);
+					_taskDisplayLists.get(taskIndex[TASK_LIST_POSITION]).remove(taskIndex[TASK_ITEM_POSITION]);
+					_taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).add(copyOfOldTask);
+					updateTextFile();
+					indices[TASK_LIST_POSITION] = copyOfOldTask.getTaskCode(_today);
+					indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).size() - 1;
 					//System.out.println(_undoStack.size());
 					Status._outcome = Status.Outcome.SUCCESS;
 				}
@@ -1171,8 +1201,9 @@ class Logic {
 	// TODO: error handling
 	private void undoAdd(State state) {
 		try {
-			_taskDisplayLists = state.getState();
+			restoreOldState(state);
 			getInternalStorage();
+			//System.out.println("Undo: task list now has " + _fullTaskList.size() + " items.");
 			_storage.writeSaveFile(_fullTaskList);
 			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
@@ -1190,7 +1221,7 @@ class Logic {
 	// TODO: error handling
 	private void undoDelete(State state) {
 		try {
-			_taskDisplayLists = state.getState();
+			restoreOldState(state);
 			getInternalStorage();
 			_storage.writeSaveFile(_fullTaskList);
 			setUiTaskDisplays("undo", state.getIndices());
@@ -1209,7 +1240,7 @@ class Logic {
 	// TODO: error handling
 	private void undoUpdate(State state) {
 		try {
-			_taskDisplayLists = state.getState();
+			restoreOldState(state);
 			getInternalStorage();
 			_storage.writeSaveFile(_fullTaskList);
 			setUiTaskDisplays("undo", state.getIndices());
@@ -1228,7 +1259,7 @@ class Logic {
 	// TODO: error handling
 	private void undoCompleted(State state) {
 		try {
-			_taskDisplayLists = state.getState();
+			restoreOldState(state);
 			getInternalStorage();
 			_storage.writeSaveFile(_fullTaskList);
 			setUiTaskDisplays("undo", state.getIndices());
@@ -1247,7 +1278,7 @@ class Logic {
 	// TODO: error handling
 	private void undoSort(State state) {
 		try {
-			_taskDisplayLists = state.getState();
+			restoreOldState(state);
 			getInternalStorage();
 			_storage.writeSaveFile(_fullTaskList);
 			setUiTaskDisplays("undo", state.getIndices());
@@ -1260,7 +1291,7 @@ class Logic {
 	
 	private void undoSearch(State state) {
 		try {
-			_taskDisplayLists = state.getState();
+			restoreOldState(state);
 			getInternalStorage();
 			_storage.writeSaveFile(_fullTaskList);
 			setUiTaskDisplays("undo", state.getIndices());
@@ -1273,7 +1304,7 @@ class Logic {
 	
 	private void undoSetSaveFilePath(State state) {
 		try {
-			_taskDisplayLists = state.getState();
+			restoreOldState(state);
 			String filePath = state.getFilePath();
 			_config.setSavePath(filePath);
 			_storage.updateConfig(_config);
@@ -1286,6 +1317,23 @@ class Logic {
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
+	}
+	
+	private void restoreOldState(State state) {
+		_taskDisplayLists.get(0).clear();
+		_taskDisplayLists.get(1).clear();
+		_taskDisplayLists.get(2).clear();
+		_taskDisplayLists.get(3).clear();
+		_taskDisplayLists.get(4).clear();
+		_taskDisplayLists.get(5).clear();
+		_taskDisplayLists.get(6).clear();
+		_taskDisplayLists.get(0).addAll(state.getOverdueTaskList());
+		_taskDisplayLists.get(1).addAll(state.getTodayTaskList());
+		_taskDisplayLists.get(2).addAll(state.getTomorrowTaskList());
+		_taskDisplayLists.get(3).addAll(state.getThisWeekTaskList());
+		_taskDisplayLists.get(4).addAll(state.getRemainingTaskList());
+		_taskDisplayLists.get(5).addAll(state.getFloatingTaskList());
+		_taskDisplayLists.get(6).addAll(state.getCompletedTaskList());
 	}
 	
 	/**

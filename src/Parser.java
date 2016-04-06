@@ -203,6 +203,7 @@ public class Parser {
 			break;
 		case SET:
 			parseSet(commandInput);
+			break;
 		default:
 			throw new InvalidInputException(ERROR_UNKNOWN);
 		}
