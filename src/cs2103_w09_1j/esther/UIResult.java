@@ -26,6 +26,15 @@ public class UIResult {
 
 	private static final int NUM_INDICES = 2;
 	
+	private static final int OVERDUE_INDEX 		= 0;
+	private static final int TODAY_INDEX 		= 1;
+	private static final int TOMORROW_INDEX 	= 2;
+	private static final int WEEK_INDEX 		= 3;
+	private static final int ALL_INDEX 			= 4;
+	private static final int FLOATING_INDEX 	= 5;
+	private static final int COMPLETED_INDEX 	= 6;
+	
+	
 	public UIResult() {
 		overdueBuffer = new ArrayList<Task>();
 		todayBuffer = new ArrayList<Task>();
@@ -115,6 +124,27 @@ public class UIResult {
 	
 	public void setCommandType(String commandType) {
 		this.commandType = commandType;
+	}
+	
+	public Task getModifiedTask() {
+		switch(getIndex()[0]){
+			case(OVERDUE_INDEX):
+				return getOverdueBuffer().get(getIndex()[1]);
+			case(TODAY_INDEX):
+				return getTodayBuffer().get(getIndex()[1]);
+			case(TOMORROW_INDEX):
+				return getTomorrowBuffer().get(getIndex()[1]);
+			case(WEEK_INDEX):
+				return getWeekBuffer().get(getIndex()[1]);
+			case(ALL_INDEX):
+				return getAllTaskBuffer().get(getIndex()[1]);
+			case(FLOATING_INDEX):
+				return getFloatingBuffer().get(getIndex()[1]);
+			case(COMPLETED_INDEX):
+				return getCompletedBuffer().get(getIndex()[1]);
+			default:
+				return null;
+		}
 	}
 	
 	/**
