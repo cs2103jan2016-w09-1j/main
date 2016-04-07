@@ -276,6 +276,25 @@ class Logic {
 		return _taskDisplayLists.get(Task.COMPLETED_TASK_INDEX);
 	}
 	
+	protected ArrayList<Task> getAllTasks() {
+		ArrayList<Task> allTasks = new ArrayList<Task>();
+		allTasks.addAll(getOverdueBuffer());
+		allTasks.addAll(getTodayBuffer());
+		allTasks.addAll(getTomorrowBuffer());
+		allTasks.addAll(getThisWeekBuffer());
+		allTasks.addAll(getRemainingBuffer());
+		allTasks.addAll(getFloatingBuffer());
+		return allTasks;
+	}
+	
+	protected ArrayList<Task> getTemporarySortList() {
+		return _temporarySortList;
+	}
+	
+	protected ArrayList<Task> getSearchResults() {
+		return _searchList;
+	}
+	
 	public void setUiTaskDisplays(String commandType, int[] indices) {
 		UIResult displayResult = createDisplayResult(commandType, indices);
 		UiMainController.setRes(displayResult);
@@ -715,13 +734,24 @@ class Logic {
 		logger.logp(Level.INFO, "Logic", "searchFile(Command command)",
 				  	  "Searching tasks in file.", searchKeyword);
 		if (searchKeyword != null) {
+			String keywords[] = searchKeyword.toLowerCase().split(" ");
 			for (Task entry: _fullTaskList) {
-				String taskNameCopy = entry.getName();
-				String taskNameLowerCase = taskNameCopy.toLowerCase();
-				if (taskNameLowerCase.contains(command.getSpecificParameter(Task.TaskField.NAME.getTaskKeyName()).trim().toLowerCase())) {
-					_searchList.add(entry);
+				for (String word: keywords) {
+					//System.out.println(word);
+					String taskNameCopy = entry.getName();
+					String taskNameLowerCase = taskNameCopy.toLowerCase();
+					if (taskNameLowerCase.contains(word)) {
+						//System.out.println("Added entry to search results.");
+						System.out.println(!_searchList.contains(entry));
+						if (!_searchList.contains(entry)) {
+							_searchList.add(entry);
+						} else {
+							
+						}
+					}
 				}
 			}
+			System.out.println(_searchList.size());
 		} else {
 			Date referenceDate;
 			try {
@@ -1169,24 +1199,28 @@ class Logic {
 				previous = new State(commandName);
 				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
+				previous.setAllTaskList(getAllTasks());
 				break;
 
 			case DELETE :
 				previous = new State(commandName);
 				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
+				previous.setAllTaskList(getAllTasks());
 				break;
 
 			case UPDATE :
 				previous = new State(commandName);
 				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
+				previous.setAllTaskList(getAllTasks());
 				break;
 				
 			case COMPLETE :
 				previous = new State(commandName);
 				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
+				previous.setAllTaskList(getAllTasks());
 				break;
 
 			case SHOW :
@@ -1203,12 +1237,14 @@ class Logic {
 				previous.setSortOrder(Task.getSortCriterion());
 				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
+				//previous.setAllTaskList(getAllTasks());
 				break;
 				
 			case SEARCH :
 				previous = new State(commandName);
 				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
+				previous.setAllTaskList(getAllTasks());
 				//System.out.println("Storing previous state for " + previous.getCommand());
 				break;
 				
@@ -1218,6 +1254,7 @@ class Logic {
 			  	previous.setFilePath(oldFilePath);
 				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
+				previous.setAllTaskList(getAllTasks());
 			  	break;
 
 			case UNDO :
@@ -1233,6 +1270,7 @@ class Logic {
 				previous = new State(EMPTY_STATE);
 				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
+				previous.setAllTaskList(getAllTasks());
 				logger.logp(Level.INFO, "Logic", "createPreviousState(Command command, Task original)",
 							"Dummy state is created.");
 				break;
