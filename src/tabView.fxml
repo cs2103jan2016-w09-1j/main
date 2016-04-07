@@ -158,7 +158,7 @@
 									<content>
 										<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="34.0" prefWidth="0.0">
                                  <children>
-                                    <TableView fx:id="completedContent">
+                                    <TableView fx:id="completedContent" VBox.vgrow="ALWAYS">
                                        <columns>
                                           <TableColumn fx:id="CTID" prefWidth="75.0" text="ID" />
                                           <TableColumn fx:id="CTTask" prefWidth="75.0" text="Task" />
@@ -184,7 +184,7 @@
 									<content>
 										<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="34.0" prefWidth="0.0">
                                  <children>
-                                    <TableView fx:id="allContent">
+                                    <TableView fx:id="allContent" VBox.vgrow="ALWAYS">
                                        <columns>
                                           <TableColumn fx:id="ATID" prefWidth="75.0" text="ID" />
                                           <TableColumn fx:id="ATTask" prefWidth="75.0" text="Task" />
@@ -209,7 +209,7 @@
 				<Insets left="14.0" />
 			</padding>
 		</Label>
-		<TextField fx:id="input" onKeyPressed="#ENTER" promptText="Enter your commands here:" VBox.vgrow="ALWAYS">
+		<TextField fx:id="input" onKeyPressed="#EnterAndNavigate" promptText="Enter your commands here:" VBox.vgrow="ALWAYS">
 			<padding>
 				<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
 			</padding>
