@@ -89,8 +89,8 @@ public class UIResult {
 		return allTaskBuffer;
 	}
 	
-	public void setAllTaskBuffer(ArrayList<Task> remainingBuffer) {
-		this.allTaskBuffer = remainingBuffer;
+	public void setAllTaskBuffer(ArrayList<Task> allBuffer) {
+		this.allTaskBuffer = allBuffer;
 	}
 	
 	public ArrayList<Task> getSearchBuffer() {
