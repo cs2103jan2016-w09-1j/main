@@ -837,11 +837,7 @@ public class Task implements Comparable<Task> {
 	private int compareByDate(Task task) {
 		if (_startDate != null && task.getStartDate() == null) { // compare event to task
 			if (task.getEndDate() == null) {
-				if (_priority == task.getPriority()) {
-					return _name.compareTo(task.getName());
-				} else {
-					return Integer.compare(_priority, task.getPriority());
-				}
+				return -1;
 			} else if (_startDate.equals(task.getEndDate())) {
 				if (_priority == task.getPriority()) {
 					return _name.compareTo(task.getName());
@@ -853,11 +849,7 @@ public class Task implements Comparable<Task> {
 			}
 		} else if (_startDate == null && task.getStartDate() != null) { // compare task to event
 			if (_endDate == null) {
-				if (_priority == task.getPriority()) {
-					return _name.compareTo(task.getName());
-				} else {
-					return Integer.compare(_priority, task.getPriority());
-				}
+				return 1;
 			} else if (_endDate.equals(task.getStartDate())) {
 				if (_priority == task.getPriority()) {
 					return _name.compareTo(task.getName());
@@ -879,10 +871,10 @@ public class Task implements Comparable<Task> {
 			}
 		} else { // compare task to task
 			if (_endDate == null || task.getEndDate() == null) {
-				if (_priority == task.getPriority()) {
-					return _name.compareTo(task.getName());
+				if (_endDate == null) {
+					return 1;
 				} else {
-					return Integer.compare(_priority, task.getPriority());
+					return -1;
 				}
 			} else if (_endDate.equals(task.getEndDate())) {
 				if (_priority == task.getPriority()) {
