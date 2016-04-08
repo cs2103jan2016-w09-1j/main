@@ -99,7 +99,7 @@ public class DateParser {
 					dateTime[0] = dp.getDate(input, dateFormat);
 					String givenDate = convertToProperDateFormat(input, dateFormat);
 					int lastIndexOfDate = input.indexOf(givenDate.toLowerCase());
-					input = input.substring(lastIndexOfDate + givenDate.length());
+					input = input.substring(lastIndexOfDate + givenDate.length()).trim();
 				}
 			}
 			
@@ -120,7 +120,7 @@ public class DateParser {
 						givenTime = givenTime.substring(1);
 					}
 					int lastIndexOfTime = input.toLowerCase().lastIndexOf(givenTime.toLowerCase());
-					input = input.substring(lastIndexOfTime + givenTime.length());
+					input = input.substring(lastIndexOfTime + givenTime.length()).trim();
 				}
 			}
 			input = input.trim();
