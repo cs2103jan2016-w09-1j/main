@@ -167,17 +167,14 @@ public class LogicTest {
 		Task.setGlobalId(0);
 		Date today = new Date();
 		String todayString = sdformat.format(today);
-		System.out.println(todayString);
 		
 		Date tomorrow = (Date) today.clone();
 		tomorrow.setDate(today.getDate() + 1);
 		String tomorrowString = sdformat.format(tomorrow);
-		System.out.println(tomorrowString);
 		
 		Date somewhereThisWeek = (Date) today.clone();
 		somewhereThisWeek.setDate(today.getDate() + 4);
 		String somewhereThisWeekString = sdformat.format(somewhereThisWeek);
-		System.out.println(somewhereThisWeekString);
 		
 		// single HashMap to be used for all commands. Will be cleared where necessary
 		parameters = new HashMap<String, String>();
