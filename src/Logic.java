@@ -1,3 +1,4 @@
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
 import java.text.ParseException;
@@ -347,10 +348,13 @@ class Logic {
 	 */
 	private void initializeLogger() {
 		try {
-			 logger = Logger.getLogger("Logic");
+			logger = Logger.getLogger("Logic");
 			logger.setLevel(Level.SEVERE);
-			// TODO: change log file path in future, upon release.
-			FileHandler fh = new FileHandler("Logic.log");
+			File logsDir = new File("logs");
+			if(!logsDir.exists()){
+			    logsDir.mkdirs();
+			}
+			FileHandler fh = new FileHandler("logs/Logic.log");
 			logger.addHandler(fh);
 			SimpleFormatter formatter = new SimpleFormatter();  
 			fh.setFormatter(formatter);
@@ -442,7 +446,7 @@ class Logic {
 	            	logger.logp(Level.INFO, "Logic", "addTask(Command command)",
 	            				  "Updating Config file in Logic and Storage.");
 	            	_config.setReferenceID(Task.getGlobalId());
-	            	_storage.updateConfig(_config);
+	            	_storage.setConfig(_config);
 	            } catch (IOException ioe) {
 	            	logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
 	            				  "Cannot update Config file in Logic and Storage.", ioe);
@@ -488,7 +492,7 @@ class Logic {
 		 * this method can just be removed totally. 
 		 */
 		try {
-			_storage.flushFile();
+			_storage.flushSaveFile();
 		} catch (IOException ioe) {
 			// TODO: handle exception
 		}
@@ -796,7 +800,7 @@ class Logic {
 				} else if (searchDateKeyword.trim().equalsIgnoreCase(SEARCH_AFTER)){
 					if (entry.isEvent() && referenceDate.compareTo(entry.getStartDate()) <= 0) {
 						_searchList.add(entry);
-					} else if (!entry.isFloatingTask() && referenceDate.compareTo(entry.getEndDate()) <= 0) {
+					} else if (!entry.isFloatingTask() && referenceDate.compareTo(entry.getEndDate()) < 0) {
 						_searchList.add(entry);
 					} else {
 						
@@ -823,7 +827,7 @@ class Logic {
 		updateUndoStack(oldState);
 		try {
 			_config.setSavePath(command.getSpecificParameter(Task.TaskField.PATH.getTaskKeyName()));
-			_storage.updateConfig(_config);
+			_storage.setConfig(_config);
 			initializeBuffers();
 			updateInternalStorage(); // refresh internal memory due to different file specified
 			Status._outcome = Status.Outcome.SUCCESS;
@@ -923,7 +927,7 @@ class Logic {
 			getInternalStorage();
 			//System.out.println("Task list now has " + _fullTaskList.size() + " items.");
 			addedTask = new Task(command);
-			System.out.println(addedTask.getTaskCode(_today));
+			//System.out.println(addedTask.getTaskCode(_today));
 			_taskDisplayLists.get(addedTask.getTaskCode(_today)).add(addedTask);
 			updateTextFile();
 			//System.out.println("Task list now has " + _fullTaskList.size() + " items.");
@@ -1400,7 +1404,7 @@ class Logic {
 			restoreOldState(state);
 			String filePath = state.getFilePath();
 			_config.setSavePath(filePath);
-			_storage.updateConfig(_config);
+			_storage.setConfig(_config);
 			initializeBuffers();
 			updateInternalStorage();
 			setUiTaskDisplays("undo", state.getIndices());

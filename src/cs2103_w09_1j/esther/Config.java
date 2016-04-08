@@ -97,7 +97,11 @@ public class Config {
 		}
 
 		setReferenceID(Integer.parseInt(resultsArray[0]));
-		setSavePath(Paths.get(resultsArray[1]));
+		try {
+			setSavePath(Paths.get(resultsArray[1]));
+		} catch (InvalidPathException ipe) {
+			setSavePath(getDefaultSavePath());
+		}
 
 		Matcher fieldNameMatcher = Pattern.compile(fieldNameRegex).matcher(configString);
 		while (fieldNameMatcher.find()) {

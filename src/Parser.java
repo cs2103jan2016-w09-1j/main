@@ -1,6 +1,6 @@
 
 /**
- * ============= [LOGIC TEST FOR ESTHER] =============
+ * ============= [PARSER COMPONENT FOR ESTHER] =============
  * 
  * This class is used to accept the command input given by the user and break it down to 
  * different fields for the logic to create the task. Only one command input will be passed
@@ -49,7 +49,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import cs2103_w09_1j.esther.Command;
-import cs2103_w09_1j.esther.Config;
 import cs2103_w09_1j.esther.Command.CommandKey;
 import cs2103_w09_1j.esther.DateParser;
 import cs2103_w09_1j.esther.InvalidInputException;
@@ -57,6 +56,15 @@ import cs2103_w09_1j.esther.Task.TaskField;
 
 public class Parser {
 
+	// Standard time for non-time input
+	public static final String defaultStartTime = "00:00";
+	public static final String defaultEndTime = "23:59";
+
+	// Use for search command
+	public static final String[] dateKeywords = { "before", "after", "on" };
+	public static final String[] nameKeywords = { "for" };
+
+	// Error messages available in Parser
 	public static final String ERROR_WRONGFORMAT = "Wrong format. ";
 	public static final String ERROR_NOSUCHCOMMAND = "No such command. Please type help to check the available commands.";
 	public static final String ERROR_ADDFORMAT = "Wrong format. Format for add command: add [taskname] [from] [date] [time] [to] [date] [time]";
@@ -65,30 +73,23 @@ public class Parser {
 	public static final String ERROR_DELETEFORMAT = ERROR_WRONGFORMAT
 			+ "Format for delete command: delete [taskname/taskid]";
 	public static final String ERROR_SEARCHFORMAT = ERROR_WRONGFORMAT
-			+ "Format for search command: search [searchword]";
+			+ "Format for search command: search [key] [name/date]";
 	public static final String ERROR_SHOWFORMAT = ERROR_WRONGFORMAT
 			+ "Format for show command : show [on/by/from] [name/id/priority]";
 	public static final String ERROR_SORTFORMAT = ERROR_WRONGFORMAT
 			+ "Format for sort command: sort by [name/id/startDate/endDate]";
 	public static final String ERROR_COMPLETEFORMAT = ERROR_WRONGFORMAT
 			+ "Format for complete command: complete [taskName/taskID]";
-	public static final String ERROR_SETFORMAT = ERROR_WRONGFORMAT
-			+ "Format for set command: set [path].";
+	public static final String ERROR_SETFORMAT = ERROR_WRONGFORMAT + "Format for set command: set [path].";
 	public static final String ERROR_DATETIMEFORMAT = ERROR_WRONGFORMAT
 			+ "Your date or time is invalid. Please check again.";
 	public static final String ERROR_PRIORITYFORMAT = "Priority is only allowed in integer format.";
+	public static final String ERROR_INTEGERFORMAT = "Name format does not accept all integers.";
+	public static final String ERROR_MISSINGENDQUOTE = "Missing end quote in your task name.";
 	public static final String ERROR_UNKNOWN = "Unknown error.";
 
 	public static final char QUOTE = '"';
 	public static final String WHITESPACE = " ";
-	public static final String defaultStartTime = "00:00";
-	public static final String defaultEndTime = "23:59";
-	public static final String[] dateKeywords = { "before", "after", "on" };
-	public static final String[] nameKeywords = { "for" };
-
-	private Command currentCommand;
-	private HashMap<String, String> fieldNameAliases;
-	private DateParser dateParser;
 
 	// These are the possible parse keys
 	public enum ParseKey {
@@ -124,6 +125,14 @@ public class Parser {
 		}
 	}
 
+	// Attributes in Parser
+	private Command currentCommand;
+	private HashMap<String, String> fieldNameAliases;
+	private DateParser dateParser;
+
+	/**
+	 * Class constructor.
+	 */
 	public Parser(HashMap<String, String> fieldNameAliases) {
 		this.currentCommand = new Command();
 		this.dateParser = new DateParser();
@@ -144,6 +153,7 @@ public class Parser {
 		String commandName = "";
 		String commandInput = "";
 		currentCommand.clear();
+		input = input.trim();
 		try {
 			int endOfCommandName = input.indexOf(" ");
 			commandName = input.substring(0, endOfCommandName);
@@ -170,6 +180,7 @@ public class Parser {
 	 */
 	private void parseCommand(String commandName, String commandInput) throws InvalidInputException {
 		CommandKey key = CommandKey.get(commandName);
+		commandInput = commandInput.trim();
 		if (key == null) {
 			throw new InvalidInputException(ERROR_NOSUCHCOMMAND);
 		}
@@ -210,19 +221,17 @@ public class Parser {
 
 	}
 
-	// Format: add [taskName] [on] [date]
-	// add "Tea With Grandma" on tomorrow
-	// Current implementation only date
 	/**
-	 * This method breaks down the input to the proper fields that is acceptable
-	 * by the add command.
-	 * 
+	 * This method breaks down the input to the proper fields that is 
+	 * acceptable by the add command.
 	 * @param input
+	 *            add command variables
 	 * @throws InvalidInputException
+	 *             wrong add command format
 	 */
 	private void parseAdd(String input) throws InvalidInputException {
 
-		// Incorrect format case 1: add
+		//Incorrect format case 1: add 
 		if (input.isEmpty()) {
 			throw new InvalidInputException(ERROR_ADDFORMAT);
 		}
@@ -231,10 +240,9 @@ public class Parser {
 		String taskName = "";
 		int endOfTaskName = -1;
 
-		// Check for taskname
-
-		// Case: "office meeting on budget" (with quote)
+		// Check for task name
 		if (inputArray[0].charAt(0) == QUOTE) {
+			// E.g."office meeting on budget" (with quote)
 			taskName += inputArray[0].substring(1, inputArray[0].length()) + WHITESPACE;
 			for (int i = 1; i < inputArray.length; i++) {
 				if (inputArray[i].charAt(inputArray[i].length() - 1) == QUOTE) {
@@ -246,9 +254,8 @@ public class Parser {
 					endOfTaskName = -1;
 				}
 			}
-		}
-		// Case: office meeting
-		else {
+		} else {
+			// E.g. office meeting
 			for (int i = 0; i < inputArray.length; i++) {
 				if (getParseKey(inputArray[i])) {
 					break;
@@ -256,25 +263,25 @@ public class Parser {
 				taskName += inputArray[i] + WHITESPACE;
 				endOfTaskName = i;
 			}
-			taskName = taskName.substring(0, taskName.length() - 1);
+			taskName = taskName.trim();
 		}
 
+		if (isNameOrID(taskName) == 1) {
+			throw new InvalidInputException(ERROR_INTEGERFORMAT);
+		}
 		currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), taskName);
-		// Case 2: add on Monday (No name) or add "something (no end ")
 		if (endOfTaskName == -1) {
+			// Case 2: add on Monday (No task name) or add "something (no end ")
 			throw new InvalidInputException(ERROR_ADDFORMAT);
-		}
-		// Case 3: add something or add "Office meeting on Sunday" (no date and
-		// time)
-		else if (endOfTaskName == inputArray.length - 1) {
+		} else if (endOfTaskName == inputArray.length - 1) {
+			// Case 3: add something or add "Office meeting on Sunday" (no
+			// date/time)
 			return;
-		}
-		// Case 4: add something on (empty date/time)
-		else if (endOfTaskName == inputArray.length) {
+		} else if (endOfTaskName == inputArray.length) {
+			// Case 4: add something on (empty date/time)
 			throw new InvalidInputException(ERROR_ADDFORMAT);
-		}
-		// Case 5: normal case add something on date/time
-		else {
+		} else {
+			// Case 5: normal case add something on date/time
 			int supposeToBeParseKeyIndex = endOfTaskName + 1;
 			ParseKey parseKey = ParseKey.get(inputArray[supposeToBeParseKeyIndex]);
 			if (parseKey == null) {
@@ -285,17 +292,18 @@ public class Parser {
 				// Case 6: add something from date/time to date/time
 				int toParseKeyIndex = getNextParseKeyIndex(inputArray, supposeToBeParseKeyIndex + 1);
 				if (toParseKeyIndex == -1) {
-					// System.out.println(toParseKeyIndex);
 					throw new InvalidInputException(ERROR_ADDFORMAT);
 				}
+
 				String startDateTime = "";
 				String endDateTime = "";
 				for (int i = supposeToBeParseKeyIndex + 1; i < toParseKeyIndex; i++) {
-					startDateTime += inputArray[i] + " ";
+					startDateTime += inputArray[i] + WHITESPACE;
 				}
 				for (int i = toParseKeyIndex + 1; i < inputArray.length; i++) {
-					endDateTime += inputArray[i] + " ";
+					endDateTime += inputArray[i] + WHITESPACE;
 				}
+
 				String[] startDateTimeArray = dateParser.getDateTime(startDateTime);
 				String[] endDateTimeArray = dateParser.getDateTime(endDateTime);
 				checkNullDateTime(startDateTimeArray);
@@ -306,17 +314,16 @@ public class Parser {
 				if (startValid == -1 || endValid == -1) {
 					throw new InvalidInputException(ERROR_DATETIMEFORMAT);
 				}
-			}
-			// Case 5
-			else {
+			} else {
+				// Case 7: add something on date/time
 				int otherParseKeyIndex = getNextParseKeyIndex(inputArray, supposeToBeParseKeyIndex + 1);
 				if (otherParseKeyIndex != -1) {
-					// System.out.println(otherParseKeyIndex);
 					throw new InvalidInputException(ERROR_ADDFORMAT);
 				}
+
 				String dateTime = "";
 				for (int i = supposeToBeParseKeyIndex + 1; i < inputArray.length; i++) {
-					dateTime += inputArray[i] + " ";
+					dateTime += inputArray[i] + WHITESPACE;
 				}
 				String[] dateTimeArray = dateParser.getDateTime(dateTime);
 				int valid = addDateTime(dateTimeArray, TaskField.ENDDATE, TaskField.ENDTIME);
@@ -328,18 +335,29 @@ public class Parser {
 
 	}
 
-	// Format: update [taskName/taskID] [taskField] to [updatedValue]
-	// update Tea With Grandma date to 22/07/2016
+	/**
+	 * This method breaks down the input to the proper fields that is acceptable
+	 * by the update command.
+	 * 
+	 * @param input
+	 *            update command variables
+	 * @throws InvalidInputException
+	 *             wrong update command format
+	 */
 	private void parseUpdate(String input) throws InvalidInputException {
 		String[] inputArray = input.split(WHITESPACE);
 
-		int toParseKeyIndex = getToKeyIndex(inputArray, 0); // get the to
+		int toParseKeyIndex = getToKeyIndex(inputArray, 0);
+
+		// Case 1: update meeting name office meeting
 		if (toParseKeyIndex == -1) {
 			throw new InvalidInputException(ERROR_UPDATEFORMAT);
 		}
 
 		String taskName = "";
 		int endOfTaskName = -1;
+
+		// Case 2: update "meeting on budget" name to meeting
 		if (inputArray[0].charAt(0) == QUOTE) {
 			taskName = inputArray[0].substring(1, inputArray[0].length()) + WHITESPACE;
 			for (int i = 1; i < toParseKeyIndex - 1; i++) {
@@ -350,6 +368,7 @@ public class Parser {
 				}
 				taskName += inputArray[i] + WHITESPACE;
 			}
+			// Case 3: update "meeting on budget name to meeting (no end " )
 			if (endOfTaskName == -1) {
 				throw new InvalidInputException(ERROR_UPDATEFORMAT);
 			}
@@ -357,16 +376,13 @@ public class Parser {
 			for (int i = 0; i < toParseKeyIndex - 1; i++) {
 				taskName += inputArray[i] + WHITESPACE;
 			}
-			taskName = taskName.trim();
 		}
-
+		taskName = taskName.trim();
 		int getNameOrID = isNameOrID(taskName);
 		if (getNameOrID == 1) {
 			currentCommand.addFieldToMap(TaskField.ID.getTaskKeyName(), taskName);
 		} else if (getNameOrID == 0) {
 			currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), taskName);
-		} else {
-			throw new InvalidInputException(ERROR_UNKNOWN);
 		}
 
 		String taskFieldName = fieldNameAliases.get(inputArray[toParseKeyIndex - 1].toLowerCase());
@@ -383,7 +399,7 @@ public class Parser {
 
 		String newValue = "";
 		for (int i = toParseKeyIndex + 1; i < inputArray.length; i++) {
-			newValue += inputArray[i] + " ";
+			newValue += inputArray[i] + WHITESPACE;
 		}
 		newValue = newValue.substring(0, newValue.length() - 1);
 		if (newValue.isEmpty()) {
@@ -403,11 +419,31 @@ public class Parser {
 			} catch (NumberFormatException nfe) {
 				throw new InvalidInputException(ERROR_PRIORITYFORMAT);
 			}
+		} else if (aliaseField == TaskField.UPDATENAME) {
+
+			if (newValue.charAt(0) == QUOTE) {
+				if (newValue.charAt(newValue.length() - 1) != QUOTE) {
+					throw new InvalidInputException(ERROR_MISSINGENDQUOTE);
+				} else {
+					newValue = newValue.substring(1, newValue.length() - 1);
+				}
+			}
+			if (isNameOrID(newValue) == 1) {
+				throw new InvalidInputException(ERROR_INTEGERFORMAT);
+			}
 		}
-		currentCommand.addFieldToMap(aliaseField.getTaskKeyName(), newValue);
+		currentCommand.addFieldToMap(aliaseField.getTaskKeyName(), newValue.trim());
 	}
 
-	// Format: delete 10
+	/**
+	 * This method breaks down the input to the proper fields that is acceptable
+	 * by the delete command.
+	 * 
+	 * @param input
+	 *            delete command variables
+	 * @throws InvalidInputException
+	 *             wrong delete command format
+	 */
 	private void parseDelete(String input) throws InvalidInputException {
 		if (input.isEmpty()) {
 			throw new InvalidInputException(ERROR_DELETEFORMAT);
@@ -422,27 +458,41 @@ public class Parser {
 		}
 		int getNameOrID = isNameOrID(input);
 		if (getNameOrID == 1) {
-			currentCommand.addFieldToMap(TaskField.ID.getTaskKeyName(), input);
+			currentCommand.addFieldToMap(TaskField.ID.getTaskKeyName(), input.trim());
 		} else if (getNameOrID == 0) {
-			currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), input);
-		} else {
-			throw new InvalidInputException(ERROR_UNKNOWN);
+			currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), input.trim());
 		}
 	}
-
-	// Format: search [for] [taskname/datetime]
+	
+	/**
+	 * This method breaks down the input to the proper fields that is acceptable
+	 * by the search command.
+	 * 
+	 * @param input
+	 *            search command variables
+	 * @throws InvalidInputException
+	 *             wrong search command format
+	 */
 	private void parseSearch(String input) throws InvalidInputException {
+
 		if (input.isEmpty()) {
 			throw new InvalidInputException(ERROR_SEARCHFORMAT);
 		}
 		String[] keywordTermArray = input.split(WHITESPACE, 2);
+
+		if (keywordTermArray.length < 2) {
+			throw new InvalidInputException(ERROR_SEARCHFORMAT);
+		}
 		String keyword = keywordTermArray[0];
 		String term = keywordTermArray[1];
+
 		if (Arrays.asList(dateKeywords).contains(keyword.toLowerCase())) {
+			// Case 1: date search using "before", "after", "on" key
 			String[] dateTime = dateParser.getDateTime(term);
 			addDateTime(dateTime, TaskField.ENDDATE, TaskField.ENDTIME);
 			currentCommand.addFieldToMap(TaskField.KEYWORD.getTaskKeyName(), keyword);
 		} else if (Arrays.asList(nameKeywords).contains(keyword.toLowerCase())) {
+			// Case 2: name search using "for" key
 			if (term.charAt(0) == QUOTE) {
 				if (term.charAt(term.length() - 1) == QUOTE) {
 					term = term.substring(1, input.length() - 1);
@@ -450,13 +500,20 @@ public class Parser {
 					throw new InvalidInputException(ERROR_SEARCHFORMAT);
 				}
 			}
-			currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), term);
+			currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), term.trim());
 		} else {
 			throw new InvalidInputException(ERROR_SEARCHFORMAT);
 		}
 	}
-
-	// Format: show by [fieldName]
+	/**
+	 * This method breaks down the input to the proper fields that is acceptable
+	 * by the show command.
+	 * 
+	 * @param input
+	 *            show command variables
+	 * @throws InvalidInputException
+	 *             wrong show command format
+	 */
 	private void parseShow(String input) throws InvalidInputException {
 
 		if (input.isEmpty()) {
@@ -465,29 +522,43 @@ public class Parser {
 		}
 		String[] inputArray = input.split(WHITESPACE);
 
-		if (inputArray.length != 2) {
+		if (inputArray.length < 2) {
 			throw new InvalidInputException(ERROR_SORTFORMAT);
 		}
-
-		String fieldName = fieldNameAliases.get(inputArray[1]);
+		String showValue = "";
+		for (int i = 1; i < inputArray.length; i++) {
+			showValue += inputArray[i] + WHITESPACE;
+		}
+		String fieldName = fieldNameAliases.get(showValue.trim());
 		if (fieldName == null) {
 			throw new InvalidInputException(ERROR_SORTFORMAT);
 		}
 		currentCommand.addFieldToMap(TaskField.SHOW.getTaskKeyName(), fieldName);
 	}
 
-	// Format: sort by [fieldName]
+	/**
+	 * This method breaks down the input to the proper fields that is acceptable
+	 * by the sort command.
+	 * 
+	 * @param input
+	 *            sort command variables
+	 * @throws InvalidInputException
+	 *             wrong sort command format
+	 */
 	private void parseSort(String input) throws InvalidInputException {
 
-		if (input == "") {
+		if (input.isEmpty()) {
 			throw new InvalidInputException(ERROR_SORTFORMAT);
 		}
 		String[] inputArray = input.split(WHITESPACE);
 		if (inputArray.length != 2) {
 			throw new InvalidInputException(ERROR_SORTFORMAT);
 		}
-
-		String fieldName = fieldNameAliases.get(inputArray[1]);
+		String sortValue = "";
+		for (int i = 1; i < inputArray.length; i++) {
+			sortValue += inputArray[i] + WHITESPACE;
+		}
+		String fieldName = fieldNameAliases.get(sortValue.trim());
 		if (fieldName == null) {
 			throw new InvalidInputException(ERROR_SORTFORMAT);
 		}
@@ -495,7 +566,15 @@ public class Parser {
 
 	}
 
-	// Format: complete 20
+	/**
+	 * This method breaks down the input to the proper fields that is acceptable
+	 * by the complete command.
+	 * 
+	 * @param input
+	 *            complete command variables
+	 * @throws InvalidInputException
+	 *             wrong complete command format
+	 */
 	private void parseComplete(String input) throws InvalidInputException {
 		if (input.isEmpty()) {
 			throw new InvalidInputException(ERROR_COMPLETEFORMAT);
@@ -513,31 +592,33 @@ public class Parser {
 			currentCommand.addFieldToMap(TaskField.ID.getTaskKeyName(), input);
 		} else if (getNameOrID == 0) {
 			currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), input);
-		} else {
-			throw new InvalidInputException(ERROR_UNKNOWN);
 		}
 	}
 
-	// Format: undo
+	/**
+	 * This method accepts the command as undo
+	 */
 	private void parseUndo() {
 		currentCommand.addFieldToMap(TaskField.UNDO.getTaskKeyName(), "");
 
 	}
 
-	// Format: help
+	/**
+	 * This method accepts the command as help
+	 */
 	private void parseHelp() {
 		currentCommand.addFieldToMap(TaskField.HELP.getTaskKeyName(), "");
 	}
-
-	private int isNameOrID(String givenInput) {
-		try {
-			Integer.parseInt(givenInput);
-			return 1;
-		} catch (NumberFormatException nfe) {
-			return 0;
-		}
-	}
-
+	
+	/**
+	 * This method breaks down the input to the proper fields that is acceptable
+	 * by the set command.
+	 * 
+	 * @param input
+	 *            set command variables
+	 * @throws InvalidInputException
+	 *             wrong set command format
+	 */
 	private void parseSet(String input) throws InvalidInputException {
 		if (input.isEmpty()) {
 			throw new InvalidInputException(ERROR_SETFORMAT);
@@ -547,7 +628,30 @@ public class Parser {
 		}
 		currentCommand.addFieldToMap(TaskField.PATH.getTaskKeyName(), input);
 	}
-
+	
+	/**
+	 * This method checks if the string is all integers.
+	 * 
+	 * @param givenInput
+	 *            string to be checked
+	 * @return 0 if number, 1 if not number
+	 */
+	private int isNameOrID(String givenInput) {
+		try {
+			Integer.parseInt(givenInput);
+			return 1;
+		} catch (NumberFormatException nfe) {
+			return 0;
+		}
+	}
+	
+	/**
+	 * This method checks if there is a ParseKey.
+	 * 
+	 * @param input
+	 *            string to be checked
+	 * @return true if exist, false if not
+	 */
 	private boolean getParseKey(String input) {
 		for (ParseKey parseKeyName : ParseKey.values()) {
 			if (input.equals(parseKeyName.getParseKeyName())) {
@@ -557,6 +661,16 @@ public class Parser {
 		return false;
 	}
 
+	/**
+	 * This method checks if there is a ParseKey after a certain position in the
+	 * string.
+	 * 
+	 * @param inputArray
+	 *            all the words in the string
+	 * @param startIndex
+	 *            start position
+	 * @return position of the ParseKey, -1 if it does not exist
+	 */
 	private int getNextParseKeyIndex(String[] inputArray, int startIndex) {
 		for (ParseKey parseKeyName : ParseKey.values()) {
 			for (int i = startIndex; i < inputArray.length; i++) {
@@ -568,6 +682,16 @@ public class Parser {
 		return -1;
 	}
 
+	/**
+	 * This method checks if there is a "to" ParseKey after a certain position
+	 * in the string.
+	 * 
+	 * @param inputArray
+	 *            all the words in the string
+	 * @param startIndex
+	 *            start position
+	 * @return position of the "to" ParseKey, -1 if it does not exist
+	 */
 	private int getToKeyIndex(String[] inputArray, int startIndex) {
 		for (int i = startIndex; i < inputArray.length; i++) {
 			if (inputArray[i].equals(ParseKey.TO.getParseKeyName())) {
@@ -577,12 +701,30 @@ public class Parser {
 		return -1;
 	}
 
+	/**
+	 * This method verify that there is no date and time in datetime array.
+	 * 
+	 * @param dateTimeArray
+	 *            include the date and time
+	 * @throws InvalidInputException
+	 *             no date and time
+	 */
 	private void checkNullDateTime(String[] dateTimeArray) throws InvalidInputException {
 		if (dateTimeArray[0] == null && dateTimeArray[1] == null) {
 			throw new InvalidInputException(ERROR_DATETIMEFORMAT);
 		}
 	}
 
+	/**
+	 * This method include the default date and time if not entered by the user.
+	 * 
+	 * @param startDateTimeArray
+	 *            the start date and time
+	 * @param endDateTimeArray
+	 *            the end date and time
+	 * @throws InvalidInputException
+	 *             start datetime is after end datetime
+	 */
 	private void addStartEndDateTime(String[] startDateTimeArray, String[] endDateTimeArray)
 			throws InvalidInputException {
 		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
@@ -612,9 +754,9 @@ public class Parser {
 			startDate = sdf.parse(startDateTimeArray[0]);
 			endDate = sdf.parse(endDateTimeArray[0]);
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new InvalidInputException(ERROR_DATETIMEFORMAT);
 		}
+
 		// check if start date is after end date
 		if (startDate.compareTo(endDate) > 0) {
 			throw new InvalidInputException(ERROR_DATETIMEFORMAT);
@@ -625,6 +767,17 @@ public class Parser {
 		}
 	}
 
+	/**
+	 * This method allocate the date and time to the Command object for Logic.
+	 * 
+	 * @param dateTimeArray
+	 *            the date and time
+	 * @param dateField
+	 *            check if start date or end date
+	 * @param timeField
+	 *            check if start time or end time
+	 * @return indication if added into Command object: -1 not added, 1 added
+	 */
 	private int addDateTime(String[] dateTimeArray, TaskField dateField, TaskField timeField) {
 		int valid = -1;
 		if (dateTimeArray[0] != null) {
