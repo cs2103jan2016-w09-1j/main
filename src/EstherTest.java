@@ -2,6 +2,7 @@ import static org.junit.Assert.*;
 
 import java.awt.Event;
 import java.io.IOException;
+import java.nio.channels.NonWritableChannelException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -39,7 +40,8 @@ public class EstherTest {
 	private ArrayList<DateTimeTester> tmwTestFormats;
 	private ArrayList<DateTimeTester> tmwOneHrTestFormats;
 
-	private Date now = new Date();
+	private Date nw = new Date();
+	private Date now = new Date(nw.getTime() + (5*60*1000));
 	private Date nowOneHr = new Date(now.getTime() + (60 * 60 * 1000));
 	private Date tmwOneHr = new Date(now.getTime() + (25 * 60 * 60 * 1000));
 	private Date tmwTwoHr = new Date(tmwOneHr.getTime() + (60 * 60 * 1000));
@@ -105,7 +107,7 @@ public class EstherTest {
 						continue;
 					}
 				} else {
-					// has 1 string anyway
+					// has 1 string
 					addCommand = "add task on " + dateTimeTester.getTDString();
 				}
 				String result = logic.executeCommand(addCommand);
@@ -314,10 +316,11 @@ public class EstherTest {
 	@Test
 	public void updateFltToTskExhaustive() {
 		Task.setGlobalId(0);
+		String dt = "";
 		tryAddTask();
 		for (DateTimeTester tester : todayTestFormats) {
+			dt = tester.getDTString();
 			tryCommand("update 0 date to " + tester.getDTString());
-			tryCommand("update 0 time to " + tester.getTDString());
 			assertTrue(verifyEndDate(tester));
 		}
 	}
@@ -380,11 +383,10 @@ public class EstherTest {
 		failCommand("complete task");
 	}
 
-	// TODO: For GQ all search test cases
 	@Test
 	public void searchFor() {
 		tryAddTask();
-		tryCommand("search for " + taskName);
+		tryCommand("search for task");
 	}
 
 	@Test
