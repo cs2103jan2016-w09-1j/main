@@ -1,15 +1,12 @@
 import static org.junit.Assert.*;
 
-import java.io.BufferedReader;
-import java.io.File;
+import java.awt.Event;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 
 import org.junit.After;
@@ -27,9 +24,11 @@ import cs2103_w09_1j.esther.UIResult;
  */
 public class EstherTest {
 
-	private String pathString = "esther.txt";
 	private String taskName = "task";
+	private String pathString = "esther.txt";
+	private String cfgPathString = "estherconfig.txt";
 
+	private Path cfgLoc = Paths.get(cfgPathString);
 	private Path saveLoc = Paths.get(pathString);
 
 	private String[] dateFormats = { "", "dd/MM/yy", "dd/MM/yyyy", "d/M/yy", "d/MM/yy", "dd/M/yy", "E" };
@@ -49,7 +48,7 @@ public class EstherTest {
 	private DateTimeTester default1HTester = new DateTimeTester(nowOneHr, dateFormats[1], timeFormats[1]);
 
 	private boolean setupDone = false;
-	
+
 	private Logic logic;
 
 	private final boolean DEBUG = false;
@@ -401,24 +400,45 @@ public class EstherTest {
 		// search for name that doesn't exist
 	}
 
-	// @Test
+	@Test
 	public void searchOn() {
+		tryAddEvent();
 		// use the on keyword
+		tryCommand("search on today");
 	}
 
-	// @Test
+	@Test
 	public void searchOnFail() {
-		// search for task with date that does not exist
+		tryAddTask();
+		failCommand("search on today");
 	}
 
-	// @Test
+	@Test
 	public void searchBefore() {
 		// use the before keyword
+		tryAddTaskWithDeadline();
+		tryCommand("search before tmw");
 	}
 
-	// @Test
-	public void searchAfterDate() {
+	@Test
+	public void searchBeforeFail() {
+		// use the before keyword to search for task that doesn't exist
+		tryAddTaskWithDeadline();
+		failCommand("search before today");
+	}
+
+	@Test
+	public void searchAfter() {
+		// use the after keyword
+		tryCommand("add task on tmw");
+		tryCommand("search after today");
+	}
+
+	@Test
+	public void searchAfterFail() {
 		// use the after keyword in a fail test case
+		tryCommand("add task on today");
+		failCommand("search after today");
 	}
 
 	@Test
@@ -491,20 +511,20 @@ public class EstherTest {
 		tryCommand("add atask");
 		tryCommand("sort by name");
 		tryCommand("undo");
-		assertTrue(verifyName("atask"));
+		assertTrue(getUIRes().getBuffer(getUIRes().FLOATING_INDEX).get(0).getName().equals("btask"));
 	}
 
-	// @Test
+	@Test
 	public void setTest() {
 		tryCommand("set esther2.txt");
 	}
 
-	// @Test
+	@Test
 	public void setAbsolute() {
-		tryCommand("set C://esther/esther.txt");
+		tryCommand("set C://Users/esther.txt");
 	}
 
-	// @Test
+	@Test
 	public void setFail() {
 		failCommand("set blah");
 	}
@@ -512,9 +532,10 @@ public class EstherTest {
 	@After
 	public void cleanUp() {
 		logic.flushInternalStorage();
+		deleteFile();
 	}
-	
-	private UIResult getUIRes(){
+
+	private UIResult getUIRes() {
 		return UiMainController.getRes();
 	}
 
@@ -524,7 +545,7 @@ public class EstherTest {
 	 */
 	private void tryCommand(String command) {
 		String result = logic.executeCommand(command);
-		boolean assertResult = result.contains("success");
+		boolean assertResult = result.contains("success") || result.contains("Success");
 		if (!assertResult) {
 			System.out.println("\"" + command + "\" failed.");
 			System.out.println(result);
@@ -612,6 +633,9 @@ public class EstherTest {
 		try {
 			if (Files.exists(saveLoc)) {
 				Files.delete(saveLoc);
+			}
+			if (Files.exists(cfgLoc)) {
+				Files.delete(cfgLoc);
 			}
 		} catch (IOException e) {
 
