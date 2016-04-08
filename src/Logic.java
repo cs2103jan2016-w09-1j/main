@@ -276,6 +276,25 @@ class Logic {
 		return _taskDisplayLists.get(Task.COMPLETED_TASK_INDEX);
 	}
 	
+	protected ArrayList<Task> getAllTasks() {
+		ArrayList<Task> allTasks = new ArrayList<Task>();
+		allTasks.addAll(getOverdueBuffer());
+		allTasks.addAll(getTodayBuffer());
+		allTasks.addAll(getTomorrowBuffer());
+		allTasks.addAll(getThisWeekBuffer());
+		allTasks.addAll(getRemainingBuffer());
+		allTasks.addAll(getFloatingBuffer());
+		return allTasks;
+	}
+	
+	protected ArrayList<Task> getTemporarySortList() {
+		return _temporarySortList;
+	}
+	
+	protected ArrayList<Task> getSearchResults() {
+		return _searchList;
+	}
+	
 	public void setUiTaskDisplays(String commandType, int[] indices) {
 		UIResult displayResult = createDisplayResult(commandType, indices);
 		UiMainController.setRes(displayResult);
@@ -289,19 +308,29 @@ class Logic {
 		result.setWeekBuffer(_taskDisplayLists.get(Task.THIS_WEEK_TASK_INDEX));
 		result.setFloatingBuffer(_taskDisplayLists.get(Task.FLOATING_TASK_INDEX));
 		result.setCompletedBuffer(_taskDisplayLists.get(Task.COMPLETED_TASK_INDEX));
-		if (_temporarySortList == null) {
-			ArrayList<Task> allTasks = new ArrayList<Task>();
-			allTasks.addAll(_taskDisplayLists.get(Task.OVERDUE_TASK_INDEX));
-			allTasks.addAll(_taskDisplayLists.get(Task.TODAY_TASK_INDEX));
-			allTasks.addAll(_taskDisplayLists.get(Task.TOMORROW_TASK_INDEX));
-			allTasks.addAll(_taskDisplayLists.get(Task.THIS_WEEK_TASK_INDEX));
-			allTasks.addAll(_taskDisplayLists.get(Task.UNCODED_TASK_INDEX));
-			allTasks.addAll(_taskDisplayLists.get(Task.FLOATING_TASK_INDEX));
-			result.setAllTaskBuffer(allTasks);
+		if (!commandType.equalsIgnoreCase(Command.CommandKey.SORT.getCommandKeyName())) {
+			if (commandType.equalsIgnoreCase(Command.CommandKey.UNDO.getCommandKeyName())) {
+				System.out.println("Undoing sort.");
+				ArrayList<Task> copy = new ArrayList<Task>();
+				copy.addAll(_temporarySortList);
+				result.setAllTaskBuffer(copy);
+				//_temporarySortList = null;
+			} else {
+				ArrayList<Task> allTasks = new ArrayList<Task>();
+				allTasks.addAll(_taskDisplayLists.get(Task.OVERDUE_TASK_INDEX));
+				allTasks.addAll(_taskDisplayLists.get(Task.TODAY_TASK_INDEX));
+				allTasks.addAll(_taskDisplayLists.get(Task.TOMORROW_TASK_INDEX));
+				allTasks.addAll(_taskDisplayLists.get(Task.THIS_WEEK_TASK_INDEX));
+				allTasks.addAll(_taskDisplayLists.get(Task.UNCODED_TASK_INDEX));
+				allTasks.addAll(_taskDisplayLists.get(Task.FLOATING_TASK_INDEX));
+				result.setAllTaskBuffer(allTasks);
+			}
 		} else {
 			Collections.sort(_temporarySortList);
-			result.setAllTaskBuffer(_temporarySortList);
-			_temporarySortList = null;
+			ArrayList<Task> copy = new ArrayList<Task>();
+			copy.addAll(_temporarySortList);
+			result.setAllTaskBuffer(copy);
+			//_temporarySortList = null;
 		}
 		result.setCommandType(commandType);
 		result.setIndex(indices);
@@ -513,19 +542,24 @@ class Logic {
 		if (toSort) {
 			Task.setSortCriterion(sortOrder);
 			if (sortOrder.equals(Task.SORT_BY_START_DATE_KEYWORD) ||
-				sortOrder.equals(Task.SORT_BY_END_DATE_KEYWORD)) {
-				Task.setSortCriterion(Task.SORT_BY_DATE_KEYWORD);
+				sortOrder.equals(Task.SORT_BY_END_DATE_KEYWORD) ||
+				sortOrder.equals(Task.SORT_BY_DATE_KEYWORD)) {
+				//Task.setSortCriterion(Task.SORT_BY_DATE_KEYWORD);
+				_temporarySortList = new ArrayList<Task>();
 				for (int i = 0; i < NUM_TASK_BUFFERS; i++) {
-					// do not sort floating or completed tasks by date
-					if (i == Task.FLOATING_TASK_INDEX || i == Task.COMPLETED_TASK_INDEX) {
-						
-					} else {
+					/*if (i == Task.FLOATING_TASK_INDEX || i == Task.COMPLETED_TASK_INDEX) {
+					
+					} else {*/
+					if (i != Task.COMPLETED_TASK_INDEX) {
+						_temporarySortList.addAll(_taskDisplayLists.get(i));
 						Collections.sort(_taskDisplayLists.get(i));
 					}
+					//}
 				}
-				Task.setSortCriterion(DEFAULT_FLOATING_TASKS_SORT_ORDER);
-				Collections.sort(_taskDisplayLists.get(Task.FLOATING_TASK_INDEX));
-				Collections.sort(_taskDisplayLists.get(Task.COMPLETED_TASK_INDEX));
+				//Task.setSortCriterion(DEFAULT_FLOATING_TASKS_SORT_ORDER);
+				//Collections.sort(_taskDisplayLists.get(Task.FLOATING_TASK_INDEX));
+				//Collections.sort(_taskDisplayLists.get(Task.COMPLETED_TASK_INDEX));
+				//Task.setSortCriterion(sortOrder);
 			} else if (sortOrder.equals(Task.SORT_BY_NAME_KEYWORD)) {
 				// specialized sorting for floating and completed tasks to be done separately
 				_temporarySortList = new ArrayList<Task>();
@@ -659,9 +693,10 @@ class Logic {
 		int indices[] = {-1, -1};
 		System.out.println("Buffer pos: " + indices[0] + "Task pos: " + indices[1]);
 		State oldState = createPreviousState(command, indices);
-		updateUndoStack(oldState);
+		oldState.setAllTaskList(_temporarySortList);
 		//System.out.println(_undoStack.size());
 		sortAndUpdateFile(command);
+		updateUndoStack(oldState);
 		setUiTaskDisplays(command.getCommand(), indices);
 		return getOperationStatus(command);
 	}
@@ -699,13 +734,24 @@ class Logic {
 		logger.logp(Level.INFO, "Logic", "searchFile(Command command)",
 				  	  "Searching tasks in file.", searchKeyword);
 		if (searchKeyword != null) {
+			String keywords[] = searchKeyword.toLowerCase().split(" ");
 			for (Task entry: _fullTaskList) {
-				String taskNameCopy = entry.getName();
-				String taskNameLowerCase = taskNameCopy.toLowerCase();
-				if (taskNameLowerCase.contains(command.getSpecificParameter(Task.TaskField.NAME.getTaskKeyName()).trim().toLowerCase())) {
-					_searchList.add(entry);
+				for (String word: keywords) {
+					//System.out.println(word);
+					String taskNameCopy = entry.getName();
+					String taskNameLowerCase = taskNameCopy.toLowerCase();
+					if (taskNameLowerCase.contains(word)) {
+						//System.out.println("Added entry to search results.");
+						System.out.println(!_searchList.contains(entry));
+						if (!_searchList.contains(entry)) {
+							_searchList.add(entry);
+						} else {
+							
+						}
+					}
 				}
 			}
+			System.out.println(_searchList.size());
 		} else {
 			Date referenceDate;
 			try {
@@ -1153,24 +1199,28 @@ class Logic {
 				previous = new State(commandName);
 				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
+				previous.setAllTaskList(getAllTasks());
 				break;
 
 			case DELETE :
 				previous = new State(commandName);
 				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
+				previous.setAllTaskList(getAllTasks());
 				break;
 
 			case UPDATE :
 				previous = new State(commandName);
 				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
+				previous.setAllTaskList(getAllTasks());
 				break;
 				
 			case COMPLETE :
 				previous = new State(commandName);
 				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
+				previous.setAllTaskList(getAllTasks());
 				break;
 
 			case SHOW :
@@ -1184,15 +1234,17 @@ class Logic {
 			case SORT :
 				previous = new State(commandName);
 				assert command.getSpecificParameter(TaskField.SORT.getTaskKeyName()) != null;
-				previous.setSortOrder(command.getSpecificParameter(TaskField.SORT.getTaskKeyName()));
+				previous.setSortOrder(Task.getSortCriterion());
 				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
+				//previous.setAllTaskList(getAllTasks());
 				break;
 				
 			case SEARCH :
 				previous = new State(commandName);
 				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
+				previous.setAllTaskList(getAllTasks());
 				//System.out.println("Storing previous state for " + previous.getCommand());
 				break;
 				
@@ -1202,6 +1254,7 @@ class Logic {
 			  	previous.setFilePath(oldFilePath);
 				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
+				previous.setAllTaskList(getAllTasks());
 			  	break;
 
 			case UNDO :
@@ -1217,6 +1270,7 @@ class Logic {
 				previous = new State(EMPTY_STATE);
 				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
+				previous.setAllTaskList(getAllTasks());
 				logger.logp(Level.INFO, "Logic", "createPreviousState(Command command, Task original)",
 							"Dummy state is created.");
 				break;
@@ -1316,6 +1370,8 @@ class Logic {
 			restoreOldState(state);
 			getInternalStorage();
 			_storage.writeSaveFile(_fullTaskList);
+			_temporarySortList = new ArrayList<Task>();
+			_temporarySortList.addAll(state.getAllTaskList());
 			System.out.println("Buffer pos: " + state.getIndices()[0] + "Task pos: " + state.getIndices()[1]);
 			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
@@ -1345,6 +1401,8 @@ class Logic {
 			String filePath = state.getFilePath();
 			_config.setSavePath(filePath);
 			_storage.updateConfig(_config);
+			initializeBuffers();
+			updateInternalStorage();
 			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (InvalidPathException ipe) {

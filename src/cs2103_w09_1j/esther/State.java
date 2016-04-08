@@ -21,6 +21,7 @@ public class State {
 	private ArrayList<Task> remainingTaskList;
 	private ArrayList<Task> floatingTaskList;
 	private ArrayList<Task> completedTaskList;
+	private ArrayList<Task> allTaskList;
 	
 	/*
 	 * This special value for the indices indicate to the UI that it does not need to access any particular Task element
@@ -61,6 +62,11 @@ public class State {
 		remainingTaskList.addAll(taskLists.get(Task.UNCODED_TASK_INDEX));
 		floatingTaskList.addAll(taskLists.get(Task.FLOATING_TASK_INDEX));
 		completedTaskList.addAll(taskLists.get(Task.COMPLETED_TASK_INDEX));
+	}
+	
+	public void setAllTaskList(ArrayList<Task> fullTaskList) {
+		allTaskList = new ArrayList<Task>();
+		allTaskList.addAll(fullTaskList);
 	}
 	
 	public int[] getIndices() {
@@ -121,6 +127,10 @@ public class State {
 	
 	public ArrayList<Task> getCompletedTaskList() {
 		return completedTaskList;
+	}
+	
+	public ArrayList<Task> getAllTaskList() {
+		return allTaskList;
 	}
 	
 }

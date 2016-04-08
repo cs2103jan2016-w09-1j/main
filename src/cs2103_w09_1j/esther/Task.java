@@ -836,7 +836,9 @@ public class Task implements Comparable<Task> {
 	 */
 	private int compareByDate(Task task) {
 		if (_startDate != null && task.getStartDate() == null) { // compare event to task
-			if (_startDate.equals(task.getEndDate())) {
+			if (task.getEndDate() == null) {
+				return -1;
+			} else if (_startDate.equals(task.getEndDate())) {
 				if (_priority == task.getPriority()) {
 					return _name.compareTo(task.getName());
 				} else {
@@ -846,7 +848,9 @@ public class Task implements Comparable<Task> {
 				return _startDate.compareTo(task.getEndDate());
 			}
 		} else if (_startDate == null && task.getStartDate() != null) { // compare task to event
-			if (_endDate.equals(task.getStartDate())) {
+			if (_endDate == null) {
+				return 1;
+			} else if (_endDate.equals(task.getStartDate())) {
 				if (_priority == task.getPriority()) {
 					return _name.compareTo(task.getName());
 				} else {
@@ -866,7 +870,13 @@ public class Task implements Comparable<Task> {
 				return _startDate.compareTo(task.getStartDate());
 			}
 		} else { // compare task to task
-			if (_endDate.equals(task.getEndDate())) {
+			if (_endDate == null || task.getEndDate() == null) {
+				if (_endDate == null) {
+					return 1;
+				} else {
+					return -1;
+				}
+			} else if (_endDate.equals(task.getEndDate())) {
 				if (_priority == task.getPriority()) {
 					return _name.compareTo(task.getName());
 				} else {
@@ -893,7 +903,9 @@ public class Task implements Comparable<Task> {
 	private int compareByName(Task task) {
 		if (_name.equals(task.getName())) {
 			if (_priority == task.getPriority()) {
-				if (_startDate != null && task.getStartDate() == null) { // compare event with task
+				if (_endDate == null && task.getEndDate() == null) { // compare floating tasks
+					return 0;
+				} else if (_startDate != null && task.getStartDate() == null) { // compare event with task
 					return _startDate.compareTo(task.getEndDate());
 				} else if (_startDate == null && task.getStartDate() != null) { // compare task with event
 					return _endDate.compareTo(task.getStartDate());
