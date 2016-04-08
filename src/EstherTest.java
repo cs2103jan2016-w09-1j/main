@@ -128,7 +128,6 @@ public class EstherTest {
 					System.out.println(result);
 					fail();
 				} else {
-					System.out.println(index);
 					assertTrue(verifyStartDate(tester));
 					assertTrue(verifyEndDate(tester1H));
 				}
@@ -205,8 +204,16 @@ public class EstherTest {
 		// equivalence partition for updating different fields based on name
 		// reference
 		tryAddTaskWithDeadline();
-		tryCommand("update task date to " + default1HTester.getDString());
-		tryCommand("update task time to " + default1HTester.getTString());
+		tryCommand("update task date to " + default1HTester.getDTString());
+		assertTrue(verifyEndDate(default1HTester));
+	}
+
+	@Test
+	public void updateTimeByNameTest() {
+		// equivalence partition for updating different fields based on name
+		// reference
+		tryAddTaskWithDeadline();
+		tryCommand("update task time to " + default1HTester.getDTString());
 		assertTrue(verifyEndDate(default1HTester));
 	}
 
@@ -220,18 +227,15 @@ public class EstherTest {
 	@Test
 	public void updateFloatToDeadline() {
 		tryAddTask();
-		tryCommand("update task date to " + defaultTester.getDString());
-		tryCommand("update task time to " + defaultTester.getTString());
+		tryCommand("update task date to " + defaultTester.getDTString());
 		assertTrue(verifyEndDate(defaultTester));
 	}
 
 	@Test
 	public void updateFloatToEvent() {
 		tryAddTask();
-		tryCommand("update task endtime to " + default1HTester.getTString());
-		tryCommand("update task date to " + default1HTester.getDString());
-		tryCommand("update task starttime to " + defaultTester.getTString());
-		tryCommand("update task sDate to " + defaultTester.getDString());
+		tryCommand("update task endtime to " + default1HTester.getDTString());
+		tryCommand("update task sDate to " + defaultTester.getDTString());
 		assertTrue(verifyEndDate(default1HTester));
 		assertTrue(verifyStartDate(defaultTester));
 	}
@@ -239,8 +243,7 @@ public class EstherTest {
 	@Test
 	public void updateDeadlineToEvent() {
 		tryCommand("add task on " + default1HTester.getDTString());
-		tryCommand("update task stime to " + defaultTester.getTString());
-		tryCommand("update task sdate to " + defaultTester.getDString());
+		tryCommand("update task stime to " + defaultTester.getDTString());
 		assertTrue(verifyStartDate(defaultTester));
 	}
 
@@ -259,12 +262,7 @@ public class EstherTest {
 		Task.setGlobalId(0);
 		tryAddTaskWithDeadline();
 		for (DateTimeTester tester : tmwTestFormats) {
-			if (tester.hasDate()) {
-				tryCommand("update 0 date to " + tester.getDString());
-			}
-			if (tester.hasTime()) {
-				tryCommand("update 0 time to " + tester.getTString());
-			}
+			tryCommand("update 0 date to " + tester.getDTString());
 			assertTrue(verifyEndDate(tester));
 		}
 	}
@@ -275,18 +273,8 @@ public class EstherTest {
 		tryAddEvent();
 		for (DateTimeTester tester : tmwTestFormats) {
 			for (DateTimeTester laterTester : tmwOneHrTestFormats) {
-				if (tester.hasDate()) {
-					tryCommand("update 0 date to " + laterTester.getDString());
-				}
-				if (tester.hasTime()) {
-					tryCommand("update 0 time to " + laterTester.getTString());
-				}
-				if (laterTester.hasDate()) {
-					tryCommand("update 0 sd to " + tester.getDString());
-				}
-				if (laterTester.hasTime()) {
-					tryCommand("update 0 st to " + tester.getTString());
-				}
+				tryCommand("update 0 date to " + laterTester.getDTString());
+				tryCommand("update 0 st to " + tester.getTDString());
 				assertTrue(verifyEndDate(laterTester));
 				assertTrue(verifyStartDate(tester));
 			}
@@ -298,12 +286,8 @@ public class EstherTest {
 		Task.setGlobalId(0);
 		tryAddTask();
 		for (DateTimeTester tester : todayTestFormats) {
-			if (tester.hasDate()) {
-				tryCommand("update 0 date to " + tester.getDString());
-			}
-			if (tester.hasTime()) {
-				tryCommand("update 0 time to " + tester.getTString());
-			}
+				tryCommand("update 0 date to " + tester.getDTString());
+				tryCommand("update 0 time to " + tester.getTDString());
 			assertTrue(verifyEndDate(tester));
 		}
 	}
@@ -314,18 +298,12 @@ public class EstherTest {
 		tryAddTaskWithDeadline();
 		for (DateTimeTester tester : tmwTestFormats) {
 			for (DateTimeTester laterTester : tmwOneHrTestFormats) {
-				if (tester.hasDate()) {
-					tryCommand("update 0 date to " + laterTester.getDString());
-				}
-				if (tester.hasTime()) {
-					tryCommand("update 0 time to " + laterTester.getTString());
-				}
-				if (tester.hasDate() && laterTester.hasDate()) {
-					tryCommand("update 0 sd to " + tester.getDString());
-				}
-				if (laterTester.hasTime()) {
-					tryCommand("update 0 st to " + tester.getTString());
-				}
+					tryCommand("update 0 date to " + laterTester.getDTString());
+					if(laterTester.hasDate()){
+						tryCommand("update 0 sd to " + tester.getDTString());
+					} else {
+						tryCommand("update 0 st to " + tester.getTString());
+					}					
 				assertTrue(verifyEndDate(laterTester));
 				assertTrue(verifyStartDate(tester));
 			}
@@ -338,18 +316,12 @@ public class EstherTest {
 		tryAddTask();
 		for (DateTimeTester tester : tmwTestFormats) {
 			for (DateTimeTester laterTester : tmwOneHrTestFormats) {
-				if (tester.hasDate()) {
-					tryCommand("update 0 date to " + laterTester.getDString());
-				}
-				if (tester.hasTime()) {
-					tryCommand("update 0 time to " + laterTester.getTString());
-				}
-				if (tester.hasDate() && laterTester.hasDate()) {
-					tryCommand("update 0 sd to " + tester.getDString());
-				}
-				if (laterTester.hasTime()) {
+				tryCommand("update 0 date to " + laterTester.getDTString());
+				if(laterTester.hasDate()){
+					tryCommand("update 0 sd to " + tester.getDTString());
+				} else {
 					tryCommand("update 0 st to " + tester.getTString());
-				}
+				}					
 				assertTrue(verifyEndDate(laterTester));
 				assertTrue(verifyStartDate(tester));
 			}

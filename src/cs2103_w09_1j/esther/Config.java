@@ -21,7 +21,7 @@ public class Config {
 	private Path savePath;
 	private HashMap<String, String> fieldNameAliases;
 
-	private static final int defaultReferenceID = 0;
+	private static final int defaultReferenceID = 1;
 	private static final Path defaultSavePath = Paths.get("esther.txt");
 	private static final String[][] defaultFieldNameAliases = {	{ "taskname", "taskName" },
 																{ "tname", "taskName" },
