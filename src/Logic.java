@@ -1,3 +1,4 @@
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
 import java.text.ParseException;
@@ -347,8 +348,12 @@ class Logic {
 	 */
 	private void initializeLogger() {
 		try {
-			 logger = Logger.getLogger("Logic");
+			logger = Logger.getLogger("Logic");
 			logger.setLevel(Level.SEVERE);
+			File logsDir = new File("logs");
+			if(!logsDir.exists()){
+			    logsDir.mkdirs();
+			}
 			FileHandler fh = new FileHandler("logs/Logic.log");
 			logger.addHandler(fh);
 			SimpleFormatter formatter = new SimpleFormatter();  
