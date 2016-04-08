@@ -1,14 +1,16 @@
 import static org.junit.Assert.*;
 
 import java.awt.Event;
+import java.io.File;
 import java.io.IOException;
-import java.nio.channels.NonWritableChannelException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+
+import javax.naming.directory.DirContext;
 
 import org.junit.After;
 import org.junit.Before;
@@ -32,7 +34,8 @@ public class EstherTest {
 	private Path cfgLoc = Paths.get(cfgPathString);
 	private Path saveLoc = Paths.get(pathString);
 
-	private String[] dateFormats = { "", "dd/MM/yy", "dd/MM/yyyy", "d/M/yy", "d/MM/yy", "dd/M/yy", "E" };
+	private String[] dateFormats = { "", "dd/MM/yy", "dd/MM/yyyy", "d/M/yy", "d/MM/yy", "dd/M/yy" };
+	private String[] dayFormats = { "E" };
 	private String[] timeFormats = { "", "HHmm", "HH:mm", "hha", "hhmma" };
 
 	private ArrayList<DateTimeTester> todayTestFormats;
@@ -385,48 +388,61 @@ public class EstherTest {
 
 	@Test
 	public void searchFor() {
+		// using the for keyword to search by keyword
 		tryAddTask();
 		tryCommand("search for task");
+		assertTrue(logic.getSearchResults().size() == 1);
 	}
 
 	@Test
 	public void searchFail() {
-		failCommand("search fail");
 		// without using for, on, before, after keywords
+		failCommand("search fail");
 	}
 
 	@Test
 	public void searchFailFor() {
+		// search for keyword that doesn't exist
 		tryAddEvent();
 		failCommand("search for ");
-		// search for name that doesn't exist
+		tryCommand("search for blah");
+		assertTrue(logic.getSearchResults().size() == 0);
 	}
 
 	@Test
 	public void searchOn() {
+		// use the on keyword to search for tasks that fall on a day
+		tryAddTaskWithDeadline();
 		tryAddEvent();
-		// use the on keyword
 		tryCommand("search on today");
+		assertTrue(logic.getSearchResults().size() == 2);
 	}
 
 	@Test
 	public void searchOnFail() {
-		tryAddTask();
-		failCommand("search on today");
+		// use the on keyword to search for tasks that fall on a day but don't exist
+		tryAddTaskWithDeadline();
+		tryAddEvent();
+		tryCommand("search on tmw");
+		assertTrue(logic.getSearchResults().size() == 0);
 	}
 
 	@Test
 	public void searchBefore() {
 		// use the before keyword
 		tryAddTaskWithDeadline();
+		tryAddEvent();
 		tryCommand("search before tmw");
+		assertTrue(logic.getSearchResults().size() == 2);
 	}
 
 	@Test
 	public void searchBeforeFail() {
 		// use the before keyword to search for task that doesn't exist
 		tryAddTaskWithDeadline();
-		failCommand("search before today");
+		tryAddEvent();
+		tryCommand("search before today");
+		assertTrue(logic.getSearchResults().size() == 0);
 	}
 
 	@Test
@@ -434,13 +450,16 @@ public class EstherTest {
 		// use the after keyword
 		tryCommand("add task on tmw");
 		tryCommand("search after today");
+		assertTrue(logic.getSearchResults().size() > 0);
 	}
 
 	@Test
 	public void searchAfterFail() {
 		// use the after keyword in a fail test case
-		tryCommand("add task on today");
-		failCommand("search after today");
+		tryAddTaskWithDeadline();
+		tryAddEvent();
+		tryCommand("search after today");
+		assertTrue(logic.getSearchResults().size() == 0);
 	}
 
 	@Test
@@ -534,7 +553,8 @@ public class EstherTest {
 	@After
 	public void cleanUp() {
 		logic.flushInternalStorage();
-		deleteFile();
+		deleteFiles();
+		deleteLogs();
 	}
 
 	private UIResult getUIRes() {
@@ -631,7 +651,7 @@ public class EstherTest {
 		return null;
 	}
 
-	private void deleteFile() {
+	private void deleteFiles() {
 		try {
 			if (Files.exists(saveLoc)) {
 				Files.delete(saveLoc);
@@ -642,6 +662,19 @@ public class EstherTest {
 		} catch (IOException e) {
 
 		}
+	}
+	
+	private void deleteLogs() {
+	    try {
+		File dir = new File("logs");
+		if(dir.exists()){
+        		for (File file : dir.listFiles()) {
+        		    file.delete();
+        		}
+		}
+	    } catch (Exception e) {
+		e.printStackTrace();
+	    }
 	}
 
 	private ArrayList<DateTimeTester> generateDateTimes(Date date) {
