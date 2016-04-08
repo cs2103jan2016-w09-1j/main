@@ -795,7 +795,7 @@ class Logic {
 				} else if (searchDateKeyword.trim().equalsIgnoreCase(SEARCH_AFTER)){
 					if (entry.isEvent() && referenceDate.compareTo(entry.getStartDate()) <= 0) {
 						_searchList.add(entry);
-					} else if (!entry.isFloatingTask() && referenceDate.compareTo(entry.getEndDate()) <= 0) {
+					} else if (!entry.isFloatingTask() && referenceDate.compareTo(entry.getEndDate()) < 0) {
 						_searchList.add(entry);
 					} else {
 						
