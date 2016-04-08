@@ -35,9 +35,7 @@ public class Task implements Comparable<Task> {
 	public enum TaskField {
 		NAME("taskName"), ID("taskID"), PRIORITY("priority"), STARTDATE("startDate"), ENDDATE("endDate"), STARTTIME(
 				"startTime"), ENDTIME("endTime"), SORT("order"), UPDATENAME("updateName"), KEYWORD(
-						"keyword"), SHOW("order"), UNDO("undo"), HELP("help"), COMPLETE(
-								"complete"), PATH("path");
-
+						"keyword"), SHOW("order"), UNDO("undo"), HELP("help"), COMPLETE("complete"), PATH("path");
 
 		private String taskKeyName;
 		private static final Map<String, TaskField> lookup = new HashMap<String, TaskField>();
@@ -83,7 +81,7 @@ public class Task implements Comparable<Task> {
 	private static final int DEFAULT_STARTING_ID = 0;
 	private static final int DEFAULT_TASK_PRIORITY = 5;
 	private static final int HIGHEST_TASK_PRIORITY = 1;
-	
+
 	public static final int OVERDUE_TASK_INDEX = 0;
 	public static final int TODAY_TASK_INDEX = 1;
 	public static final int TOMORROW_TASK_INDEX = 2;
@@ -92,16 +90,16 @@ public class Task implements Comparable<Task> {
 	public static final int FLOATING_TASK_INDEX = 5;
 	public static final int COMPLETED_TASK_INDEX = 6;
 
-    private String _name;
-    private Date _startDate;
-    private Date _endDate;
-    private int _priority; // for now, lower number indicates higher priority
-    private int _id;
-    private boolean _isCompleted;
-    private boolean _isValid = false;
+	private String _name;
+	private Date _startDate;
+	private Date _endDate;
+	private int _priority; // for now, lower number indicates higher priority
+	private int _id;
+	private boolean _isCompleted;
+	private boolean _isValid = false;
 
-    private static String _sortCriterion = SORT_BY_PRIORITY_KEYWORD;
-    private static int _assignId = DEFAULT_STARTING_ID;
+	private static String _sortCriterion = SORT_BY_PRIORITY_KEYWORD;
+	private static int _assignId = DEFAULT_STARTING_ID;
 	public static SimpleDateFormat _dateOnlyFormatter = new SimpleDateFormat("dd/MM/yyyy");
 	public static SimpleDateFormat _dateAndTimeFormatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 	private final static Logger taskLogger = Logger.getLogger("taskLogger");
@@ -154,7 +152,6 @@ public class Task implements Comparable<Task> {
 		String startTimeString = command.hasParameter(TaskField.STARTTIME.getTaskKeyName())
 				? command.getSpecificParameter(TaskField.STARTTIME.getTaskKeyName())
 				: null;
-				
 		startDate = parseDateTimeToString(today, startDateString, startTimeString, true);
 
 		String endDateString = command.hasParameter(TaskField.ENDDATE.getTaskKeyName())
@@ -164,7 +161,6 @@ public class Task implements Comparable<Task> {
 		String endTimeString = command.hasParameter(TaskField.ENDTIME.getTaskKeyName())
 				? command.getSpecificParameter(TaskField.ENDTIME.getTaskKeyName())
 				: null;
-
 		endDate = parseDateTimeToString(today, endDateString, endTimeString, false);
 
 		int priority = command.hasParameter(TaskField.PRIORITY.getTaskKeyName())
@@ -200,7 +196,8 @@ public class Task implements Comparable<Task> {
 		for (int i = 0; i < regexArray.length; i++) {
 			resultsArray[i] = findMatch(regexArray[i], matcherInput[i]);
 			if (resultsArray[i] == null) {
-				//taskLogger.warning("Task builder could not parse " + i + "th element for task " + resultsArray[0]);
+				// taskLogger.warning("Task builder could not parse " + i + "th
+				// element for task " + resultsArray[0]);
 				resultsArray[i] = "";
 			}
 		}
@@ -322,7 +319,7 @@ public class Task implements Comparable<Task> {
 	public void setEndDate(Date date) {
 		_endDate = date;
 	}
-	
+
 	/**
 	 * 
 	 * @return
@@ -331,7 +328,7 @@ public class Task implements Comparable<Task> {
 	public String sDateToString() {
 		return dateToString(_startDate);
 	}
-	
+
 	/**
 	 * 
 	 * @return
@@ -364,23 +361,21 @@ public class Task implements Comparable<Task> {
 	 * @throws ParseException
 	 * @@author A0127572A
 	 */
-	public static Date parseDateTimeToString(Date today, String dateString, String timeString, boolean start) throws ParseException
-
-	//private Date parseDateTimeToString(Date today, String dateString, String timeString, boolean start) throws ParseException 
-	{
+	public static Date parseDateTimeToString(Date today, String dateString, String timeString, boolean start)
+			throws ParseException {
 		Date date = null;
 		if (dateString != null && timeString != null) {
-			//System.out.println("Date and time parts are modified.");
+			// System.out.println("Date and time parts are modified.");
 			date = _dateAndTimeFormatter.parse(dateString + " " + timeString);
 		} else if (dateString != null && timeString == null) {
 			date = _dateAndTimeFormatter.parse(dateString + " " + (start ? "00:00" : "23:59"));
 		} else if (dateString == null && timeString != null) {
-			//System.out.println("Time part is modified.");
+			// System.out.println("Time part is modified.");
 			date = _dateAndTimeFormatter.parse(_dateOnlyFormatter.format(today) + " " + timeString);
-		} 
+		}
 		return date;
 	}
-	
+
 	/**
 	 * 
 	 * @param dateStr
@@ -408,24 +403,24 @@ public class Task implements Comparable<Task> {
 		return _sortCriterion;
 	}
 
-    /**
-     * Sets the sorting criterion to sort Tasks by.
-     * 
-     * @see Task#compareTo(Task)
-     * @param sortCriterion
-     *            the criteria to sort tasks by
-     * @@author A0130749A
-     */
-    public static void setSortCriterion(String sortCriterion) {
-    	_sortCriterion = sortCriterion;
-    }
+	/**
+	 * Sets the sorting criterion to sort Tasks by.
+	 * 
+	 * @see Task#compareTo(Task)
+	 * @param sortCriterion
+	 *            the criteria to sort tasks by
+	 * @@author A0130749A
+	 */
+	public static void setSortCriterion(String sortCriterion) {
+		_sortCriterion = sortCriterion;
+	}
 
-    /**
-     * Gets the priority of the Task.
-     * 
-     * @return the priority level of the task
-     * @@author A0130749A
-     */
+	/**
+	 * Gets the priority of the Task.
+	 * 
+	 * @return the priority level of the task
+	 * @@author A0130749A
+	 */
 	public int getPriority() {
 		return _priority;
 	}
@@ -514,9 +509,10 @@ public class Task implements Comparable<Task> {
 	public boolean isFloatingTask() {
 		return (_startDate == null && _endDate == null) ? true : false;
 	}
-	
+
 	/**
-	 * Checks if a task is an event (i.e. a task with start and end dates and times).
+	 * Checks if a task is an event (i.e. a task with start and end dates and
+	 * times).
 	 * 
 	 * @return true if the task is an event; false otherwise
 	 * @@author A0130749A
@@ -524,7 +520,7 @@ public class Task implements Comparable<Task> {
 	public boolean isEvent() {
 		return (_startDate != null && _endDate != null) ? true : false;
 	}
-	
+
 	/**
 	 * 
 	 * @return
@@ -566,12 +562,12 @@ public class Task implements Comparable<Task> {
 		this._isValid = _isValid;
 	}
 
-    /**
-     * Creates a copy of this Task object.
-     * 
-     * @return a copy of the Task object
-     * @@author A0130749A
-     */
+	/**
+	 * Creates a copy of this Task object.
+	 * 
+	 * @return a copy of the Task object
+	 * @@author A0130749A
+	 */
 	public Task clone() {
 		Task copy = new Task();
 		copy.setName(_name);
@@ -584,7 +580,7 @@ public class Task implements Comparable<Task> {
 		return copy;
 	}
 
-    /**
+	/**
      * Updates the state of the Task object based on the Command object
      * parameters.
      * 
@@ -684,27 +680,25 @@ public class Task implements Comparable<Task> {
 		
 		return true;
 	}
-	
+
 	/**
-	 * Checks if the date-time properties of the task satisfies the formal definition of a task,
-	 * event or floating task.
+	 * Checks if the date-time properties of the task satisfies the formal
+	 * definition of a task, event or floating task.
 	 * 
-	 * To maintain consistency in the logical processing of a Task object, we define the date-time
-	 * property of a task as below:
+	 * To maintain consistency in the logical processing of a Task object, we
+	 * define the date-time property of a task as below: <br>
 	 * <br>
-	 * <br>
-	 * 1. A typical task ALWAYS has a deadline (i.e. end date-time).
-	 * <br>
-	 * 2. An event ALWAYS has start and end date-times.
-	 * <br>
-	 * 3. A floating task will have NO date-times.
-	 * <br>
+	 * 1. A typical task ALWAYS has a deadline (i.e. end date-time). <br>
+	 * 2. An event ALWAYS has start and end date-times. <br>
+	 * 3. A floating task will have NO date-times. <br>
 	 * <br>
 	 * 
-	 * @param startDate the starting date-time of the task
-	 * @param endDate the ending date-time of the task
-	 * @return true if the date change preserves a task's formal definition as a task, event or floating task;
-	 * 		   false otherwise.
+	 * @param startDate
+	 *            the starting date-time of the task
+	 * @param endDate
+	 *            the ending date-time of the task
+	 * @return true if the date change preserves a task's formal definition as a
+	 *         task, event or floating task; false otherwise.
 	 * @@author A0130749A
 	 */
 	private boolean isAcceptableDateChange(Date startDate, Date endDate) {
@@ -720,35 +714,29 @@ public class Task implements Comparable<Task> {
 			return false;
 		}
 	}
-	
+
 	/**
 	 * Checks the status of a task/event.
 	 * 
-	 * The status of a task is listed below:
-	 * <br>
-	 * 1. Overdue
-	 * <br>
-	 * 2. Due today
-	 * <br>
-	 * 3. Due tomorrow
-	 * <br>
-	 * 4. Due within this week
-	 * <br>
-	 * 5. Floating task
-	 * <br>
-	 * 6. Completed task/event
-	 * <br>
+	 * The status of a task is listed below: <br>
+	 * 1. Overdue <br>
+	 * 2. Due today <br>
+	 * 3. Due tomorrow <br>
+	 * 4. Due within this week <br>
+	 * 5. Floating task <br>
+	 * 6. Completed task/event <br>
 	 * 7. Not falling in any of the above categories
 	 * 
-	 * @param today Today's date
+	 * @param today
+	 *            Today's date
 	 * @return an Integer representing the status of the task/event.
 	 */
 	public int getTaskCode(Date today) {
-		//System.out.println(today);
+		// System.out.println(today);
 		Date todayEnd = (Date) today.clone();
 		todayEnd.setHours(23);
 		todayEnd.setMinutes(59);
-		//System.out.println(todayEnd);
+		// System.out.println(todayEnd);
 		Date tomorrow = (Date) today.clone();
 		tomorrow.setDate(today.getDate() + 1);
 		tomorrow.setHours(0);
@@ -756,12 +744,12 @@ public class Task implements Comparable<Task> {
 		Date tomorrowEnd = (Date) tomorrow.clone();
 		tomorrowEnd.setHours(23);
 		tomorrowEnd.setMinutes(59);
-		//System.out.println(tomorrow);
+		// System.out.println(tomorrow);
 		Date afterTomorrow = (Date) today.clone();
 		afterTomorrow.setDate(today.getDate() + 2);
 		afterTomorrow.setHours(0);
 		afterTomorrow.setMinutes(0);
-		//System.out.println(afterTomorrow);
+		// System.out.println(afterTomorrow);
 		Date thisWeek = (Date) today.clone();
 		thisWeek.setDate(today.getDate() + 7);
 		thisWeek.setHours(23);
@@ -770,83 +758,93 @@ public class Task implements Comparable<Task> {
 			return COMPLETED_TASK_INDEX;
 		} else if (isFloatingTask()) { // is floating task
 			return FLOATING_TASK_INDEX;
-		} else if ((isEvent() && _startDate.compareTo(today) < 0) ||
-				   _endDate.compareTo(today) < 0) { // overdue event or task
+		} else if ((isEvent() && _startDate.compareTo(today) < 0) || _endDate.compareTo(today) < 0) { // overdue
+																										// event
+																										// or
+																										// task
 			return OVERDUE_TASK_INDEX;
-		} else if ((isEvent() && _startDate.compareTo(today) >= 0 && _startDate.compareTo(todayEnd) < 0) ||
-				   (_endDate.compareTo(today) >= 0 && _endDate.compareTo(todayEnd) < 0)) { // today's event or task
+		} else if ((isEvent() && _startDate.compareTo(today) >= 0 && _startDate.compareTo(todayEnd) < 0)
+				|| (_endDate.compareTo(today) >= 0 && _endDate.compareTo(todayEnd) < 0)) { // today's
+																							// event
+																							// or
+																							// task
 			return TODAY_TASK_INDEX;
-		} else if ((isEvent() && _startDate.compareTo(tomorrow) >= 0 && _startDate.compareTo(tomorrowEnd) < 0) ||
-				   (_endDate.compareTo(tomorrow) >= 0 && _endDate.compareTo(tomorrowEnd) < 0)) { // tomorrow's event or task
+		} else if ((isEvent() && _startDate.compareTo(tomorrow) >= 0 && _startDate.compareTo(tomorrowEnd) < 0)
+				|| (_endDate.compareTo(tomorrow) >= 0 && _endDate.compareTo(tomorrowEnd) < 0)) { // tomorrow's
+																									// event
+																									// or
+																									// task
 			return TOMORROW_TASK_INDEX;
-		} else if ((isEvent() && _startDate.compareTo(afterTomorrow) >= 0 && _startDate.compareTo(thisWeek) < 0) ||
-				   (_endDate.compareTo(afterTomorrow) >= 0 && _endDate.compareTo(thisWeek) < 0)) {
+		} else if ((isEvent() && _startDate.compareTo(afterTomorrow) >= 0 && _startDate.compareTo(thisWeek) < 0)
+				|| (_endDate.compareTo(afterTomorrow) >= 0 && _endDate.compareTo(thisWeek) < 0)) {
 			return THIS_WEEK_TASK_INDEX;
 		} else {
 			return UNCODED_TASK_INDEX;
 		}
 	}
 
-    /**
-     * The comparison method for comparing tasks. This method is used for
-     * sorting tasks in certain order. The default sorting order is by task
-     * priority, then by task deadline and finally by name of task. However,
-     * other sorting criteria, such as by name or by date, is also supported.
-     * 
-     * @param task
-     *            the Task object to compare to
-     * @return 0 if the Task compared to is equal to itself; a value less than 0
-     *         if the Task compared to comes after itself; and a value more than
-     *         0 if the Task compared to comes before itself.
-     * @@author A0130749A
-     */
-    @Override
+	/**
+	 * The comparison method for comparing tasks. This method is used for
+	 * sorting tasks in certain order. The default sorting order is by task
+	 * priority, then by task deadline and finally by name of task. However,
+	 * other sorting criteria, such as by name or by date, is also supported.
+	 * 
+	 * @param task
+	 *            the Task object to compare to
+	 * @return 0 if the Task compared to is equal to itself; a value less than 0
+	 *         if the Task compared to comes after itself; and a value more than
+	 *         0 if the Task compared to comes before itself.
+	 * @@author A0130749A
+	 */
+	@Override
 	public int compareTo(Task task) {
 		switch (_sortCriterion) {
-		case SORT_BY_DATE_KEYWORD:
-			// System.out.println("Sorting by date.");
-			return compareByDate(task);
+			case SORT_BY_DATE_KEYWORD:
+				// System.out.println("Sorting by date.");
+				return compareByDate(task);
 
-		case SORT_BY_NAME_KEYWORD:
-			return compareByName(task);
-			
-		case SORT_FLOATING_BY_NAME_KEYWORD:
-			return compareFloatingByName(task);
-			
-		case SORT_BY_PRIORITY_KEYWORD:
-			return compareByPriority(task);
-			
-		case SORT_FLOATING_BY_PRIORITY_KEYWORD:
-			return compareFloatingByPriority(task);
+			case SORT_BY_NAME_KEYWORD:
+				return compareByName(task);
 
-		case SORT_BY_ID_KEYWORD:
-			return compareById(task);
-		
-		case SORT_BY_START_DATE_KEYWORD:
-			return compareByDate(task);
-			
-		case SORT_BY_END_DATE_KEYWORD:
-			return compareByDate(task);
+			case SORT_FLOATING_BY_NAME_KEYWORD:
+				return compareFloatingByName(task);
 
-		default:
-			return compareByDate(task);
+			case SORT_BY_PRIORITY_KEYWORD:
+				return compareByPriority(task);
+
+			case SORT_FLOATING_BY_PRIORITY_KEYWORD:
+				return compareFloatingByPriority(task);
+
+			case SORT_BY_ID_KEYWORD:
+				return compareById(task);
+
+			case SORT_BY_START_DATE_KEYWORD:
+				return compareByDate(task);
+
+			case SORT_BY_END_DATE_KEYWORD:
+				return compareByDate(task);
+
+			default:
+				return compareByDate(task);
 		}
 	}
 
-    /**
-     * The comparison method invoked when sorting criteria is by task deadline.
-     * 
-     * Comparison order is by date, then by priority and then by name.
-     * 
-     * @param task
-     *            the Task object to compare to
-     * @return 0 if the Task compared to is equal to itself; a value less than 0
-     *         if the Task compared to comes after itself; and a value more than
-     *         0 if the Task compared to comes before itself.
-     * @@author A0130749A
-     */
+	/**
+	 * The comparison method invoked when sorting criteria is by task deadline.
+	 * 
+	 * Comparison order is by date, then by priority and then by name.
+	 * 
+	 * @param task
+	 *            the Task object to compare to
+	 * @return 0 if the Task compared to is equal to itself; a value less than 0
+	 *         if the Task compared to comes after itself; and a value more than
+	 *         0 if the Task compared to comes before itself.
+	 * @@author A0130749A
+	 */
 	private int compareByDate(Task task) {
-		if (_startDate != null && task.getStartDate() == null) { // compare event to task
+		if (_startDate != null && task.getStartDate() == null) { // compare
+																	// event to
+																	// task
 			if (task.getEndDate() == null) {
 				return -1;
 			} else if (_startDate.equals(task.getEndDate())) {
@@ -858,7 +856,10 @@ public class Task implements Comparable<Task> {
 			} else {
 				return _startDate.compareTo(task.getEndDate());
 			}
-		} else if (_startDate == null && task.getStartDate() != null) { // compare task to event
+		} else if (_startDate == null && task.getStartDate() != null) { // compare
+																		// task
+																		// to
+																		// event
 			if (_endDate == null) {
 				return 1;
 			} else if (_endDate.equals(task.getStartDate())) {
@@ -870,7 +871,10 @@ public class Task implements Comparable<Task> {
 			} else {
 				return _endDate.compareTo(task.getStartDate());
 			}
-		} else if (_startDate != null && task.getStartDate() != null) { // compare event to event
+		} else if (_startDate != null && task.getStartDate() != null) { // compare
+																		// event
+																		// to
+																		// event
 			if (_startDate.equals(task.getStartDate())) {
 				if (_priority == task.getPriority()) {
 					return _name.compareTo(task.getName());
@@ -899,34 +903,47 @@ public class Task implements Comparable<Task> {
 		}
 	}
 
-    /**
-     * The comparison method invoked when sorting criteria is by task name.
-     * 
-     * Comparison order is by name, then by priority and then by date.
-     * 
-     * @param task
-     *            the Task object to compare to
-     * @return 0 if the Task compared to is equal to itself; a value less than 0
-     *         if the Task compared to comes after itself; and a value more than
-     *         0 if the Task compared to comes before itself.
-     * @@author A0130749A
-     */
+	/**
+	 * The comparison method invoked when sorting criteria is by task name.
+	 * 
+	 * Comparison order is by name, then by priority and then by date.
+	 * 
+	 * @param task
+	 *            the Task object to compare to
+	 * @return 0 if the Task compared to is equal to itself; a value less than 0
+	 *         if the Task compared to comes after itself; and a value more than
+	 *         0 if the Task compared to comes before itself.
+	 * @@author A0130749A
+	 */
 	private int compareByName(Task task) {
 		if (_name.equals(task.getName())) {
 			if (_priority == task.getPriority()) {
-				if (_endDate == null && task.getEndDate() == null) { // compare floating tasks
+				if (_endDate == null && task.getEndDate() == null) { // compare
+																		// floating
+																		// tasks
 					return 0;
-				} else if (_startDate != null && task.getStartDate() == null) { // compare event with task
+				} else if (_startDate != null && task.getStartDate() == null) { // compare
+																				// event
+																				// with
+																				// task
 					return _startDate.compareTo(task.getEndDate());
-				} else if (_startDate == null && task.getStartDate() != null) { // compare task with event
+				} else if (_startDate == null && task.getStartDate() != null) { // compare
+																				// task
+																				// with
+																				// event
 					return _endDate.compareTo(task.getStartDate());
-				} else if (_startDate != null && task.getStartDate() != null) { // compare event with event
+				} else if (_startDate != null && task.getStartDate() != null) { // compare
+																				// event
+																				// with
+																				// event
 					return _startDate.compareTo(task.getStartDate());
 				} else { // compare task with task
 					return _endDate.compareTo(task.getEndDate());
 				}
 			} else {
-				if (_endDate == null && task.getEndDate() == null) { // comparing floating tasks
+				if (_endDate == null && task.getEndDate() == null) { // comparing
+																		// floating
+																		// tasks
 					// do nothing
 					return 0;
 				} else {
@@ -937,20 +954,20 @@ public class Task implements Comparable<Task> {
 			return _name.compareTo(task.getName());
 		}
 	}
-	
+
 	/**
-     * The comparison method invoked when sorting criteria is by task name.
-     * This comparison method is used only on floating tasks.
-     * 
-     * Comparison order is by name, then by priority and then by date.
-     * 
-     * @param task
-     *            the Task object to compare to
-     * @return 0 if the Task compared to is equal to itself; a value less than 0
-     *         if the Task compared to comes after itself; and a value more than
-     *         0 if the Task compared to comes before itself.
-     * @@author A0130749A
-     */
+	 * The comparison method invoked when sorting criteria is by task name. This
+	 * comparison method is used only on floating tasks.
+	 * 
+	 * Comparison order is by name, then by priority and then by date.
+	 * 
+	 * @param task
+	 *            the Task object to compare to
+	 * @return 0 if the Task compared to is equal to itself; a value less than 0
+	 *         if the Task compared to comes after itself; and a value more than
+	 *         0 if the Task compared to comes before itself.
+	 * @@author A0130749A
+	 */
 	private int compareFloatingByName(Task task) {
 		if (_name.equals(task.getName())) {
 			return Integer.compare(_priority, task.getPriority());
@@ -959,19 +976,22 @@ public class Task implements Comparable<Task> {
 		}
 	}
 
-    /**
-     * The comparison method invoked when sorting criteria is by task priority.
-     * 
-     * @param task
-     *            the Task object to compare to
-     * @return 0 if the Task compared to is equal to itself; a value less than 0
-     *         if the Task compared to comes after itself; and a value more than
-     *         0 if the Task compared to comes before itself.
-     * @@author A0130749A
-     */
+	/**
+	 * The comparison method invoked when sorting criteria is by task priority.
+	 * 
+	 * @param task
+	 *            the Task object to compare to
+	 * @return 0 if the Task compared to is equal to itself; a value less than 0
+	 *         if the Task compared to comes after itself; and a value more than
+	 *         0 if the Task compared to comes before itself.
+	 * @@author A0130749A
+	 */
 	private int compareByPriority(Task task) {
 		if (_priority == task.getPriority()) {
-			if (_startDate != null && task.getStartDate() == null) { // compare event with task
+			if (_startDate != null && task.getStartDate() == null) { // compare
+																		// event
+																		// with
+																		// task
 				if (_endDate == null || task.getEndDate() == null) {
 					return _name.compareTo(task.getName());
 				} else if (_startDate.equals(task.getEndDate())) {
@@ -979,7 +999,10 @@ public class Task implements Comparable<Task> {
 				} else {
 					return _startDate.compareTo(task.getEndDate());
 				}
-			} else if (_startDate == null && task.getStartDate() != null) { // compare task with event
+			} else if (_startDate == null && task.getStartDate() != null) { // compare
+																			// task
+																			// with
+																			// event
 				if (_endDate == null || task.getEndDate() == null) {
 					return _name.compareTo(task.getName());
 				} else if (_endDate.equals(task.getStartDate())) {
@@ -987,7 +1010,10 @@ public class Task implements Comparable<Task> {
 				} else {
 					return _endDate.compareTo(task.getStartDate());
 				}
-			} else if (_startDate != null && task.getStartDate() != null) { // compare event with event
+			} else if (_startDate != null && task.getStartDate() != null) { // compare
+																			// event
+																			// with
+																			// event
 				if (_endDate == null || task.getEndDate() == null) {
 					return _name.compareTo(task.getName());
 				} else if (_startDate.equals(task.getStartDate())) {
@@ -1010,18 +1036,18 @@ public class Task implements Comparable<Task> {
 			return Integer.compare(_priority, task.getPriority());
 		}
 	}
-	
+
 	/**
-     * The comparison method invoked when sorting criteria is by task priority.
-     * This comparison method is used only on floating tasks.
-     * 
-     * @param task
-     *            the Task object to compare to
-     * @return 0 if the Task compared to is equal to itself; a value less than 0
-     *         if the Task compared to comes after itself; and a value more than
-     *         0 if the Task compared to comes before itself.
-     * @@author A0130749A
-     */
+	 * The comparison method invoked when sorting criteria is by task priority.
+	 * This comparison method is used only on floating tasks.
+	 * 
+	 * @param task
+	 *            the Task object to compare to
+	 * @return 0 if the Task compared to is equal to itself; a value less than 0
+	 *         if the Task compared to comes after itself; and a value more than
+	 *         0 if the Task compared to comes before itself.
+	 * @@author A0130749A
+	 */
 	private int compareFloatingByPriority(Task task) {
 		if (_priority == task.getPriority()) {
 			return _name.compareTo(task.getName());
@@ -1029,19 +1055,19 @@ public class Task implements Comparable<Task> {
 			return Integer.compare(_priority, task.getPriority());
 		}
 	}
-    
-    /**
-     * The comparison method invoked when sorting criteria is by task ID.
-     * 
-     * @param task
-     *            the Task object to compare to
-     * @return 0 if the Task compared to is equal to itself; a value less than 0
-     *         if the Task compared to comes after itself; and a value more than
-     *         0 if the Task compared to comes before itself.
-     * @@author A0130749A
-     */
-    private int compareById(Task task) {
-    	return Integer.compare(_id, task.getId());
-    }
+
+	/**
+	 * The comparison method invoked when sorting criteria is by task ID.
+	 * 
+	 * @param task
+	 *            the Task object to compare to
+	 * @return 0 if the Task compared to is equal to itself; a value less than 0
+	 *         if the Task compared to comes after itself; and a value more than
+	 *         0 if the Task compared to comes before itself.
+	 * @@author A0130749A
+	 */
+	private int compareById(Task task) {
+		return Integer.compare(_id, task.getId());
+	}
 
 }
