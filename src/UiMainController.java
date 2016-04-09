@@ -397,6 +397,10 @@ public class UiMainController implements Initializable {
 		return second;
 	}
 
+	public SingleSelectionModel<Tab> getSelectionModel() {
+		return this.selectionModel;
+	}
+	
 	private void displaySearch() {
 		Tab searchTab = new Tab();
 

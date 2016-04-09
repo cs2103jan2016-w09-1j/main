@@ -1,37 +1,34 @@
 import static org.junit.Assert.*;
 
+import java.awt.Robot;
+
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import cs2103_w09_1j.esther.UIResult;
 
 public class UiMainControllerTest {
 
+	private static UiMainController controller;
+	private static Robot robot;
+
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+		controller = new UiMainController();
+		robot = new Robot();
+	}
+
 	@Test
 	public void testGetRes() {
-		fail("Not yet implemented");
+		assertEquals(controller.getRes().getClass(), new UIResult().getClass());
 	}
 
 	@Test
 	public void testSetRes() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testOverdueClick() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testUpcomingClick() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testEnterAndNavigate() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testInitialize() {
-		fail("Not yet implemented");
+		UIResult res = new UIResult();
+		res.setCommandType("test cmd");
+		controller.setRes(res);
+		assertEquals(controller.getRes().getCommandType(), "test cmd");
 	}
 
 }
