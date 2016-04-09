@@ -91,8 +91,8 @@ public class DateParser {
 		}
 		while (input != null) {
 			oldInput = input;
-			
-			//Check for date
+
+			// Check for date
 			if (dateTime[0] == null) {
 				String dateFormat = dp.getDateFormat(input);
 				if (!dateFormat.isEmpty()) {
@@ -102,8 +102,8 @@ public class DateParser {
 					input = input.substring(lastIndexOfDate + givenDate.length());
 				}
 			}
-			
-			//Check for time
+
+			// Check for time
 			if (dateTime[1] == null) {
 				String timeFormat = dp.getTimeFormat(input);
 				if (!timeFormat.isEmpty()) {
@@ -113,7 +113,6 @@ public class DateParser {
 					try {
 						inputTime = givenTimeFormat.parse(input);
 					} catch (ParseException e) {
-						e.printStackTrace();
 					}
 					String givenTime = givenTimeFormat.format(inputTime);
 					if (givenTime.charAt(0) == '0') {
@@ -245,7 +244,6 @@ public class DateParser {
 
 			if (currentDayValue >= specificDayValue) {
 				cal.add(Calendar.DATE, daysInAWeek);
-
 			}
 			for (int i = 0; i < nextWeekWords.length; i++) {
 				if (input.toLowerCase().contains(nextWeekWords[i])) {
@@ -323,7 +321,6 @@ public class DateParser {
 		try {
 			date = dateFormat.parse(input);
 		} catch (ParseException e) {
-			throw new InvalidInputException(ERROR_DATEFORMAT);
 		}
 
 		// Check if no year
@@ -361,7 +358,6 @@ public class DateParser {
 		try {
 			date = timeFormat.parse(input);
 		} catch (ParseException e) {
-			throw new InvalidInputException(ERROR_TIMEFORMAT);
 		}
 		return convertToTimeFormat.format(date);
 	}

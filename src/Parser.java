@@ -216,8 +216,6 @@ public class Parser {
 		case SET:
 			parseSet(commandInput);
 			break;
-		default:
-			throw new InvalidInputException(ERROR_UNKNOWN);
 		}
 
 	}
@@ -279,19 +277,12 @@ public class Parser {
 			// Case 3: add something or add "Office meeting on Sunday" (no
 			// date/time)
 			return;
-		} else if (endOfTaskName == inputArray.length) {
-			// Case 4: add something on (empty date/time)
-			throw new InvalidInputException(ERROR_ADDFORMAT);
 		} else {
-			// Case 5: normal case add something on date/time
 			int supposeToBeParseKeyIndex = endOfTaskName + 1;
 			ParseKey parseKey = ParseKey.get(inputArray[supposeToBeParseKeyIndex]);
-			if (parseKey == null) {
-				throw new InvalidInputException(ERROR_ADDFORMAT);
-			}
 
 			if (parseKey == ParseKey.FROM) {
-				// Case 6: add something from date/time to date/time
+				// Case 4: add something from date/time to date/time
 				int toParseKeyIndex = getNextParseKeyIndex(inputArray, supposeToBeParseKeyIndex + 1);
 				if (toParseKeyIndex == -1) {
 					throw new InvalidInputException(ERROR_ADDFORMAT);
@@ -313,16 +304,9 @@ public class Parser {
 				addStartEndDateTime(startDateTimeArray, endDateTimeArray);
 				int startValid = addDateTime(startDateTimeArray, TaskField.STARTDATE, TaskField.STARTTIME);
 				int endValid = addDateTime(endDateTimeArray, TaskField.ENDDATE, TaskField.ENDTIME);
-				if (startValid == -1 || endValid == -1) {
-					throw new InvalidInputException(ERROR_DATETIMEFORMAT);
-				}
 			} else {
-				// Case 7: add something on date/time
+				// Case 5: add something on date/time
 				int otherParseKeyIndex = getNextParseKeyIndex(inputArray, supposeToBeParseKeyIndex + 1);
-				if (otherParseKeyIndex != -1) {
-					throw new InvalidInputException(ERROR_ADDFORMAT);
-				}
-
 				String dateTime = "";
 				for (int i = supposeToBeParseKeyIndex + 1; i < inputArray.length; i++) {
 					dateTime += inputArray[i] + WHITESPACE;
@@ -350,9 +334,8 @@ public class Parser {
 		String[] inputArray = input.split(WHITESPACE);
 
 		int toParseKeyIndex = getToKeyIndex(inputArray, 0);
-
 		// Case 1: update meeting name office meeting
-		if (toParseKeyIndex == -1) {
+		if (toParseKeyIndex == -1 || inputArray.length == toParseKeyIndex) {
 			throw new InvalidInputException(ERROR_UPDATEFORMAT);
 		}
 
@@ -393,9 +376,7 @@ public class Parser {
 		}
 
 		TaskField aliaseField = TaskField.get(taskFieldName);
-		if (aliaseField == null) {
-			throw new InvalidInputException(ERROR_UPDATEFORMAT);
-		} else if (aliaseField == TaskField.NAME) {
+		if (aliaseField == TaskField.NAME) {
 			aliaseField = TaskField.UPDATENAME;
 		}
 
@@ -403,7 +384,7 @@ public class Parser {
 		for (int i = toParseKeyIndex + 1; i < inputArray.length; i++) {
 			newValue += inputArray[i] + WHITESPACE;
 		}
-		newValue = newValue.substring(0, newValue.length() - 1);
+		newValue = newValue.trim();
 		if (newValue.isEmpty()) {
 			throw new InvalidInputException(ERROR_UPDATEFORMAT);
 		}
@@ -497,7 +478,7 @@ public class Parser {
 			// Case 2: name search using "for" key
 			if (term.charAt(0) == QUOTE) {
 				if (term.charAt(term.length() - 1) == QUOTE) {
-					term = term.substring(1, input.length() - 1);
+					term = term.substring(1, term.length() - 1);
 				} else {
 					throw new InvalidInputException(ERROR_SEARCHFORMAT);
 				}
@@ -758,7 +739,7 @@ public class Parser {
 			startDate = sdf.parse(startDateTimeArray[0]);
 			endDate = sdf.parse(endDateTimeArray[0]);
 		} catch (ParseException e) {
-			throw new InvalidInputException(ERROR_DATETIMEFORMAT);
+
 		}
 
 		// check if start date is after end date
