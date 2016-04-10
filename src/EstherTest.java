@@ -57,7 +57,7 @@ public class EstherTest {
 	private Logic logic;
 
 	private final boolean DEBUG = false;
-	private final boolean EXHAUSTIVE = false;
+	private final boolean EXHAUSTIVE = true;
 
 	@Before
 	public void init() throws ParseException, IOException {
@@ -354,8 +354,6 @@ public class EstherTest {
 					tryCommand("update 0 date to " + laterTester.getDTString());
 					if (laterTester.hasDate()) {
 						tryCommand("update 0 sd to " + tester.getDTString());
-					} else {
-						tryCommand("update 0 st to " + tester.getTString());
 					}
 					assertTrue(verifyEndDate(laterTester));
 					assertTrue(verifyStartDate(tester));
@@ -641,14 +639,6 @@ public class EstherTest {
 
 	private Task getLastModifiedTask() {
 		return getUIRes().getModifiedTask();
-	}
-
-	private Task getLastTaskInBuffer(int whichBuffer) {
-		if (whichBuffer < 0 || whichBuffer > getUIRes().NUM_BUFFERS - 1) {
-			return getUIRes().getTask(whichBuffer, getUIRes().getBuffer(whichBuffer).size() - 1);
-		}
-		System.out.println("Fail buffer: " + whichBuffer);
-		return null;
 	}
 
 	private void deleteFiles() {

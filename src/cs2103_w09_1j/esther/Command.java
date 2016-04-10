@@ -165,14 +165,6 @@ public class Command {
 			value = _parameters.get(parameter);
 			break;
 
-		case KEYWORD:
-			value = _parameters.get(parameter);
-			break;
-
-		case PATH:
-			value = _parameters.get(parameter);
-			break;
-
 		default:
 			value = null;
 			break;

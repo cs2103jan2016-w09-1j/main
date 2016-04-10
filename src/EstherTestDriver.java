@@ -8,11 +8,11 @@ import cs2103_w09_1j.esther.TaskTest;
 @RunWith(Suite.class)
 @SuiteClasses({ 
 	EstherTest.class, 
-	LogicTest.class, 
 	ParserTest.class, 
 	DateParserTest.class,
 	TaskTest.class,
-	StorageTest.class
+	StorageTest.class,
+	LogicTest.class
 })
 
 public class EstherTestDriver {
