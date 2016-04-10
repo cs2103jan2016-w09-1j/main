@@ -21,10 +21,7 @@ import cs2103_w09_1j.esther.Status;
 import cs2103_w09_1j.esther.InvalidInputException;
 
 /**
- * ============= [LOGIC COMPONENT FOR ESTHER] =============
- * <br>
- * <br>
- * Logic handles all operations as requested by the user.
+ * The <code>Logic</code> handles all operations as requested by the user.
  * A list of operations that are supported are:
  * <br>
  * 1. CRUD
@@ -42,43 +39,36 @@ import cs2103_w09_1j.esther.InvalidInputException;
  * which will then be shown to the user.
  * <br>
  * <br>
- * If operations succeed, <code>UIResult</code> is passed to UI for
- * display to the user. Otherwise, an error message is
- * shown to the user.
- * <br>
- * <br>
- * =================== [CURRENT STATUS] ===================
- * <br>
- * <br>
- * Most of ESTHER is broken due to Task changes. When all
- * necessary fixes are done, will proceed to test.
+ * For all operations, a <code>UIResult</code> is passed to UI for
+ * display to the user and a message indicating the status of the
+ * user operation is displayed to the user through the UI.
  * 
  * @@author A0129660A
  */
 class Logic {
-	
-	private static final int NOT_FOUND_INDEX = -1;
-	private static final int DUPLICATE_TASK_INDEX = -2;
-	
-	// TODO: finalize buffer implementation
-	/*
-	 * Note: this implementation will affect ALL logic operations.
-	 * */
-	private static final int NUM_TASK_BUFFERS = 7;
-	
+
 	private static final String EMPTY_STATE = "Empty";
 	private static final String DEFAULT_TASKS_SORT_ORDER = Task.TaskField.ENDDATE.getTaskKeyName();
-	private static final String DEFAULT_FLOATING_TASKS_SORT_ORDER = "id";
 	private static final String SEARCH_BEFORE = "before";
 	private static final String SEARCH_ON = "on";
 	private static final String SEARCH_AFTER = "after";
+	private static final String INVALID_COMMAND = "Invalid";
+	private static final String INITIALIZE_COMMAND = "Initialize";
+	
 	private static final int TASK_LIST_POSITION = 0;
 	private static final int TASK_ITEM_POSITION = 1;
+	private static final int NOT_APPLICABLE_INDEX = -1;
+	private static final int NOT_FOUND_INDEX = -1;
+	private static final int DUPLICATE_TASK_INDEX = -2;
+	private static final int NUM_TASK_BUFFERS = 7;
+	
+	// To turn off logging, set this boolean to false
+	private static boolean toDebug = true;
 	
 	private Parser _parser;
 	private Storage _storage;
-	private ArrayList<Task> _fullTaskList;
 	private ArrayList<ArrayList<Task>> _taskDisplayLists;
+	private ArrayList<Task> _fullTaskList;
 	private ArrayList<Task> _searchList;
 	private ArrayList<Task> _temporarySortList;
 	private Stack<State> _undoStack;
@@ -90,19 +80,17 @@ class Logic {
 	// =========================================================================================== //
 	// =========================== HIGH-LEVEL IMPLEMENTATION OF LOGIC ============================ //
 	// These methods are the highest-level implementation of the core structure of Logic.          //
-	// The important methods falling into this category are: 									   //
+	// The most important methods falling into this category are: 								   //
 	// 1. Constructor, Logic()																	   //
 	// 2. public String executeCommand(String input)											   //
 	// 3. private String executeCommand(Command command)										   //
 	//																							   //
 	// As new functions are added, or as existing inner functions are extended,					   //
-	// method executeCommand(Command command) will be subject to more and more changes.			   //
+	// the method executeCommand(Command command) will be subject to more and more changes.		   //
 	// =========================================================================================== //
 	
 	/**
 	 * Constructs a Logic component instance.
-	 * 
-	 * 
 	 */
 	public Logic() throws ParseException, IOException {
 		initializeLogger();
@@ -120,30 +108,26 @@ class Logic {
 	 * @see    Logic#executeCommand(Command)
 	 * @param  userInput the input that the user entered
 	 * @return a message indicating the status of the operation carried out
-	 * 
 	 */
-	// TODO: finalize implementation
-	// Note that Parser will throw exception in future, conditional should be modified
-	public String executeCommand(String userInput) {
-		logger.logp(Level.INFO, "Logic", "executeCommand",
-					"Parsing user input into Command object for execution.", userInput);
-		int indices[] = {-1, -1};
-		try {
-			Command command = _parser.acceptUserInput(userInput);
-			if (command == null) {
+	public String executeCommand(String userInput) {		
+		logger.logp(Level.INFO, "Logic", "executeCommand", "Parsing user input into Command object for execution.", userInput);
+		int[] indices = createDefaultIndices();		
+		try {			
+			Command command = _parser.acceptUserInput(userInput);			
+			if (isNullCommand(command)) {				
 				logger.log(Level.WARNING, "Error from Parser: encountered null Command object.");
-				setUiTaskDisplays("Invalid", indices);
+				setUiTaskDisplays(INVALID_COMMAND, indices);
 				Status._outcome = Status.Outcome.ERROR;
 				Status._errorCode = Status.ErrorCode.INVALID_COMMAND;
-				return Status.getMessage(null, null, null);
-			}
+				return Status.getMessage(null, null, null);				
+			}			
 			return executeCommand(command);
-		} catch (InvalidInputException iie) {
+		} catch (InvalidInputException iie) {			
 			logger.log(Level.WARNING, "Invalid input supplied by user.");
 			setUiTaskDisplays("Invalid", indices);
 			Status._outcome = Status.Outcome.ERROR;
-			Status._errorCode = Status.ErrorCode.INVALID_COMMAND;
-			return iie.getMessage();
+			Status._errorCode = Status.ErrorCode.INVALID_COMMAND;	
+			return iie.getMessage();			
 		}
 	}
 	
@@ -157,16 +141,15 @@ class Logic {
 	 * in is not null.
 	 * 
 	 * @param  command	the Command object containing all required information
-	 * @return a message indicating the status of the operation carried out
+	 * @return			a message indicating the status of the operation carried out
 	 * 
 	 */
 	protected String executeCommand(Command command) {
-		assert command != null;
 		String commandName = command.getCommand();
 		CommandKey commandType = CommandKey.get(commandName);
-		logger.logp(Level.INFO, "Logic", "executeCommand(Command command)",
-					"Executing on Command object.", commandType);
+		logger.logp(Level.INFO, "Logic", "executeCommand(Command command)",	"Executing on Command object.", commandType);
 		String statusMessage;
+		
 		switch (commandType) {
 			case ADD : 
 				statusMessage = addTask(command);
@@ -201,22 +184,15 @@ class Logic {
 			  	break;
 				
 			case HELP :
-				int indices[] = {-1, -1};
-				setUiTaskDisplays(command.getCommand(), indices);
-				Status._outcome = Status.Outcome.SUCCESS;
-				statusMessage = Status.getMessage(null, null, commandName);
+				statusMessage = help(command);
 				break;
 				
 			default :
-				assert commandType != null;
-				logger.logp(Level.INFO, "Logic", "executeCommand(Command command)",
-							"Unrecognized command.");
-				int indices2[] = {-1, -1};
-				setUiTaskDisplays("Invalid", indices2);
-				Status._outcome = Status.Outcome.ERROR;
-				Status._errorCode = Status.ErrorCode.INVALID_COMMAND;
-				statusMessage = Status.getMessage(null, null, commandName);
-				break;
+				/* 
+				 * This state is unreachable because the Parser would have guarded against
+				 *  weird Command objects.
+				 */
+				throw new Error("Impossible state.");
 		}
 		return statusMessage;
 	}
@@ -228,11 +204,8 @@ class Logic {
 
 	// =========================================================================================== //
 	// ================================ SYSTEM METHODS FOR LOGIC ================================= //
-	// These methods are used to maintain the inner workings of Logic and are unrelated to         //
-	// user-related operations.																	   //
-	//																							   //
-	// SOME of these methods may be removed upon release phase, as these methods are mostly		   //
-	// used only for testing.																	   //
+	// These methods are used to maintain the inner workings of Logic and are usually			   //
+	// unrelated to user-related operations.													   //
 	// =========================================================================================== //
 	
 	/**
@@ -249,34 +222,74 @@ class Logic {
 		return _fullTaskList;
 	}
 	
+	/**
+	 * Retrieves the list of overdue tasks stored in Logic.
+	 * 
+	 * @return the list of overdue tasks
+	 */
 	protected ArrayList<Task> getOverdueBuffer() {
 		return _taskDisplayLists.get(Task.OVERDUE_TASK_INDEX);
 	}
 	
+	/**
+	 * Retrieves the list of today's tasks stored in Logic.
+	 * 
+	 * @return the list of today's tasks
+	 */
 	protected ArrayList<Task> getTodayBuffer() {
 		return _taskDisplayLists.get(Task.TODAY_TASK_INDEX);
 	}
 	
+	/**
+	 * Retrieves the list of tomorrow's tasks stored in Logic.
+	 * 
+	 * @return the list of tomorrow's tasks
+	 */
 	protected ArrayList<Task> getTomorrowBuffer() {
 		return _taskDisplayLists.get(Task.TOMORROW_TASK_INDEX);
 	}
 	
+	/**
+	 * Retrieves the list of this week's tasks stored in Logic.
+	 * 
+	 * @return the list of this week's tasks
+	 */
 	protected ArrayList<Task> getThisWeekBuffer() {
 		return _taskDisplayLists.get(Task.THIS_WEEK_TASK_INDEX);
 	}
 	
+	/**
+	 * Retrieves the list of other tasks stored in Logic, excluding floating or completed tasks.
+	 * 
+	 * @return the list of other tasks, excluding floating or completed tasks
+	 */
 	protected ArrayList<Task> getRemainingBuffer() {
 		return _taskDisplayLists.get(Task.UNCODED_TASK_INDEX);
 	}
 	
+	/**
+	 * Retrieves the list of floating tasks stored in Logic.
+	 * 
+	 * @return the list of floating tasks.
+	 */
 	protected ArrayList<Task> getFloatingBuffer() {
 		return _taskDisplayLists.get(Task.FLOATING_TASK_INDEX);
 	}
 	
+	/**
+	 * Retrieves the list of completed tasks stored in Logic.
+	 * 
+	 * @return the list of completed tasks.
+	 */
 	protected ArrayList<Task> getCompletedBuffer() {
 		return _taskDisplayLists.get(Task.COMPLETED_TASK_INDEX);
 	}
 	
+	/**
+	 * Retrieves the list of all tasks stored in Logic, excluding completed tasks.
+	 * 
+	 * @return the list of all tasks, excluding completed tasks.
+	 */
 	protected ArrayList<Task> getAllTasks() {
 		ArrayList<Task> allTasks = new ArrayList<Task>();
 		allTasks.addAll(getOverdueBuffer());
@@ -288,20 +301,70 @@ class Logic {
 		return allTasks;
 	}
 	
+	/**
+	 * Retrieves the temporary list used for sorting in Logic.
+	 * 
+	 * @return the temporary list used for sorting
+	 */
 	protected ArrayList<Task> getTemporarySortList() {
 		return _temporarySortList;
 	}
 	
+	/**
+	 * Retrieves the list representing the search results of a search query.
+	 * 
+	 * @return the list of Tasks representing the search result
+	 */
 	protected ArrayList<Task> getSearchResults() {
 		return _searchList;
 	}
 	
+	/**
+	 * Updates the view of the <code>UserInterface</code> that is shown to the user.
+	 * 
+	 * @param commandType	the command that was executed
+	 * @param indices		a tuple representing [UI_tab_index, task_item_index]
+	 */
 	public void setUiTaskDisplays(String commandType, int[] indices) {
 		UIResult displayResult = createDisplayResult(commandType, indices);
 		UiMainController.setRes(displayResult);
 	}
 	
+	/**
+	 * Creates a <code>UIResult</code> object representing the view that the user would see
+	 * in the UI.
+	 * 
+	 * @param commandType	the type of user operation to be carried out
+	 * @param indices		the indices used for showing focus to affected Task entries in <code>UIResult</code>
+	 * @return				a <code>UIResult</code> that will be used by the UI
+	 */
 	public UIResult createDisplayResult(String commandType, int[] indices) {
+		UIResult result = setUiResultWithIndividualLists();
+		if (isSortCommand(commandType)) {
+			Collections.sort(_temporarySortList);
+			result.setAllTaskBuffer(getTemporarySortList());
+		} else {
+			if (isUndoCommand(commandType)) {
+				result.setAllTaskBuffer(getTemporarySortList());
+			} else {
+				ArrayList<Task> allTasks = getAllTasks();
+				result.setAllTaskBuffer(allTasks);
+			}
+		}
+		result.setCommandType(commandType);
+		result.setIndex(indices);
+		if (isSearchCommand(commandType)) {
+			result.setSearchBuffer(_searchList);
+		}
+		return result;
+	}
+
+	/**
+	 * Initializes a <code>UIResult</code> object with the lists of tasks from each category.
+	 * 
+	 * @return an initialized <code>UIResult</code> object
+	 */
+	private UIResult setUiResultWithIndividualLists() {
 		UIResult result = new UIResult();
 		result.setOverdueBuffer(_taskDisplayLists.get(Task.OVERDUE_TASK_INDEX));
 		result.setTodayBuffer(_taskDisplayLists.get(Task.TODAY_TASK_INDEX));
@@ -309,42 +372,13 @@ class Logic {
 		result.setWeekBuffer(_taskDisplayLists.get(Task.THIS_WEEK_TASK_INDEX));
 		result.setFloatingBuffer(_taskDisplayLists.get(Task.FLOATING_TASK_INDEX));
 		result.setCompletedBuffer(_taskDisplayLists.get(Task.COMPLETED_TASK_INDEX));
-		if (!commandType.equalsIgnoreCase(Command.CommandKey.SORT.getCommandKeyName())) {
-			if (commandType.equalsIgnoreCase(Command.CommandKey.UNDO.getCommandKeyName())) {
-				////System.out.println("Undoing sort.");
-				ArrayList<Task> copy = new ArrayList<Task>();
-				copy.addAll(_temporarySortList);
-				result.setAllTaskBuffer(copy);
-				//_temporarySortList = null;
-			} else {
-				ArrayList<Task> allTasks = new ArrayList<Task>();
-				allTasks.addAll(_taskDisplayLists.get(Task.OVERDUE_TASK_INDEX));
-				allTasks.addAll(_taskDisplayLists.get(Task.TODAY_TASK_INDEX));
-				allTasks.addAll(_taskDisplayLists.get(Task.TOMORROW_TASK_INDEX));
-				allTasks.addAll(_taskDisplayLists.get(Task.THIS_WEEK_TASK_INDEX));
-				allTasks.addAll(_taskDisplayLists.get(Task.UNCODED_TASK_INDEX));
-				allTasks.addAll(_taskDisplayLists.get(Task.FLOATING_TASK_INDEX));
-				result.setAllTaskBuffer(allTasks);
-			}
-		} else {
-			Collections.sort(_temporarySortList);
-			ArrayList<Task> copy = new ArrayList<Task>();
-			copy.addAll(_temporarySortList);
-			result.setAllTaskBuffer(copy);
-			//_temporarySortList = null;
-		}
-		result.setCommandType(commandType);
-		result.setIndex(indices);
-		if (commandType.equals("search")) {
-			result.setSearchBuffer(_searchList);
-		}
 		return result;
 	}
 	
 	/**
 	 * Initializes a system logger. Used for testing purposes only.
 	 * 
-	 * 
+	 * To turn logging on or off, simply modify the <code>toDebug</code> boolean attribute.
 	 */
 	private void initializeLogger() {
 		try {
@@ -354,19 +388,22 @@ class Logic {
 			if(!logsDir.exists()){
 			    logsDir.mkdirs();
 			}
-			FileHandler fh = new FileHandler("logs/Logic.log");
+			if (toDebug) {
+				logger.setLevel(Level.SEVERE);
+			} else {
+				logger.setLevel(Level.OFF);
+			}
+			FileHandler fh = new FileHandler("Logic.log");
 			logger.addHandler(fh);
-			SimpleFormatter formatter = new SimpleFormatter();  
+			SimpleFormatter formatter = new SimpleFormatter();
 			fh.setFormatter(formatter);
 			logger.logp(Level.CONFIG, "Logic", "initializeLogger()", "Initializing logger.");
 		} catch (SecurityException se) {
-			logger.logp(Level.SEVERE, "Logic", "initializeLogger()",
-						"Not granted permission for logging.", se);
-			//System.exit(1);
+			logger.logp(Level.SEVERE, "Logic", "initializeLogger()", "Not granted permission for logging.", se);
+			System.exit(1);
 		} catch (IOException ioe) {
-			logger.logp(Level.SEVERE, "Logic", "initializeLogger()",
-						"Cannot create file for logging.", ioe);
-			//System.exit(1);
+			logger.logp(Level.SEVERE, "Logic", "initializeLogger()", "Cannot create file for logging.", ioe);
+			System.exit(1);
 		}
 	}
 	
@@ -375,7 +412,6 @@ class Logic {
 	 * 
 	 * @throws ParseException
 	 * @throws IOException
-	 * 
 	 */
 	private void initializeStorageAndConfig() throws ParseException, IOException {
 		_storage = new Storage();
@@ -384,45 +420,36 @@ class Logic {
 		_config = _storage.getConfig();
 		logger.logp(Level.CONFIG, "Storage", "getConfig()", "Initializing Config.");
 		assert _config != null;
-		////System.out.println(_config.getReferenceID());
 		Task.setGlobalId(_config.getReferenceID());
-		////System.out.println("Storage and Config initialized.");
 	}
 
 	/**
 	 * Initializes Parser system in Logic.
-	 * 
-	 * 
 	 */
 	private void initializeParser() {
 		logger.logp(Level.CONFIG, "Parser", "Parser()", "Initializing Parser.");
 		HashMap<String, String> fieldNameAliases = _config.getFieldNameAliases();
 		_parser = new Parser(fieldNameAliases);
 		assert _parser != null;
-		////System.out.println("Parser initialized.");
 	}
 	
 	/**
 	 * Initializes internal system variables in Logic.
+	 * 
 	 * @throws IOException 
-	 * @throws ParseException 
-	 * 
-	 * 
+	 * @throws ParseException
 	 */
 	private void initializeLogicSystemVariables() throws ParseException, IOException {
 		initializeBuffers();
-		logger.logp(Level.CONFIG, "Logic", "updateInternalStorage()",
-					"Reading tasks into inner memory upon initialization.");
+		logger.logp(Level.CONFIG, "Logic", "updateInternalStorage()", "Reading tasks into inner memory upon initialization.");
 		updateInternalStorage();
 		_undoStack = new Stack<State>();
-		////System.out.println("Inner variables initialized.");
-		setUiTaskDisplays("initialize", new int[2]);
+		int indices[] = createDefaultIndices();
+		setUiTaskDisplays(INITIALIZE_COMMAND, indices);
 	}
 	
 	/**
 	 * Sets up all inner buffers needed for UI to show custom task views.
-	 * 
-	 * 
 	 */
 	private void initializeBuffers() {
 		_taskDisplayLists = new ArrayList<ArrayList<Task>>(NUM_TASK_BUFFERS);
@@ -432,38 +459,26 @@ class Logic {
 	}
 	
 	/**
-	 * Attaches a shutdown-event handler to perform necessary system updates
-	 * when ESTHER is shut down.
-	 * 
-	 * 
+	 * Attaches a shutdown-event handler to perform necessary system updates when ESTHER is shut down.
 	 */
 	private void attachShutdownHandler() {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 	        @Override
 	        public void run() {
-	        	////System.out.println("Saving current system configurations.");
 	            try {
-	            	logger.logp(Level.INFO, "Logic", "addTask(Command command)",
-	            				  "Updating Config file in Logic and Storage.");
+	            	logger.logp(Level.INFO, "Logic", "addTask(Command command)", "Updating Config file in Logic and Storage.");
 	            	_config.setReferenceID(Task.getGlobalId());
 	            	_storage.setConfig(_config);
 	            } catch (IOException ioe) {
-	            	logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
-	            				  "Cannot update Config file in Logic and Storage.", ioe);
-	                //System.out.println("Error updating Config file in both Logic and Storage.");
+	            	logger.logp(Level.SEVERE, "Logic", "addTask(Command command)", "Cannot update Config file in Logic and Storage.", ioe);
 	            }
 	        }   
 	    });
 	}
 	
 	/**
-	 * Updates the internal memory of the Logic to account
-	 * for any changes done to the text file.
-	 * 
-	 * 
+	 * Updates the internal memory of the Logic to account for any changes done to the text file.
 	 */
-	// TODO: finalize implementation, error handling
-	// current implementation is to terminate program, for now
 	public void updateInternalStorage() {
 		logger.logp(Level.INFO, "Logic", "updateInternalStorage()", "Retrieving tasks list from Storage.");
 		try {
@@ -471,30 +486,20 @@ class Logic {
 			assert _fullTaskList != null;
 			filterTasksToLists(DEFAULT_TASKS_SORT_ORDER, true, true);
 		} catch (Exception e) {
-			// TODO: error handling
-			logger.logp(Level.SEVERE, "Storage", "readSaveFile()",
-						"Cannot read from save file in Storage.", e);
+			logger.logp(Level.SEVERE, "Storage", "readSaveFile()", "Cannot read from save file in Storage.", e);
 			e.printStackTrace();
 			System.exit(1);
 		}
 	}
 	
 	/**
-	 * Empties the text file of any contents.
-	 * Only used for internal testing.
-	 * 
-	 * 
+	 * Empties the text file of any contents. Only used for internal testing.
 	 */
 	public void flushInternalStorage() {
-		/* 
-		 * Might want to consider insert try-catch block here
-		 * Then again, if this method isn't needed anymore in the future,
-		 * this method can just be removed totally. 
-		 */
 		try {
 			_storage.flushSaveFile();
 		} catch (IOException ioe) {
-			// TODO: handle exception
+			//ioe.printStackTrace();
 		}
 		_fullTaskList = new ArrayList<Task>();
 		initializeBuffers();
@@ -504,7 +509,6 @@ class Logic {
 	 * Update Logic's list of tasks into text file.
 	 * 
 	 * @throws IOException
-	 * 
 	 */
 	private void updateTextFile() throws IOException {
 		_fullTaskList = new ArrayList<Task>();
@@ -515,93 +519,67 @@ class Logic {
 	}
 	
 	/**
+	 * Creates a default tuple of indices to be used in <code>UIResult</code> object.
+	 * 
+	 * @return a tuple of 2 indices representing [UI_tab_index, task_item_index], set to [-1, -1]
+	 */
+	private int[] createDefaultIndices() {		
+		int indices[] = {NOT_APPLICABLE_INDEX, NOT_APPLICABLE_INDEX};
+		return indices;		
+	}
+	
+	/**
 	 * Updates the undo stack whenever a user operation is carried out.
 	 * 
-	 * @param command a Command object representing the user operation being carried out
-	 * @param task a Task object representing the task that was operated on
-	 * 
+	 * @param state a <code>State</code> object representing the previous program state
 	 */
 	private void updateUndoStack(State state) {
-		//_undoStack.push(createPreviousState(command, _taskDisplayLists, indices));
 		_undoStack.push(state);
 	}
 	
 	/**
-	 * Separates floating tasks from tasks with deadlines for proper sorting.
-	 * 
-	 * 
+	 * Separates tasks to their respective categories for proper sorting.
 	 */
 	private void filterTasksToLists(String sortOrder, boolean toSort, boolean toInitialize) {
 		if (toInitialize) {
-			Iterator<Task> iter = _fullTaskList.iterator();
-			_today = new Date();
-			while (iter.hasNext()) {
-				Task currentTask = iter.next();
-				_taskDisplayLists.get(currentTask.getTaskCode(_today)).add(currentTask);
-				iter.remove();
-			}
-			assert _fullTaskList.size() == 0;
+			placeTasksIntoCategories();
 		}
 		
 		if (toSort) {
-			Task.setSortCriterion(sortOrder);
-			if (sortOrder.equals(Task.SORT_BY_START_DATE_KEYWORD) ||
-				sortOrder.equals(Task.SORT_BY_END_DATE_KEYWORD) ||
-				sortOrder.equals(Task.SORT_BY_DATE_KEYWORD)) {
-				//Task.setSortCriterion(Task.SORT_BY_DATE_KEYWORD);
-				_temporarySortList = new ArrayList<Task>();
-				for (int i = 0; i < NUM_TASK_BUFFERS; i++) {
-					/*if (i == Task.FLOATING_TASK_INDEX || i == Task.COMPLETED_TASK_INDEX) {
-					
-					} else {*/
-					if (i != Task.COMPLETED_TASK_INDEX) {
-						_temporarySortList.addAll(_taskDisplayLists.get(i));
-						Collections.sort(_taskDisplayLists.get(i));
-					}
-					//}
-				}
-				//Task.setSortCriterion(DEFAULT_FLOATING_TASKS_SORT_ORDER);
-				//Collections.sort(_taskDisplayLists.get(Task.FLOATING_TASK_INDEX));
-				//Collections.sort(_taskDisplayLists.get(Task.COMPLETED_TASK_INDEX));
-				//Task.setSortCriterion(sortOrder);
-			} else if (sortOrder.equals(Task.SORT_BY_NAME_KEYWORD)) {
-				// specialized sorting for floating and completed tasks to be done separately
-				_temporarySortList = new ArrayList<Task>();
-				for (int i = 0; i < NUM_TASK_BUFFERS; i++) {
-					/*if (i == Task.FLOATING_TASK_INDEX || i == Task.COMPLETED_TASK_INDEX) {
-						
-					} else {*/
-					if (i != Task.COMPLETED_TASK_INDEX) {
-						_temporarySortList.addAll(_taskDisplayLists.get(i));
-						Collections.sort(_taskDisplayLists.get(i));
-					}
-					//}
-				}
-				//Task.setSortCriterion(Task.SORT_FLOATING_BY_NAME_KEYWORD);
-				//Collections.sort(_taskDisplayLists.get(Task.FLOATING_TASK_INDEX));
-				//Task.setSortCriterion(DEFAULT_FLOATING_TASKS_SORT_ORDER);
-				//Collections.sort(_taskDisplayLists.get(Task.COMPLETED_TASK_INDEX));
-			} else if (sortOrder.equals(Task.SORT_BY_PRIORITY_KEYWORD)) {
-				_temporarySortList = new ArrayList<Task>();
-				// specialized sorting for floating and completed tasks to be done separately
-				for (int i = 0; i < NUM_TASK_BUFFERS; i++) {
-					/*if (i == Task.FLOATING_TASK_INDEX || i == Task.COMPLETED_TASK_INDEX) {
-						
-					} else {*/
-					if (i != Task.COMPLETED_TASK_INDEX) {
-						_temporarySortList.addAll(_taskDisplayLists.get(i));
-						Collections.sort(_taskDisplayLists.get(i));
-					}
-					//}
-				}
-				//Task.setSortCriterion(Task.SORT_FLOATING_BY_PRIORITY_KEYWORD);
-				//Collections.sort(_taskDisplayLists.get(Task.FLOATING_TASK_INDEX));
-				//Task.setSortCriterion(DEFAULT_FLOATING_TASKS_SORT_ORDER);
-				//Collections.sort(_taskDisplayLists.get(Task.COMPLETED_TASK_INDEX));
+			if (isRecognizedSortOrder(sortOrder)) {
+				Task.setSortCriterion(sortOrder);
+				sortAllLists();
 			} else {
 				// do nothing
 			}
 		}
+	}
+
+	/**
+	 * Sorts each individual category list.
+	 */
+	private void sortAllLists() {
+		_temporarySortList = new ArrayList<Task>();
+		for (int i = 0; i < NUM_TASK_BUFFERS; i++) {
+			if (i != Task.COMPLETED_TASK_INDEX) {
+				_temporarySortList.addAll(_taskDisplayLists.get(i));
+				Collections.sort(_taskDisplayLists.get(i));
+			}
+		}
+	}
+
+	/**
+	 * Extracts each task and stores them in the respective category lists.
+	 */
+	private void placeTasksIntoCategories() {
+		Iterator<Task> iter = _fullTaskList.iterator();
+		_today = new Date();
+		while (iter.hasNext()) {
+			Task currentTask = iter.next();
+			_taskDisplayLists.get(currentTask.getTaskCode(_today)).add(currentTask);
+			iter.remove();
+		}
+		assert _fullTaskList.size() == 0;
 	}
 
 	
@@ -683,146 +661,287 @@ class Logic {
 
 	/**
 	 * Sorts the list of tasks recorded in the text file.
-	 * By default, tasks are sorted by the order defined
-	 * in the Task class.
-	 * 
-	 * NOTE: implementation can be extended to sort the
-	 * list of tasks by user-defined criteria.
 	 * 
 	 * @see 	Task#compareTo(Task)
 	 * @return	a message indicating the status of the sort operation
-	 * 
 	 */
 	private String sortFile(Command command) {
-		int indices[] = {-1, -1};
-		////System.out.println("Buffer pos: " + indices[0] + "Task pos: " + indices[1]);
+		int indices[] = createDefaultIndices();
 		State oldState = createPreviousState(command, indices);
-		if (_temporarySortList.size() == 0 || _temporarySortList == null) {
-			oldState.setAllTaskList(getAllTasks());
-		} else {
+		if (isSortedBefore()) {
 			oldState.setAllTaskList(_temporarySortList);
+		} else {
+			oldState.setAllTaskList(getAllTasks());
 		}
-		////System.out.println(_undoStack.size());
 		sortAndUpdateFile(command);
 		updateUndoStack(oldState);
 		setUiTaskDisplays(command.getCommand(), indices);
 		return getOperationStatus(command);
 	}
+
+	/**
+	 * Checks if a sort operation has been performed before by the user.
+	 * 
+	 * @return true if a sort operation was performed previously; false otherwise.
+	 */
+	private boolean isSortedBefore() {
+		return _temporarySortList != null && _temporarySortList.size() != 0;  
+	}
 	
 	/**
-	 * Searches for a task based on the user's desired criteria.
+	 * Searches for tasks based on the user-specified criterion.
 	 * 
-	 * NOTE: default search is by whether a task contains a specified
-	 * task name or not. This implementation can be extended to support
-	 * varying user criteria.
-	 * 
-	 * @param  task	a Task object representation of a keyword to lookup
-	 * @return a list of Task objects that match the search criteria
-	 * 
+	 * @param command a Command object representing the user operation being carried out
+	 * @return		  a message indicating the status of the search operation
 	 */
 	private String searchFile(Command command) {
-		int indices[] = {-1, -1};
-		////System.out.println("Buffer pos: " + indices[0] + "Task pos: " + indices[1]);
-		//State oldState = createPreviousState(command, indices);
-		//updateUndoStack(oldState);
+		int indices[] = createDefaultIndices();
 		getInternalStorage();
 		_searchList = new ArrayList<Task>();
 		String searchKeyword = command.getSpecificParameter(Task.TaskField.NAME.getTaskKeyName());
 		String searchDateKeyword = command.getSpecificParameter(Task.TaskField.KEYWORD.getTaskKeyName());
-		////System.out.println(searchDateKeyword);
 		String dateString = command.getSpecificParameter(Task.TaskField.ENDDATE.getTaskKeyName());
 		String timeString = command.getSpecificParameter(Task.TaskField.ENDTIME.getTaskKeyName());
 		
-		if ((searchKeyword == null && searchDateKeyword == null) ||
-			(searchDateKeyword != null && dateString == null && timeString == null)) {
+		if (isInvalidSearch(searchKeyword, searchDateKeyword, dateString, timeString)) {
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SEARCH_INVALID;
 			return getOperationStatus(command);
+		} else {
+			return searchForTasks(command, indices, searchKeyword, searchDateKeyword, dateString, timeString);
 		}
-		logger.logp(Level.INFO, "Logic", "searchFile(Command command)",
-				  	  "Searching tasks in file.", searchKeyword);
-		if (searchKeyword != null) {
-			String keywords[] = searchKeyword.toLowerCase().split(" ");
-			for (Task entry: _fullTaskList) {
-				for (String word: keywords) {
-					////System.out.println(word);
-					String taskNameCopy = entry.getName();
-					String taskNameLowerCase = taskNameCopy.toLowerCase();
-					if (taskNameLowerCase.contains(word)) {
-						////System.out.println("Added entry to search results.");
-						//System.out.println(!_searchList.contains(entry));
-						if (!_searchList.contains(entry)) {
-							_searchList.add(entry);
-						} else {
-							
-						}
-					}
-				}
-			}
-			//System.out.println(_searchList.size());
+	}
+
+	/**
+	 * Searches for tasks based on criteria specified by the user.
+	 * 
+	 * @param command				the Command object representing the user operation being carried out
+	 * @param indices				indices to be included into a <code>UIResult</code>
+	 * @param searchKeyword			user-specified keyword(s) if he wishes to search by task name
+	 * @param searchDateKeyword		a user-specified date-related keyword if he wishes to search by date
+	 * @param dateString			a user-specified date
+	 * @param timeString			a user-specified time
+	 * @return						a message indicating the status of the search operation
+	 */
+	private String searchForTasks(Command command, int[] indices, String searchKeyword, String searchDateKeyword,
+			String dateString, String timeString) {
+		logger.logp(Level.INFO, "Logic", "searchFile(Command command)", "Searching tasks in file.", searchKeyword);
+		if (isSearchByName(searchKeyword)) {
+			searchTasksByName(searchKeyword);
 		} else {
 			Date referenceDate;
 			try {
-				if (searchDateKeyword.trim().equalsIgnoreCase(SEARCH_BEFORE)) {
-					referenceDate = Task.parseDateTimeToString(new Date(), dateString, timeString, true);
-				} else {
-					referenceDate = Task.parseDateTimeToString(new Date(), dateString, timeString, false);
-				}
+				referenceDate = setReferenceDate(command, searchDateKeyword, dateString, timeString);
 			} catch (ParseException pe) {
 				Status._outcome = Status.Outcome.ERROR;
 				Status._errorCode = Status.ErrorCode.SEARCH_INVALID;
 				return getOperationStatus(command);
 			}
-			////System.out.println(Task._dateAndTimeFormatter.format(referenceDate));
-			for (Task entry: _fullTaskList) {
-				if (searchDateKeyword.trim().equalsIgnoreCase(SEARCH_BEFORE)) {
-					if (entry.isEvent() && referenceDate.compareTo(entry.getStartDate()) > 0) {
-						_searchList.add(entry);
-					} else if (!entry.isFloatingTask() && referenceDate.compareTo(entry.getEndDate()) > 0) {
-						_searchList.add(entry);
-					} else {
-						
-					}
-				} else if (searchDateKeyword.trim().equalsIgnoreCase(SEARCH_ON)) {
-					Date intervalStart = (Date) referenceDate.clone();
-					intervalStart.setHours(0);
-					intervalStart.setMinutes(0);
-					Date intervalEnd = (Date) referenceDate.clone();
-					intervalEnd.setHours(23);
-					intervalEnd.setMinutes(59);
-					////System.out.println(Task._dateAndTimeFormatter.format(intervalStart));
-					////System.out.println(Task._dateAndTimeFormatter.format(intervalEnd));
-					if (entry.isEvent() && intervalStart.compareTo(entry.getStartDate()) <= 0 &&
-						intervalEnd.compareTo(entry.getStartDate()) >= 0) {
-						_searchList.add(entry);
-					} else if (!entry.isFloatingTask() && intervalStart.compareTo(entry.getEndDate()) <= 0
-							   && intervalEnd.compareTo(entry.getEndDate()) >= 0) {
-						_searchList.add(entry);
-					} else {
-						
-					}
-				} else if (searchDateKeyword.trim().equalsIgnoreCase(SEARCH_AFTER)){
-					if (entry.isEvent() && referenceDate.compareTo(entry.getStartDate()) <= 0) {
-						_searchList.add(entry);
-					} else if (!entry.isFloatingTask() && referenceDate.compareTo(entry.getEndDate()) < 0) {
-						_searchList.add(entry);
-					} else {
-						
-					}
-				} else {
-					Status._outcome = Status.Outcome.ERROR;
-					Status._errorCode = Status.ErrorCode.SEARCH_INVALID;
-					indices[0] = -1;
-					indices[1] = -1;
-					setUiTaskDisplays(command.getCommand(), indices);
-					return getOperationStatus(command);
-				}
-			}
+			searchByDate(searchDateKeyword, referenceDate);
 		}
-		////System.out.println(results);
 		setUiTaskDisplays(command.getCommand(), indices);
 		Status._outcome = Status.Outcome.SUCCESS;
 		return getOperationStatus(command);
+	}
+
+	/**
+	 * Searches tasks by date, as specified by the user.
+	 * 
+	 * @param searchDateKeyword	a reference keyword with respect to the Date specified ('before', 'on', 'after')
+	 * @param referenceDate		the Date specified by the user
+	 */
+	private void searchByDate(String searchDateKeyword, Date referenceDate) {
+		for (Task entry: _fullTaskList) {
+			if (isSearchBeforeDate(searchDateKeyword)) {
+				addToSearchResultsIfBeforeDate(referenceDate, entry);
+			} else if (isSearchOnDate(searchDateKeyword)) {
+				Date intervalStart = createDateStart(referenceDate);
+				Date intervalEnd = createDateEnd(referenceDate);
+				addToSearchResultIfOnDate(entry, intervalStart, intervalEnd);
+			} else if (isSearchAfterDate(searchDateKeyword)){
+				addToSearchResultIfAfterDate(referenceDate, entry);
+			} else {
+				
+			}
+		}
+	}
+
+	/**
+	 * Adds target task to search results if the task is after a specified date.
+	 * 
+	 * @param referenceDate	a reference Date to compare the task date with
+	 * @param entry			the Task to be checked
+	 */
+	private void addToSearchResultIfAfterDate(Date referenceDate, Task entry) {
+		if (entry.isEvent() && referenceDate.compareTo(entry.getStartDate()) <= 0) {
+			_searchList.add(entry);
+		} else if (!entry.isFloatingTask() && referenceDate.compareTo(entry.getEndDate()) <= 0) {
+			_searchList.add(entry);
+		} else {
+			
+		}
+	}
+
+	/**
+	 * Adds target task to search results if the task is on a specified date.
+	 * 
+	 * @param entry			the Task to be checked
+	 * @param intervalStart	starting interval of the Date to compare the task date with
+	 * @param intervalEnd	ending interval of the Date to compare the task date with
+	 */
+	private void addToSearchResultIfOnDate(Task entry, Date intervalStart, Date intervalEnd) {
+		if (entry.isEvent() && intervalStart.compareTo(entry.getStartDate()) <= 0 &&
+			intervalEnd.compareTo(entry.getStartDate()) >= 0) {
+			_searchList.add(entry);
+		} else if (!entry.isFloatingTask() && intervalStart.compareTo(entry.getEndDate()) <= 0
+				   && intervalEnd.compareTo(entry.getEndDate()) >= 0) {
+			_searchList.add(entry);
+		} else {
+			
+		}
+	}
+
+	/**
+	 * Sets the hours and minutes of the date to 23:59.
+	 * 
+	 * Used in searching for tasks due on a certain date.
+	 * 
+	 * @param referenceDate	the date used as the reference for a search query
+	 * @return				the date with time set to 23:59
+	 */
+	private Date createDateEnd(Date referenceDate) {
+		Date intervalEnd = (Date) referenceDate.clone();
+		intervalEnd.setHours(23);
+		intervalEnd.setMinutes(59);
+		return intervalEnd;
+	}
+
+	/**
+	 * Sets the hours and minutes of the date to 00:00.
+	 * 
+	 * Used in searching for tasks due on a certain date.
+	 * 
+	 * @param referenceDate	the date used as the reference for a search query
+	 * @return				the date with time set to 00:00
+	 */
+	private Date createDateStart(Date referenceDate) {
+		Date intervalStart = (Date) referenceDate.clone();
+		intervalStart.setHours(0);
+		intervalStart.setMinutes(0);
+		return intervalStart;
+	}
+
+	/**
+	 * Adds target task to search results if the task is before a specified date.
+	 * 
+	 * @param referenceDate	a reference Date to compare the task date with
+	 * @param entry			the Task to be checked
+	 */
+	private void addToSearchResultsIfBeforeDate(Date referenceDate, Task entry) {
+		if (entry.isEvent() && referenceDate.compareTo(entry.getStartDate()) > 0) {
+			_searchList.add(entry);
+		} else if (!entry.isFloatingTask() && referenceDate.compareTo(entry.getEndDate()) > 0) {
+			_searchList.add(entry);
+		} else {
+			
+		}
+	}
+
+	/**
+	 * Checks if search query is to search tasks after a certain date.
+	 * 
+	 * @param searchDateKeyword	the date-reference keyword specified by the user
+	 * @return					true if search query is to search tasks after a certain date; false otherwise
+	 */
+	private boolean isSearchAfterDate(String searchDateKeyword) {
+		return searchDateKeyword.trim().equalsIgnoreCase(SEARCH_AFTER);
+	}
+
+	/**
+	 * Checks if search query is to search tasks on a certain date.
+	 * 
+	 * @param searchDateKeyword	the date-reference keyword specified by the user
+	 * @return					true if search query is to search tasks on a certain date; false otherwise
+	 */
+	private boolean isSearchOnDate(String searchDateKeyword) {
+		return searchDateKeyword.trim().equalsIgnoreCase(SEARCH_ON);
+	}
+
+	/**
+	 * Checks if search query is to search tasks before a certain date.
+	 * 
+	 * @param searchDateKeyword	the date-reference keyword specified by the user
+	 * @return					true if search query is to search tasks before a certain date; false otherwise
+	 */
+	private boolean isSearchBeforeDate(String searchDateKeyword) {
+		return searchDateKeyword.trim().equalsIgnoreCase(SEARCH_BEFORE);
+	}
+
+	/**
+	 * @param command
+	 * @param searchDateKeyword
+	 * @param dateString
+	 * @param timeString
+	 * @return
+	 */
+	private Date setReferenceDate(Command command, String searchDateKeyword, String dateString,
+			String timeString) throws ParseException {
+		Date referenceDate;
+		if (isSearchBeforeDate(searchDateKeyword)) {
+			referenceDate = Task.parseDateTimeToString(new Date(), dateString, timeString, true);
+		} else {
+			referenceDate = Task.parseDateTimeToString(new Date(), dateString, timeString, false);
+		}
+		return referenceDate;
+	}
+
+	/**
+	 * Searches for tasks containing the specified keyword(s). 
+	 * 
+	 * @param searchKeyword	the keyword to look out for when searching tasks
+	 */
+	private void searchTasksByName(String searchKeyword) {
+		String keywords[] = searchKeyword.toLowerCase().split(" ");
+		for (Task entry: _fullTaskList) {
+			String taskNameCopy = entry.getName();
+			String taskNameLowerCase = taskNameCopy.toLowerCase();
+			for (String word: keywords) {
+				if (taskNameLowerCase.contains(word)) {
+					if (!_searchList.contains(entry)) {
+						_searchList.add(entry);
+					} else {
+						
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Checks if search query is by task name.
+	 * 
+	 * @param searchKeyword	the keyword to search for, supplied by the user
+	 * @return				true if search query is by task name; false otherwise
+	 */
+	private boolean isSearchByName(String searchKeyword) {
+		return searchKeyword != null;
+	}
+
+	/**
+	 * Checks if search is valid. More precisely, it checks if the search query has a keyword for
+	 * searching tasks by name, or checks if the search query has the date references for searching
+	 * tasks by date.
+	 * 
+	 * @param searchKeyword			the keyword to look out for in the Task name
+	 * @param searchDateKeyword		the keyword for searching tasks by date ('before', 'on', 'after')
+	 * @param dateString			the date for reference when searching tasks by date
+	 * @param timeString			the time for reference when searching tasks by date
+	 * @return						true if important data for search query is omitted; false otherwise
+	 */
+	private boolean isInvalidSearch(String searchKeyword, String searchDateKeyword, String dateString,
+			String timeString) {
+		return (isUnspecifiedSortOrder(searchKeyword) && isUnspecifiedSortOrder(searchDateKeyword)) ||
+			   (isSearchByName(searchDateKeyword) && isUnspecifiedSortOrder(dateString) && isUnspecifiedSortOrder(timeString));
 	}
 	
 	private String setSaveFilePath(Command command) {
@@ -856,12 +975,10 @@ class Logic {
 	private String undo(Command command) {
 		if (_undoStack.size() == 0) {
 			logger.logp(Level.INFO, "Logic", "undo()", "User cannot undo any further.");
-			////System.out.println("Undo not successful.");
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.UNDO;
 		} else {
 			State previousState = _undoStack.pop();
-			////System.out.println(previousState.getCommand());
 			CommandKey commandType = CommandKey.get(previousState.getCommand());
 			logger.logp(Level.INFO, "Logic", "undo()", "Undoing a previous operation.", commandType);
 			switch (commandType) {
@@ -886,7 +1003,6 @@ class Logic {
 					break;
 					
 				case SEARCH :
-					//undoSearch(previousState);
 					break;
 					
 				case SET :
@@ -906,6 +1022,19 @@ class Logic {
 		return getOperationStatus(command);
 	}
 	
+	/**
+	 * Executes the help command.
+	 * 
+	 * @param command a Command objecting representing the user operation to be carried out
+	 * @return a message indicating status of the undo operation
+	 */
+	private String help(Command command) {
+		int indices[] = createDefaultIndices();
+		setUiTaskDisplays(command.getCommand(), indices);
+		Status._outcome = Status.Outcome.SUCCESS;
+		return Status.getMessage(null, null, command.getCommand());
+	}
+	
 	// ============================ USER OPERATION METHODS FOR LOGIC ============================= //
 	// =========================================================================================== //
 	
@@ -916,51 +1045,56 @@ class Logic {
 	// These methods are lower-level methods used within user operation methods.				   //
 	// During code re-factoring, you may place these lower-level methods here.					   //
 	// =========================================================================================== //
+		
+	// ============================== [MAIN USER-OPERATION METHODS] ============================== //
 	
 	/**
 	 * Creates and adds a task in both Logic and Storage.
 	 * 
-	 * @param command a Command object representing the user operation being carried out
-	 * @return the Task that was added; null if an error occurred
+	 * @param command	a Command object representing the user operation being carried out
 	 */
 	private void createAndAddTaskToFile(Command command) {
-		Task addedTask = null;
-		int indices[] = {-1, -1};
+		int indices[] = createDefaultIndices();
 		State oldState = createPreviousState(command, indices);
 		try {
 			getInternalStorage();
-			////System.out.println("Task list now has " + _fullTaskList.size() + " items.");
-			addedTask = new Task(command);
-			//System.out.println(addedTask.getTaskCode(_today));
-			_taskDisplayLists.get(addedTask.getTaskCode(_today)).add(addedTask);
+			addTaskToInnerMemory(command, indices);
 			updateTextFile();
-			////System.out.println("Task list now has " + _fullTaskList.size() + " items.");
-			indices[TASK_LIST_POSITION] = addedTask.getTaskCode(_today);
-			if (indices[TASK_LIST_POSITION] != Task.UNCODED_TASK_INDEX) {
-				indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(addedTask.getTaskCode(_today)).size() - 1;
-			} else {
-				indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(Task.OVERDUE_TASK_INDEX).size()
-											  + _taskDisplayLists.get(Task.TODAY_TASK_INDEX).size()
-											  + _taskDisplayLists.get(Task.TOMORROW_TASK_INDEX).size()
-											  + _taskDisplayLists.get(Task.THIS_WEEK_TASK_INDEX).size()
-											  + _taskDisplayLists.get(addedTask.getTaskCode(_today)).size() - 1;
-			}
 			updateUndoStack(oldState);
-			////System.out.println(_undoStack.size());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (ParseException pe) {
-			logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
-						"Add task: Inappropriate date format passed into Task.", pe);
+			logger.logp(Level.SEVERE, "Logic", "addTask(Command command)", "Add task: Inappropriate date format passed into Task.", pe);
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.ADD_INVALID_FORMAT;
 		} catch (IOException ioe) {
-			logger.logp(Level.SEVERE, "Logic", "addTask(Command command)",
-					"Add task: Error in writing to file.", ioe);
+			logger.logp(Level.SEVERE, "Logic", "addTask(Command command)", "Add task: Error in writing to file.", ioe);
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
-		//System.out.println("Buffer pos: " + indices[0] + "Task pos: " + indices[1]);
 		setUiTaskDisplays(command.getCommand(), indices);
+	}
+
+	/**
+	 * Creates a task and adds it internally into Logic.
+	 * 
+	 * @param command	a Command object representing the user operation being carried out
+	 * @param indices	the tuple of indices representing [UI_tab_index, task_item_index] for <code>UIResult</code>
+	 * @throws 			ParseException
+	 */
+	private void addTaskToInnerMemory(Command command, int[] indices) throws ParseException {
+		Task addedTask = new Task(command);
+		_taskDisplayLists.get(addedTask.getTaskCode(_today)).add(addedTask);
+		
+		indices[TASK_LIST_POSITION] = addedTask.getTaskCode(_today);
+		if (indices[TASK_LIST_POSITION] != Task.UNCODED_TASK_INDEX) {
+			indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(addedTask.getTaskCode(_today)).size() - 1;
+		} else {
+			indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(Task.OVERDUE_TASK_INDEX).size()
+										  + _taskDisplayLists.get(Task.TODAY_TASK_INDEX).size()
+										  + _taskDisplayLists.get(Task.TOMORROW_TASK_INDEX).size()
+										  + _taskDisplayLists.get(Task.THIS_WEEK_TASK_INDEX).size()
+										  + _taskDisplayLists.get(addedTask.getTaskCode(_today)).size() - 1;
+		}
 	}
 	
 	/**
@@ -968,24 +1102,22 @@ class Logic {
 	 * [ NOT_FOUND_INDEX, NOT_FOUND_INDEX ] is returned if the task cannot be found anywhere.<br>
 	 * [ DUPLICATE_TASK_INDEX, DUPLICATE_TASK_INDEX ] is returned if tasks with duplicate names exist.<br>
 	 * 
-	 * @param command the Command object representing the user operation being carried out
-	 * @return the index of a task, if a single task can be located; -1 if no task can be found
-	 * 		   or if there are duplicate tasks
+	 * @param command	the Command object representing the user operation being carried out
+	 * @return 			the indices of a task, if a single task can be located;<br>
+	 * 					[ NOT_FOUND_INDEX, NOT_FOUND_INDEX ] if no task can be found;<br>
+	 * 		   			[ DUPLICATE_TASK_INDEX, DUPLICATE_TASK_INDEX ] if there are duplicate tasks
 	 * 
 	 */
 	private int[] getTaskIndex(Command command) {
 		int index[] = {NOT_FOUND_INDEX, NOT_FOUND_INDEX};
 		boolean hasDuplicate = false;
 		String taskName = command.getSpecificParameter(TaskField.NAME.getTaskKeyName());
-		////System.out.println("Task name to update: " + taskName);
 		String taskID = command.hasParameter(TaskField.ID.getTaskKeyName())
 						? command.getSpecificParameter(TaskField.ID.getTaskKeyName())
 						: String.valueOf(NOT_FOUND_INDEX);
-		////System.out.println(taskID);
 		String[] params = {taskName, command.getSpecificParameter(TaskField.ID.getTaskKeyName())};
 		logger.logp(Level.INFO, "Logic", "removeTask(Command command)",	"Removing a task.", params);
 		for (int i = 0; i < NUM_TASK_BUFFERS; i++) {
-			////System.out.println("Current task accessed is " + _tasks.get(i).getName());
 			for (int j = 0; j < _taskDisplayLists.get(i).size(); j++) {
 				if (_taskDisplayLists.get(i).get(j).getName().equals(taskName) ||
 					_taskDisplayLists.get(i).get(j).getId() == Integer.parseInt(taskID)) {
@@ -1001,21 +1133,18 @@ class Logic {
 			index[TASK_LIST_POSITION] = DUPLICATE_TASK_INDEX;
 			index[TASK_ITEM_POSITION] = DUPLICATE_TASK_INDEX;
 		}
-		////System.out.println(index);
 		return index;
 	}
 	
 	/**
 	 * Removes a task from both Logic's internal storage as well as from the text file.
 	 * 
-	 * @param command a Command object representing the user operation being carried out
+	 * @param command	a Command object representing the user operation being carried out
 	 */
 	private void removeTaskAndUpdateFile(Command command) {
 		Task removed = null;
 		int taskIndex[] = getTaskIndex(command);
-		//System.out.println("Buffer pos: " + taskIndex[0] + "Task pos: " + taskIndex[1]);
 		State oldState = createPreviousState(command, taskIndex);
-		int indices[] = {-1, -1};
 		try {
 			if (taskIndex[TASK_LIST_POSITION] != NOT_FOUND_INDEX &&
 				taskIndex[TASK_LIST_POSITION] != DUPLICATE_TASK_INDEX) {
@@ -1023,7 +1152,6 @@ class Logic {
 				_taskDisplayLists.get(taskIndex[0]).remove(removed);
 				updateTextFile();
 				updateUndoStack(oldState);
-				////System.out.println(_undoStack.size());
 				Status._outcome = Status.Outcome.SUCCESS;
 			} else if (taskIndex[TASK_LIST_POSITION] == DUPLICATE_TASK_INDEX) {
 				Status._outcome = Status.Outcome.ERROR;
@@ -1040,49 +1168,30 @@ class Logic {
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
-		setUiTaskDisplays(command.getCommand(), indices);
+		setUiTaskDisplays(command.getCommand(), taskIndex);
 	}
 	
 	/**
 	 * Updates a task in both Logic's internal storage as well as from the text file. 
 	 * 
-	 * @param command a Command object representing the user operation being carried out
-	 * 
+	 * @param command	a Command object representing the user operation being carried out
 	 */
 	private void updateTaskInFile(Command command) {
 		Task toUpdate = null;
 		int taskIndex[] = getTaskIndex(command);
-		//System.out.println("Buffer pos: " + taskIndex[0] + "Task pos: " + taskIndex[1]);
-		////System.out.println(taskIndex);
 		State oldState = createPreviousState(command, taskIndex); 
-		int indices[] = {-1, -1};
+		int indices[] = createDefaultIndices();
 		
 		try {
 			if (taskIndex[TASK_LIST_POSITION] != NOT_FOUND_INDEX &&
 				taskIndex[TASK_LIST_POSITION] != DUPLICATE_TASK_INDEX) {
-				//String old = toUpdate.getName();
 				toUpdate = _taskDisplayLists.get(taskIndex[TASK_LIST_POSITION]).get(taskIndex[TASK_ITEM_POSITION]);
 				Task copyOfOldTask = toUpdate.clone();
 				boolean isUpdated = copyOfOldTask.updateTask(command);
 				if (isUpdated) {
-					_taskDisplayLists.get(taskIndex[TASK_LIST_POSITION]).remove(taskIndex[TASK_ITEM_POSITION]);
-					_taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).add(copyOfOldTask);
+					updateInInnerMemory(taskIndex, indices, copyOfOldTask);
 					updateTextFile();
 					updateUndoStack(oldState);
-					////System.out.println(_undoStack.size());
-					////System.out.println("Old name: " + old + " New name: " + _tasks.get(updateIndex).getName());
-					indices[TASK_LIST_POSITION] = copyOfOldTask.getTaskCode(_today);
-					//System.out.println(indices[TASK_LIST_POSITION]);
-					if (indices[TASK_LIST_POSITION] != Task.UNCODED_TASK_INDEX) {
-						indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).size() - 1;
-					} else {
-						indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(Task.OVERDUE_TASK_INDEX).size()
-													  + _taskDisplayLists.get(Task.TODAY_TASK_INDEX).size()
-													  + _taskDisplayLists.get(Task.TOMORROW_TASK_INDEX).size()
-													  + _taskDisplayLists.get(Task.THIS_WEEK_TASK_INDEX).size()
-													  + _taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).size() - 1;
-					}
-					//System.out.println(indices[TASK_ITEM_POSITION]);
 					Status._outcome = Status.Outcome.SUCCESS;
 				} else {
 					Status._outcome = Status.Outcome.ERROR;
@@ -1091,37 +1200,54 @@ class Logic {
 				Status._outcome = Status.Outcome.ERROR;
 				Status._errorCode = Status.ErrorCode.UPDATE_DUPLICATES_PRESENT;
 			} else {
-				logger.logp(Level.WARNING, "Logic", "updateTask(Command command)",
-							"Update task: Task not found. Possible user-side error or no name/ID matching.");
+				logger.logp(Level.WARNING, "Logic", "updateTask(Command command)", "Update task: Task not found. Possible user-side error or no name/ID matching.");
 				Status._outcome = Status.Outcome.ERROR;
 				Status._errorCode = Status.ErrorCode.UPDATE_NOT_FOUND;
 			}
 		} catch (ParseException pe) {
-			logger.logp(Level.SEVERE, "Logic", "updateTask(Command command)",
-						"Update task: Inappropriate date formated passed into Task.", pe);
+			logger.logp(Level.SEVERE, "Logic", "updateTask(Command command)", "Update task: Inappropriate date formated passed into Task.", pe);
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.UPDATE_INVALID_FIELD;
 		} catch (IOException ioe) {
-			logger.logp(Level.SEVERE, "Logic", "updateTask(Command command)",
-						"Update task: cannot write to file.", ioe);
+			logger.logp(Level.SEVERE, "Logic", "updateTask(Command command)", "Update task: cannot write to file.", ioe);
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
 		setUiTaskDisplays(command.getCommand(), indices);
 	}
+
+	/**
+	 * Updates a task internally in Logic.
+	 * 
+	 * @param taskIndex			the indices where the target Task may be found
+	 * @param indices			the indices for <code>UIResult</code>
+	 * @param copyOfOldTask		the copy of the target Task, that is now updated
+	 */
+	private void updateInInnerMemory(int[] taskIndex, int[] indices, Task copyOfOldTask) {
+		_taskDisplayLists.get(taskIndex[TASK_LIST_POSITION]).remove(taskIndex[TASK_ITEM_POSITION]);
+		_taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).add(copyOfOldTask);
+		indices[TASK_LIST_POSITION] = copyOfOldTask.getTaskCode(_today);
+		if (indices[TASK_LIST_POSITION] != Task.UNCODED_TASK_INDEX) {
+			indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).size() - 1;
+		} else {
+			indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(Task.OVERDUE_TASK_INDEX).size()
+										  + _taskDisplayLists.get(Task.TODAY_TASK_INDEX).size()
+										  + _taskDisplayLists.get(Task.TOMORROW_TASK_INDEX).size()
+										  + _taskDisplayLists.get(Task.THIS_WEEK_TASK_INDEX).size()
+										  + _taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).size() - 1;
+		}
+	}
 	
 	/**
 	 * Completes a task in both Logic's internal storage as well as the text file.
 	 * 
-	 * @param command a Command object representing the user operation being carried out
-	 * 
+	 * @param command	a Command object representing the user operation being carried out
 	 */
 	private void completeTaskInFile(Command command) {
 		Task toUpdate = null;
 		int taskIndex[] = getTaskIndex(command);
-		//System.out.println("Buffer pos: " + taskIndex[0] + "Task pos: " + taskIndex[1]);
 		State oldState = createPreviousState(command, taskIndex);
-		int indices[] = {-1, -1};
+		int indices[] = createDefaultIndices();
 		try {
 			if (taskIndex[TASK_LIST_POSITION] != NOT_FOUND_INDEX &&
 				taskIndex[TASK_LIST_POSITION] != DUPLICATE_TASK_INDEX) {
@@ -1132,49 +1258,60 @@ class Logic {
 				}
 				else {
 					Task copyOfOldTask = toUpdate.clone();
-					copyOfOldTask.setCompleted(true);
-					_taskDisplayLists.get(taskIndex[TASK_LIST_POSITION]).remove(taskIndex[TASK_ITEM_POSITION]);
-					_taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).add(copyOfOldTask);
+					completeTaskInInnerMemory(taskIndex, indices, copyOfOldTask);
 					updateTextFile();
 					updateUndoStack(oldState);
-					indices[TASK_LIST_POSITION] = copyOfOldTask.getTaskCode(_today);
-					if (indices[TASK_LIST_POSITION] != Task.UNCODED_TASK_INDEX) {
-						indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).size() - 1;
-					} else {
-						indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(Task.OVERDUE_TASK_INDEX).size()
-													  + _taskDisplayLists.get(Task.TODAY_TASK_INDEX).size()
-													  + _taskDisplayLists.get(Task.TOMORROW_TASK_INDEX).size()
-													  + _taskDisplayLists.get(Task.THIS_WEEK_TASK_INDEX).size()
-													  + _taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).size() - 1;
-					}
-					////System.out.println(_undoStack.size());
 					Status._outcome = Status.Outcome.SUCCESS;
 				}
 			} else if (taskIndex[TASK_LIST_POSITION] == DUPLICATE_TASK_INDEX) {
 				Status._outcome = Status.Outcome.ERROR;
 				Status._errorCode = Status.ErrorCode.COMPLETED_DUPLICATES_PRESENT;
 			} else {
-				logger.logp(Level.WARNING, "Logic", "completeTask(Command command)",
-							"Complete task: Task not found. Possible user-side error or no name/ID matching.");
+				logger.logp(Level.WARNING, "Logic", "completeTask(Command command)", "Complete task: Task not found. Possible user-side error or no name/ID matching.");
 				Status._outcome = Status.Outcome.ERROR;
 				Status._errorCode = Status.ErrorCode.COMPLETED_NOT_FOUND;
 			}
 		} catch (IOException ioe) {
-			logger.logp(Level.SEVERE, "Logic", "completeTask(Command command)",
-						"Complete task: cannot write to file.", ioe);
+			logger.logp(Level.SEVERE, "Logic", "completeTask(Command command)",	"Complete task: cannot write to file.", ioe);
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
 		setUiTaskDisplays(command.getCommand(), indices);
 	}
+
+	/**
+	 * Marks a task as completed internally in Logic.
+	 * 
+	 * @param taskIndex			the indices of the target Task that may be found
+	 * @param indices			the indices used for <code>UIResult</code>
+	 * @param copyOfOldTask		a copy of the target Task, that is now marked as completed
+	 */
+	private void completeTaskInInnerMemory(int[] taskIndex, int[] indices, Task copyOfOldTask) {
+		copyOfOldTask.setCompleted(true);
+		_taskDisplayLists.get(taskIndex[TASK_LIST_POSITION]).remove(taskIndex[TASK_ITEM_POSITION]);
+		_taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).add(copyOfOldTask);
+		indices[TASK_LIST_POSITION] = copyOfOldTask.getTaskCode(_today);
+		if (indices[TASK_LIST_POSITION] != Task.UNCODED_TASK_INDEX) {
+			indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).size() - 1;
+		} else {
+			indices[TASK_ITEM_POSITION] = _taskDisplayLists.get(Task.OVERDUE_TASK_INDEX).size()
+										  + _taskDisplayLists.get(Task.TODAY_TASK_INDEX).size()
+										  + _taskDisplayLists.get(Task.TOMORROW_TASK_INDEX).size()
+										  + _taskDisplayLists.get(Task.THIS_WEEK_TASK_INDEX).size()
+										  + _taskDisplayLists.get(copyOfOldTask.getTaskCode(_today)).size() - 1;
+		}
+	}
 	
+	/**
+	 * Sorts entries in the Logic as well as the text file.
+	 * 
+	 * @param command	the Command object representing the user operation being carried out
+	 */
 	private void sortAndUpdateFile(Command command) {
 		String sortOrder = command.getSpecificParameter(TaskField.SORT.getTaskKeyName());
-		////System.out.println(sortOrder);
 		try {
-			logger.logp(Level.INFO, "Logic", "sortFile(Command command)",
-						"Sorting all tasks by user-specified order.", sortOrder);
-			if (sortOrder == null) {
+			logger.logp(Level.INFO, "Logic", "sortFile(Command command)", "Sorting all tasks by user-specified order.", sortOrder);
+			if (isUnspecifiedSortOrder(sortOrder)) {
 				sortOrder = DEFAULT_TASKS_SORT_ORDER;
 			}
 			filterTasksToLists(sortOrder, true, false);
@@ -1189,12 +1326,31 @@ class Logic {
 	}
 	
 	/**
+	 * Retrieves the status message of the user operation that is being carried out by Logic.
+	 * 
+	 * @param command	a Command object representing the user operation being carried out
+	 * @return			the status message of the user operation being carried out
+	 * 
+	 */
+	private String getOperationStatus(Command command) {
+		if (isUndoCommand(command)) {
+			return Status.getMessage(null, null, command.getCommand());
+		} else {
+			return Status.getMessage(command.getSpecificParameter(TaskField.NAME.getTaskKeyName()),
+									 command.getSpecificParameter(TaskField.ID.getTaskKeyName()),
+									 command.getCommand());
+		}
+	}
+	
+	
+	// ============================== [UNDO-RELATED METHODS] ============================== //
+	
+	/**
 	 * Stores the program state before a user operation was performed.
 	 * 
-	 * @param  task	a Task object representation of the user's input
-	 * @return a Task object that has an opposite command to be
-	 * 		   performed on it, where applicable.
-	 * 
+	 * @param command		a Command object representing the user operation being carried out
+	 * @param oldIndices	previous indices used by the UI
+	 * @return				the previous state of the program
 	 */
 	private State createPreviousState(Command command, int[] oldIndices) {
 		logger.logp(Level.INFO, "Logic", "createPreviousState(Command command, Task original)",
@@ -1231,21 +1387,12 @@ class Logic {
 				previous.setAllTaskList(getAllTasks());
 				break;
 
-			case SHOW :
-				/*previous = new State(commandName);
-				assert command.getSpecificParameter(TaskField.SHOW.getTaskKeyName()) != null;
-				previous.setSortOrder(command.getSpecificParameter(TaskField.SHOW.getTaskKeyName()));
-				previous.setState(taskLists);
-				previous.setIndices(oldIndices);*/
-				break;
-
 			case SORT :
 				previous = new State(commandName);
 				assert command.getSpecificParameter(TaskField.SORT.getTaskKeyName()) != null;
 				previous.setSortOrder(Task.getSortCriterion());
 				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
-				//previous.setAllTaskList(getAllTasks());
 				break;
 				
 			case SEARCH :
@@ -1253,7 +1400,6 @@ class Logic {
 				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
 				previous.setAllTaskList(getAllTasks());
-				////System.out.println("Storing previous state for " + previous.getCommand());
 				break;
 				
 			case SET :
@@ -1289,16 +1435,13 @@ class Logic {
 	/**
 	 * Reverts an add-task operation.
 	 * 
-	 * @param task the reference of the initially added task to remove
+	 * @param state the previous state of the program
 	 */
-	// TODO: error handling
 	private void undoAdd(State state) {
 		try {
 			restoreOldState(state);
 			getInternalStorage();
-			////System.out.println("Undo: task list now has " + _fullTaskList.size() + " items.");
 			_storage.writeSaveFile(_fullTaskList);
-			//System.out.println("Buffer pos: " + state.getIndices()[0] + "Task pos: " + state.getIndices()[1]);
 			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
@@ -1310,15 +1453,13 @@ class Logic {
 	/**
 	 * Reverts a delete-task operation.
 	 * 
-	 * @param task a reference of the initially deleted task to add back
+	 * @param state the previous state of the program
 	 */
-	// TODO: error handling
 	private void undoDelete(State state) {
 		try {
 			restoreOldState(state);
 			getInternalStorage();
 			_storage.writeSaveFile(_fullTaskList);
-			//System.out.println("Buffer pos: " + state.getIndices()[0] + "Task pos: " + state.getIndices()[1]);
 			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
@@ -1330,15 +1471,13 @@ class Logic {
 	/**
 	 * Reverts an update-task operation.
 	 * 
-	 * @param task a reference of the previous state of a task before it was updated
+	 * @param state the previous state of the program
 	 */
-	// TODO: error handling
 	private void undoUpdate(State state) {
 		try {
 			restoreOldState(state);
 			getInternalStorage();
 			_storage.writeSaveFile(_fullTaskList);
-			//System.out.println("Buffer pos: " + state.getIndices()[0] + "Task pos: " + state.getIndices()[1]);
 			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
@@ -1350,15 +1489,13 @@ class Logic {
 	/**
 	 * Reverts a complete-task operation.
 	 * 
-	 * @param task a reference of a task before it was set as completed
+	 * @param state the previous state of the program
 	 */
-	// TODO: error handling
 	private void undoCompleted(State state) {
 		try {
 			restoreOldState(state);
 			getInternalStorage();
 			_storage.writeSaveFile(_fullTaskList);
-			//System.out.println("Buffer pos: " + state.getIndices()[0] + "Task pos: " + state.getIndices()[1]);
 			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
@@ -1370,9 +1507,8 @@ class Logic {
 	/**
 	 * Reverts a sort-task operation.
 	 * 
-	 * @param tasks a reference to the previous ordering of tasks
+	 * @param state	the previous state of the program
 	 */
-	// TODO: error handling
 	private void undoSort(State state) {
 		try {
 			restoreOldState(state);
@@ -1380,7 +1516,6 @@ class Logic {
 			_storage.writeSaveFile(_fullTaskList);
 			_temporarySortList = new ArrayList<Task>();
 			_temporarySortList.addAll(state.getAllTaskList());
-			//System.out.println("Buffer pos: " + state.getIndices()[0] + "Task pos: " + state.getIndices()[1]);
 			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
@@ -1389,20 +1524,11 @@ class Logic {
 		}
 	}
 	
-	/*private void undoSearch(State state) {
-		try {
-			restoreOldState(state);
-			getInternalStorage();
-			_storage.writeSaveFile(_fullTaskList);
-			//System.out.println("Buffer pos: " + state.getIndices()[0] + "Task pos: " + state.getIndices()[1]);
-			setUiTaskDisplays("undo", state.getIndices());
-			Status._outcome = Status.Outcome.SUCCESS;
-		} catch (IOException ioe) {
-			Status._outcome = Status.Outcome.ERROR;
-			Status._errorCode = Status.ErrorCode.SYSTEM;
-		}
-	}*/
-	
+	/**
+	 * Reverts a set file-path operation.
+	 * 
+	 * @param state	the previous state of the program
+	 */
 	private void undoSetSaveFilePath(State state) {
 		try {
 			restoreOldState(state);
@@ -1422,45 +1548,136 @@ class Logic {
 		}
 	}
 	
-	private void restoreOldState(State state) {
-		_taskDisplayLists.get(0).clear();
-		_taskDisplayLists.get(1).clear();
-		_taskDisplayLists.get(2).clear();
-		_taskDisplayLists.get(3).clear();
-		_taskDisplayLists.get(4).clear();
-		_taskDisplayLists.get(5).clear();
-		_taskDisplayLists.get(6).clear();
-		_taskDisplayLists.get(0).addAll(state.getOverdueTaskList());
-		_taskDisplayLists.get(1).addAll(state.getTodayTaskList());
-		_taskDisplayLists.get(2).addAll(state.getTomorrowTaskList());
-		_taskDisplayLists.get(3).addAll(state.getThisWeekTaskList());
-		_taskDisplayLists.get(4).addAll(state.getRemainingTaskList());
-		_taskDisplayLists.get(5).addAll(state.getFloatingTaskList());
-		_taskDisplayLists.get(6).addAll(state.getCompletedTaskList());
-	}
-	
 	/**
-	 * Retrieves the status message of the user operation that is being carried out by Logic.
+	 * Restores inner memory and lists with previous program state.
 	 * 
-	 * @param command a Command object representing the user operation being carried out
-	 * @return the status message of the user operation being carried out
-	 * 
+	 * @param state	a <code>State</code> object representing the previous program state
 	 */
-	private String getOperationStatus(Command command) {
-		if (isUndoCommand(command)) {
-			return Status.getMessage(null, null, command.getCommand());
-		} else {
-			return Status.getMessage(command.getSpecificParameter(TaskField.NAME.getTaskKeyName()),
-									 command.getSpecificParameter(TaskField.ID.getTaskKeyName()),
-									 command.getCommand());
-		}
+	private void restoreOldState(State state) {
+		flushDisplayLists();
+		_taskDisplayLists.get(Task.OVERDUE_TASK_INDEX).addAll(state.getOverdueTaskList());
+		_taskDisplayLists.get(Task.TODAY_TASK_INDEX).addAll(state.getTodayTaskList());
+		_taskDisplayLists.get(Task.TOMORROW_TASK_INDEX).addAll(state.getTomorrowTaskList());
+		_taskDisplayLists.get(Task.THIS_WEEK_TASK_INDEX).addAll(state.getThisWeekTaskList());
+		_taskDisplayLists.get(Task.UNCODED_TASK_INDEX).addAll(state.getRemainingTaskList());
+		_taskDisplayLists.get(Task.FLOATING_TASK_INDEX).addAll(state.getFloatingTaskList());
+		_taskDisplayLists.get(Task.COMPLETED_TASK_INDEX).addAll(state.getCompletedTaskList());
 	}
 
 	/**
-	 * Checks if a command is an undo operation.
+	 * Empties the inner memory of any contents.
+	 */
+	private void flushDisplayLists() {
+		for (int i = 0; i < NUM_TASK_BUFFERS; i++) {
+			_taskDisplayLists.get(i).clear();
+		}
+	}
+
+	
+
+	// ============================== [CONDITIONAL CHECKS] ============================== //
+	
+	/**
+	 * Checks if a Command object is null.
 	 * 
-	 * @param command a Command representing the user operation to be carried out
-	 * @return true if the Command represents an undo command, false otherwise
+	 * @param command	the Command object to be verified
+	 * @return 			true if the object is not null; false otherwise
+	 */
+	private boolean isNullCommand(Command command) {
+		return command == null;
+	}
+	
+	/**
+	 * Checks if the user command is about task-sorting.
+	 * 
+	 * @param commandType	the command type
+	 * @return				true if the command type is about task-sorting; false otherwise
+	 */
+	private boolean isSortCommand(String commandType) {
+		return commandType.equalsIgnoreCase(Command.CommandKey.SORT.getCommandKeyName());
+	}
+	
+	/**
+	 * Checks if the sort order is not specified.
+	 * 
+	 * @param sortOrder	the sorting criterion specified by the user
+	 * @return			true if the criterion is NOT specified; false otherwise
+	 */
+	private boolean isUnspecifiedSortOrder(String sortOrder) {
+		return sortOrder == null;
+	}
+	
+	/**
+	 * Checks if sort criterion is valid.
+	 * 
+	 * @param sortOrder a user-specified sorting criterion
+	 * @return			true if sorting criterion is valid; false otherwise
+	 */
+	private boolean isRecognizedSortOrder(String sortOrder) {
+		return isSortByName(sortOrder) || isSortByDate(sortOrder) || isSortByPriority(sortOrder);
+	}
+
+	/**
+	 * Checks if sort criterion is by priority.
+	 * 
+	 * @param sortOrder a user-specified sorting criterion
+	 * @return			true if sorting is by date; false otherwise
+	 */
+	private boolean isSortByPriority(String sortOrder) {
+		return sortOrder.equals(Task.SORT_BY_PRIORITY_KEYWORD);
+	}
+
+	/**
+	 * Checks if sort criterion is by name.
+	 * 
+	 * @param sortOrder	a user-specified sorting criterion
+	 * @return			true if sorting is by name; false otherwise
+	 */
+	private boolean isSortByName(String sortOrder) {
+		return sortOrder.equals(Task.SORT_BY_NAME_KEYWORD);
+	}
+
+	/**
+	 * Checks if sort criterion is by date.
+	 * 
+	 * @param sortOrder	a user-specified sorting criterion
+	 * @return			true if sorting is by date; false otherwise
+	 */
+	private boolean isSortByDate(String sortOrder) {
+		return sortOrder.equals(Task.SORT_BY_START_DATE_KEYWORD) ||
+			   sortOrder.equals(Task.SORT_BY_END_DATE_KEYWORD) ||
+			   sortOrder.equals(Task.SORT_BY_DATE_KEYWORD);
+	}
+	
+	/**
+	 * Checks if a command is the search-task command.
+	 * 
+	 * @param commandType	the type of command
+	 * @return				true if command is about task-search; false otherwise
+	 */
+	private boolean isSearchCommand(String commandType) {
+		return commandType.equals("search");
+	}
+	
+	/**
+	 * Checks if the user command is an undo command. Note that there is an overloaded method that
+	 * takes in a Command object as an argument instead.
+	 * 
+	 * @see 				#isUndoCommand(Command)
+	 * @param commandType	the command type
+	 * @return				true if the command type is undo; false otherwise
+	 */
+	private boolean isUndoCommand(String commandType) {
+		return commandType.equalsIgnoreCase(Command.CommandKey.UNDO.getCommandKeyName());
+	}
+	
+	/**
+	 * Checks if a command is an undo operation. Note that there is an overloaded method that takes
+	 * in a String as an argument instead.
+	 * 
+	 * @see 			#isUndoCommand(String)
+	 * @param command	a Command representing the user operation to be carried out
+	 * @return 			true if the Command represents an undo command, false otherwise
 	 * 
 	 */
 	private boolean isUndoCommand(Command command) {
