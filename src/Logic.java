@@ -63,7 +63,7 @@ class Logic {
 	private static final int NUM_TASK_BUFFERS = 7;
 	
 	// To turn off logging, set this boolean to false
-	private static boolean toDebug = true;
+	private static boolean toDebug = false;
 	
 	private Parser _parser;
 	private Storage _storage;
