@@ -1,6 +1,9 @@
 import static org.junit.Assert.*;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -26,85 +29,74 @@ public class StorageTest {
 	private boolean setupDone = false;
 
 	@Before
-	public void init() {
+	public void init() throws ParseException, IOException {
 		if (!setupDone) {
-			try {
-				logic = new Logic();
-				storage = new Storage();
-				setupDone = true;
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			logic = new Logic();
+			storage = new Storage();
+			setupDone = true;
 		}
 	}
 
 	@Test
-	public void writeReadSave() {
+	public void writeReadSave() throws IOException, ParseException {
 		ArrayList<Task> tasks = new ArrayList<>();
 		tasks.add(createSampleTask());
-		try {
-			storage.writeSaveFile(tasks);
-			storage.readSaveFile();
-			assertEquals(tasks, storage.getTasks());
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail();
-		}
+		storage.writeSaveFile(tasks);
+		storage.readSaveFile();
+		assertEquals(tasks, storage.getTasks());
 	}
 
 	@Test
-	public void writeReadConfig() {
+	public void writeReadConfig() throws IOException, ParseException {
 		Config testCfg = new Config();
 		testCfg.setReferenceID(13);
 		testCfg.setSavePath(filePath);
-		try {
-			storage.flushFileAtLocation("estherconfig.txt");
-			storage.writeConfigFile(testCfg);
-			storage.readConfigFile();
-			assertEquals(testCfg, storage.getConfig());
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail();
-		}
+		storage.flushFileAtLocation("estherconfig.txt");
+		storage.writeConfigFile(testCfg);
+		storage.readConfigFile();
+		assertEquals(testCfg, storage.getConfig());
 	}
 
 	@Test
-	public void flushFile() {
+	public void flushFile() throws IOException {
 		ArrayList<Task> tasks = new ArrayList<>();
-		try {
-			storage.writeSaveFile(tasks);
-			storage.flushSaveFile();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		storage.writeSaveFile(tasks);
+		storage.flushSaveFile();
 		assertFalse(storage.getConfig().getSavePath().toFile().exists());
 	}
 
 	@Test
-	public void changeConfig() {
+	public void changeConfig() throws IOException {
 		Config testCfg = new Config();
-		try {
-			storage.setConfig(testCfg);
-			testCfg.setReferenceID(13);
-			testCfg.setSavePath(filePath);
-			storage.setConfig(testCfg);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		storage.setConfig(testCfg);
+		testCfg.setReferenceID(13);
+		testCfg.setSavePath(filePath);
+		storage.setConfig(testCfg);
 		assertEquals(testCfg, storage.getConfig());
 
 	}
+	
+	@Test 
+	public void loadBadConfig() throws IOException, ParseException {
+		Files.deleteIfExists(Paths.get("estherconfig.txt"));
+		Files.createFile(Paths.get("estherconfig.txt"));
+		storage.readConfigFile();
+	}
+	
+	@Test 
+	public void loadBadTasks() throws IOException, ParseException {
+		Path testPath = Paths.get("test.txt");
+		BufferedWriter writer = Files.newBufferedWriter(testPath);
+		writer.write(" | | |");
+		writer.close();
+		storage.readSaveFile(testPath);
+	}
 
 	@After
-	public void cleanUp() {
-		try {
-			storage.flushSaveFile();
-			storage.flushFileAtLocation("estherconfig.txt");
-			storage.flushSaveFile();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public void cleanUp() throws IOException {
+		storage.flushSaveFile();
+		storage.flushFileAtLocation("estherconfig.txt");
+		storage.flushSaveFile();
 	}
 
 	private Task createSampleTask() {
