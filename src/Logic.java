@@ -382,7 +382,7 @@ class Logic {
 	 */
 	private void initializeLogger() {
 		try {
-			logger = Logger.getLogger("Logic");
+			logger = Logger.getLogger("estherLogger");
 			logger.setLevel(Level.SEVERE);
 			File logsDir = new File("logs");
 			if(!logsDir.exists()){
@@ -392,17 +392,11 @@ class Logic {
 				logger.setLevel(Level.SEVERE);
 			} else {
 				logger.setLevel(Level.OFF);
-			}/*
-			FileHandler fh = new FileHandler("Logic.log");
-			logger.addHandler(fh);
-			SimpleFormatter formatter = new SimpleFormatter();
-			fh.setFormatter(formatter);*/
+			}
 			logger.log(Level.CONFIG, "Initializing logger.");
 		} catch (SecurityException se) {
 			logger.log(Level.SEVERE, "Not granted permission for logging.", se);
-		} /*catch (IOException ioe) {
-			logger.log(Level.SEVERE, "Cannot create file for logging.", ioe);
-		}*/
+		}
 	}
 	
 	/**

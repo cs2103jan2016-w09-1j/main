@@ -30,7 +30,7 @@ public class Storage {
 	private static final String BY_NEXTLINE = "\\n";
 	private static final String configName = "estherconfig.txt";
 	private static final Path configPath = Paths.get(configName);
-	private static final Logger storageLogger = Logger.getLogger("storageLogger");
+	private static final Logger storageLogger = Logger.getLogger("estherLogger");
 
 	// ===================PUBLIC METHODS=======================
 
