@@ -13,6 +13,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
+import cs2103_w09_1j.esther.Command;
+import cs2103_w09_1j.esther.Task;
+
 /**
  * This class is the test-driver for the Logic component only.
  * <br>
@@ -30,7 +33,6 @@ import java.util.HashMap;
  * run only before <code>TASK_END_TIME</code>.</b>
  * 
  * @author Tay Guo Qiang
- * @@author A0129660A
  */
 public class LogicTest {
 	Logic logic;
@@ -1315,6 +1317,8 @@ public class LogicTest {
 		
 		ArrayList<Task> floatingTasks = logic.getFloatingBuffer();
 		assertEquals("There should be no change in list size.", 1, floatingTasks.size());
+		
+		System.out.println("terminated");
 	}
 	
 	@Test
