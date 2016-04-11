@@ -1,12 +1,12 @@
 package cs2103_w09_1j.esther;
 
 import java.util.ArrayList;
-import cs2103_w09_1j.esther.Status;
 
 /**
- * The <code>UIResult</code> class contains a view of tasks that will be shown to users via the
- * <code>UserInterface</code> component. This view is created by the <code>Logic</code> component
- * each time a user operation is performed and is updated into the <code>UserInterface</code>.
+ * The <code>UIResult</code> class contains a view of tasks that will be shown
+ * to users via the <code>UserInterface</code> component. This view is created
+ * by the <code>Logic</code> component each time a user operation is performed
+ * and is updated into the <code>UserInterface</code>.
  * 
  * @author
  */
@@ -25,7 +25,16 @@ public class UIResult {
 	private String commandType;
 
 	private static final int NUM_INDICES = 2;
-	
+
+	public static final int OVERDUE_INDEX = 0;
+	public static final int TODAY_INDEX = 1;
+	public static final int TOMORROW_INDEX = 2;
+	public static final int WEEK_INDEX = 3;
+	public static final int ALL_INDEX = 4;
+	public static final int FLOATING_INDEX = 5;
+	public static final int COMPLETED_INDEX = 6;
+	public static final int NUM_BUFFERS = 7;
+
 	public UIResult() {
 		overdueBuffer = new ArrayList<Task>();
 		todayBuffer = new ArrayList<Task>();
@@ -36,7 +45,7 @@ public class UIResult {
 		completedBuffer = new ArrayList<Task>();
 		searchBuffer = new ArrayList<Task>();
 	}
-	
+
 	public ArrayList<Task> getOverdueBuffer() {
 		return overdueBuffer;
 	}
@@ -89,14 +98,14 @@ public class UIResult {
 		return allTaskBuffer;
 	}
 	
-	public void setAllTaskBuffer(ArrayList<Task> remainingBuffer) {
-		this.allTaskBuffer = remainingBuffer;
+	public void setAllTaskBuffer(ArrayList<Task> allBuffer) {
+		this.allTaskBuffer = allBuffer;
 	}
-	
+
 	public ArrayList<Task> getSearchBuffer() {
 		return searchBuffer;
 	}
-	
+
 	public void setSearchBuffer(ArrayList<Task> searchBuffer) {
 		this.searchBuffer = searchBuffer;
 	}
@@ -108,15 +117,15 @@ public class UIResult {
 	public void setIndex(int[] index) {
 		this.index = index;
 	}
-	
+
 	public String getCommandType() {
 		return commandType;
 	}
-	
+
 	public void setCommandType(String commandType) {
 		this.commandType = commandType;
 	}
-	
+
 	/**
 	 * Retrieves the help message.
 	 * 
@@ -125,5 +134,43 @@ public class UIResult {
 	public String getMessage() {
 		return Status.MESSAGE_HELP;
 	}
-	
+
+	// ===========TESTING METHODS================
+
+	public ArrayList<Task> getBuffer(int whichBuffer) {
+		switch (whichBuffer) {
+			case (OVERDUE_INDEX):
+				return getOverdueBuffer();
+			case (TODAY_INDEX):
+				return getTodayBuffer();
+			case (TOMORROW_INDEX):
+				return getTomorrowBuffer();
+			case (WEEK_INDEX):
+				return getWeekBuffer();
+			case (ALL_INDEX):
+				return getAllTaskBuffer();
+			case (FLOATING_INDEX):
+				return getFloatingBuffer();
+			case (COMPLETED_INDEX):
+				return getCompletedBuffer();
+			default:
+				System.out.println("No buffer provided" + whichBuffer);
+				return null;
+		}
+	}
+
+	public Task getTask(int whichBuffer, int posInBuffer) {
+		ArrayList<Task> buffer = getBuffer(whichBuffer);
+		if (buffer != null) {
+			if (buffer.size() > posInBuffer) {
+				return buffer.get(posInBuffer);
+			}
+		}
+		return null;
+	}
+
+	public Task getModifiedTask() {
+		return getTask(getIndex()[0], getIndex()[1]);
+	}
+
 }

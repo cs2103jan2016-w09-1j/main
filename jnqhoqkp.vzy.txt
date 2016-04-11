@@ -1,0 +1,46 @@
+﻿Merge remote-tracking branch 'refs/remotes/origin/Logic' into Jeremy
+
+# Conflicts:
+#	src/Logic.java
+#	src/Parser.java
+#	src/cs2103_w09_1j/esther/Task.java
+#
+# It looks like you may be committing a merge.
+# If this is not correct, please remove the file
+#	.git/MERGE_HEAD
+# and try again.
+
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+# On branch Jeremy
+# Your branch is ahead of 'origin/Jeremy' by 1 commit.
+#   (use "git push" to publish your local commits)
+#
+# All conflicts fixed but you are still merging.
+#
+# Changes to be committed:
+#	renamed:    src/collated/A0126000H.md -> collated/A0126000H.md
+#	renamed:    src/collated/A0127572A.md -> collated/A0127572A.md
+#	renamed:    src/collated/A0129660A.md -> collated/A0129660A.md
+#	renamed:    src/collated/A0130749A.md -> collated/A0130749A.md
+#	modified:   src/Logic.java
+#	modified:   src/Parser.java
+#	deleted:    src/UIController.java
+#	new file:   src/UiMainController.java
+#	renamed:    src/secondController.java -> src/UiSecondController.java
+#	modified:   src/UserInterface.java
+#	modified:   src/cs2103_w09_1j/esther/Command.java
+#	modified:   src/cs2103_w09_1j/esther/Config.java
+#	new file:   src/cs2103_w09_1j/esther/Resources/HomeTab.jpg
+#	renamed:    src/cs2103_w09_1j/esther/UI.css -> src/cs2103_w09_1j/esther/Resources/UI.css
+#	modified:   src/cs2103_w09_1j/esther/State.java
+#	modified:   src/cs2103_w09_1j/esther/Status.java
+#	modified:   src/cs2103_w09_1j/esther/Task.java
+#	new file:   src/cs2103_w09_1j/esther/TaskWrapper.java
+#	new file:   src/cs2103_w09_1j/esther/UIResult.java
+#	modified:   src/mainUI.fxml
+#	modified:   src/secondWindow.fxml
+#	new file:   src/tabView.fxml
+#
+

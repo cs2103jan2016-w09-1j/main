@@ -1,14 +1,17 @@
+package cs2103_w09_1j.esther;
 import java.io.IOException;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
-import cs2103_w09_1j.esther.*;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -21,9 +24,7 @@ import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableSelectionModel;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TableView.TableViewSelectionModel;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
@@ -47,6 +48,12 @@ public class UiMainController implements Initializable {
 
 	private static UIResult res = new UIResult();
 
+	private BooleanProperty ctrlPressed = new SimpleBooleanProperty(false);
+	private BooleanProperty leftPressed = new SimpleBooleanProperty(false);
+	private BooleanProperty rightPressed = new SimpleBooleanProperty(false);
+	private BooleanBinding switchLeft = ctrlPressed.and(leftPressed);
+	private BooleanBinding switchRight = ctrlPressed.and(rightPressed);
+
 	public static UIResult getRes() {
 		return res;
 	}
@@ -56,7 +63,6 @@ public class UiMainController implements Initializable {
 	}
 
 	private SingleSelectionModel<Tab> selectionModel;
-
 	private ObservableList<TaskWrapper> sList, cList, odList, fList, aList, tdList, tmrList, wkList;
 
 	@FXML
@@ -93,11 +99,6 @@ public class UiMainController implements Initializable {
 
 	@FXML
 	private TableColumn<TaskWrapper, String> HOPriority;
-
-	@FXML
-	void overdueClick(MouseEvent event) {
-
-	}
 
 	// home tab's upcoming list
 	@FXML
@@ -235,8 +236,25 @@ public class UiMainController implements Initializable {
 	private Label commandLog;
 
 	@FXML
-	void ENTER(KeyEvent event) throws Exception {
-		if (event.getCode() == KeyCode.ENTER) {
+	void overdueClick(MouseEvent event) {
+
+		selectionModel.select(1);
+	}
+
+	@FXML
+	void upcomingClick(MouseEvent event) {
+		selectionModel.select(2);
+	}
+
+	@FXML
+	void EnterAndNavigate(KeyEvent event) throws Exception {
+		if (event.getCode() == KeyCode.CONTROL) {
+			ctrlPressed.set(true);
+		} else if (event.getCode() == KeyCode.RIGHT) {
+			rightPressed.set(true);
+		} else if (event.getCode() == KeyCode.LEFT) {
+			leftPressed.set(true);
+		} else if (event.getCode() == KeyCode.ENTER) {
 			String userInput = input.getText();
 			System.out.println(userInput);
 
@@ -259,60 +277,82 @@ public class UiMainController implements Initializable {
 			} else {
 				commandLog.setText(logicOutput);
 				initializeTabs(res);
-				if (command.equalsIgnoreCase("sort") || command.equalsIgnoreCase("undo")) {
+				if (command.equalsIgnoreCase("sort")) {
 
 				} else {
 					int[] index = res.getIndex();
 					int line = index[1];
+					
 					switch(index[0]) {
+					
 					case(0):
 						//overdue
-						if (selectionModel.isSelected(0)) {
-							overdueList.getSelectionModel().select(line);
-						} else {
+						if (selectionModel.isSelected(1)) {
 							overdue.getSelectionModel().select(line);
+						} else {
+							selectionModel.select(0);
+							overdueList.getSelectionModel().select(line);
 						}
+						break;
+
 					case(1):
 						//today
-						if (selectionModel.isSelected(0)) {
-							homeTree.getSelectionModel().select(line+1);
-						} else {
+						if (selectionModel.isSelected(2)) {
 							upTabTree.getSelectionModel().select(line+1);
+						} else {
+							selectionModel.select(0);
+							homeTree.getSelectionModel().select(line+1);
 						}
+						break;
+
 					case(2):
 						//tomorrow
-						if (selectionModel.isSelected(0)) {
-						homeTree.getSelectionModel().select(res.getTodayBuffer().size() 
-								+ line + 2);
-						} else {
+						if (selectionModel.isSelected(2)) {
 							upTabTree.getSelectionModel().select(res.getTodayBuffer().size() 
-								+ line + 2);
+									+ line + 2);
+						} else {
+							selectionModel.select(0);
+							homeTree.getSelectionModel().select(res.getTodayBuffer().size() 
+									+ line + 2);
 						}
+						break;
+
 					case(3):
 						//week
-						if (selectionModel.isSelected(0)) {
-							homeTree.getSelectionModel().select(res.getTodayBuffer().size()
-									+ res.getTomorrowBuffer().size() + line + 3);
-						} else {
+						if (selectionModel.isSelected(2)) {
 							upTabTree.getSelectionModel().select(res.getTodayBuffer().size()
 									+ res.getTomorrowBuffer().size() + line + 3);
+						} else {
+							selectionModel.select(0);
+							homeTree.getSelectionModel().select(res.getTodayBuffer().size()
+									+ res.getTomorrowBuffer().size() + line + 3);
 						}
-						
+						break;
+
 					case(4):
 						//all - nothing at all, should not even use this
+						selectionModel.select(5);
+						allContent.getSelectionModel().select(line);
+						System.out.println("the line is " + line);
+						break;
+
 					case(5):
 						//floating
-						if (selectionModel.isSelected(3)) {
-							floatingContent.getSelectionModel().select(line);
-						}
+						selectionModel.select(3);
+						floatingContent.getSelectionModel().select(line);
+						break;
+						
 					case(6):
 						//completed
+						selectionModel.select(4);
+						completedContent.getSelectionModel().select(line);
+						break;
+						
 					default:
 						//default
+						break;
 					}
 				}
-
-
 
 			}
 
@@ -352,6 +392,10 @@ public class UiMainController implements Initializable {
 		return second;
 	}
 
+	public SingleSelectionModel<Tab> getSelectionModel() {
+		return this.selectionModel;
+	}
+	
 	private void displaySearch() {
 		Tab searchTab = new Tab();
 
@@ -397,7 +441,7 @@ public class UiMainController implements Initializable {
 
 	}
 
-	// initialize logic
+	// initialize logic and other tabs
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 
@@ -410,6 +454,44 @@ public class UiMainController implements Initializable {
 		}
 
 		selectionModel = tabSum.getSelectionModel();
+
+		input.setOnKeyReleased(new EventHandler<KeyEvent>() {
+
+			@Override
+			public void handle(KeyEvent arg0) {
+				if (arg0.getCode() == KeyCode.CONTROL) {
+					ctrlPressed.set(false);
+				} else if (arg0.getCode() == KeyCode.RIGHT) {
+					rightPressed.set(false);
+				} else if (arg0.getCode() == KeyCode.LEFT) {
+					leftPressed.set(false);
+				}
+
+			}
+
+		});
+
+		switchRight.addListener(new ChangeListener<Boolean>() {
+
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+				if (selectionModel.getSelectedIndex() != tabSum.getTabs().size() - 1) {
+					selectionModel.select(selectionModel.getSelectedIndex() + 1);
+				}
+			}
+
+		});
+
+		switchLeft.addListener(new ChangeListener<Boolean>() {
+
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+				if (selectionModel.getSelectedIndex() != 0) {
+					selectionModel.select(selectionModel.getSelectedIndex() - 1);
+				}
+			}
+
+		});
 
 		initializeTabs(res);
 
@@ -433,26 +515,6 @@ public class UiMainController implements Initializable {
 		}
 
 		odList = (ObservableList) FXCollections.observableArrayList(overdueWrapper);
-		/*odList.addListener(new ListChangeListener<TaskWrapper>() {
-
-			@Override
-			public void onChanged(Change c) {
-				ArrayList<Task> overdueBuffer = res.getOverdueBuffer();
-
-				ArrayList<TaskWrapper> overdueWrapper = new ArrayList<TaskWrapper>();
-				for (int i = 0; i < overdueBuffer.size(); i++) {
-					TaskWrapper tw = new TaskWrapper(overdueBuffer.get(i));
-					overdueWrapper.add(tw);
-				}
-
-				odList = (ObservableList) FXCollections.observableArrayList(overdueWrapper);
-
-				overdueList.setItems(odList);
-				overdue.setItems(odList);
-
-			}
-
-		});*/
 
 		HOID.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("id"));
 		HOTask.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("taskName"));
@@ -466,6 +528,7 @@ public class UiMainController implements Initializable {
 
 		overdueList.setItems(odList);
 		overdue.setItems(odList);
+
 	}
 
 	private void initializeUpcomingList(UIResult res) {
@@ -488,72 +551,23 @@ public class UiMainController implements Initializable {
 		for (i = 0; i < todayBuffer.size(); i++) {
 			TaskWrapper tw = new TaskWrapper(todayBuffer.get(i));
 			todayNode.getChildren().add(new TreeItem<TaskWrapper>(tw));
-			//todayWrapper.add(tw);
 		}
 
 		for (i = 0; i < tmrBuffer.size(); i++) {
 			TaskWrapper tw = new TaskWrapper(tmrBuffer.get(i));
 			tomorrowNode.getChildren().add(new TreeItem<TaskWrapper>(tw));
-			//tmrWrapper.add(tw);
 		}
 
 		for (i = 0; i < weekBuffer.size(); i++) {
 			TaskWrapper tw = new TaskWrapper(weekBuffer.get(i));
 			weekNode.getChildren().add(new TreeItem<TaskWrapper>(tw));
-			//weekWrapper.add(tw);
 		}
 
 		tdList = (ObservableList) FXCollections.observableArrayList(todayWrapper);
-		/*tdList.addListener(new ListChangeListener<TaskWrapper>() {
 
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends TaskWrapper> c) {
-				ArrayList<Task> todayBuffer = res.getTodayBuffer();
-				ArrayList<TaskWrapper> todayWrapper = new ArrayList<TaskWrapper>();
-				todayNode.getChildren().clear();
-				for (int i = 0; i < todayBuffer.size(); i++) {
-					TaskWrapper tw = new TaskWrapper(todayBuffer.get(i));
-					todayNode.getChildren().add(new TreeItem<TaskWrapper>(tw));
-					//todayWrapper.add(tw);
-				}
-				tdList = (ObservableList) FXCollections.observableArrayList(todayWrapper);
-			}
-
-		});*/
 		tmrList = (ObservableList) FXCollections.observableArrayList(tmrWrapper);
-		/*tmrList.addListener(new ListChangeListener<TaskWrapper>() {
 
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends TaskWrapper> c) {
-				ArrayList<Task> tmrBuffer = res.getTomorrowBuffer();
-				ArrayList<TaskWrapper> tmrWrapper = new ArrayList<TaskWrapper>();
-				todayNode.getChildren().clear();
-				for (int i = 0; i < tmrBuffer.size(); i++) {
-					TaskWrapper tw = new TaskWrapper(tmrBuffer.get(i));
-					tomorrowNode.getChildren().add(new TreeItem<TaskWrapper>(tw));
-					//todayWrapper.add(tw);
-				}
-				tmrList = (ObservableList) FXCollections.observableArrayList(tmrWrapper);
-			}
-
-		});*/
 		wkList = (ObservableList) FXCollections.observableArrayList(weekWrapper);
-		/*wkList.addListener(new ListChangeListener<TaskWrapper>() {
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends TaskWrapper> c) {
-				ArrayList<Task> weekBuffer = res.getWeekBuffer();
-				ArrayList<TaskWrapper> wkWrapper = new ArrayList<TaskWrapper>();
-				weekNode.getChildren().clear();
-				for (int i = 0; i < weekBuffer.size(); i++) {
-					TaskWrapper tw = new TaskWrapper(weekBuffer.get(i));
-					weekNode.getChildren().add(new TreeItem<TaskWrapper>(tw));
-					//todayWrapper.add(tw);
-				}
-				wkList = (ObservableList) FXCollections.observableArrayList(wkWrapper);
-			}
-
-		});*/
 
 		rootNode.getChildren().addAll(todayNode, tomorrowNode, weekNode);
 
@@ -636,27 +650,6 @@ public class UiMainController implements Initializable {
 		}
 
 		cList = (ObservableList) FXCollections.observableArrayList(completedWrapper);
-		/*cList.addListener(new ListChangeListener<TaskWrapper>() {
-
-			@Override
-			public void onChanged(Change c) {
-				ArrayList<Task> completedBuffer = res.getCompletedBuffer();
-
-				ArrayList<TaskWrapper> completedWrapper = new ArrayList<TaskWrapper>();
-				for (int i = 0; i < completedBuffer.size(); i++) {
-					TaskWrapper tw = new TaskWrapper(completedBuffer.get(i));
-					completedWrapper.add(tw);
-				}
-
-				cList = (ObservableList) FXCollections.observableArrayList(completedWrapper);
-
-				completedContent.setItems(cList);
-
-			}
-
-		});*/
-
-
 
 		CTID.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("id"));
 		CTTask.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("taskName"));
@@ -676,25 +669,7 @@ public class UiMainController implements Initializable {
 		}
 
 		fList = (ObservableList) FXCollections.observableArrayList(floatingWrapper);
-		/*fList.addListener(new ListChangeListener<TaskWrapper>() {
 
-			@Override
-			public void onChanged(Change c) {
-				ArrayList<Task> floatingBuffer = res.getFloatingBuffer();
-
-				ArrayList<TaskWrapper> floatingWrapper = new ArrayList<TaskWrapper>();
-				for (int i = 0; i < floatingBuffer.size(); i++) {
-					TaskWrapper tw = new TaskWrapper(floatingBuffer.get(i));
-					floatingWrapper.add(tw);
-				}
-
-				fList = (ObservableList) FXCollections.observableArrayList(floatingWrapper);
-
-				floatingContent.setItems(fList);
-
-			}
-
-		});*/
 		FTID.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("id"));
 		FTTask.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("taskName"));
 		FTDate.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("date"));
@@ -713,25 +688,6 @@ public class UiMainController implements Initializable {
 		}
 
 		aList = (ObservableList) FXCollections.observableArrayList(allWrapper);
-		/*aList.addListener(new ListChangeListener<TaskWrapper>() {
-
-			@Override
-			public void onChanged(Change c) {
-				ArrayList<Task> allBuffer = res.getAllTaskBuffer();
-
-				ArrayList<TaskWrapper> allWrapper = new ArrayList<TaskWrapper>();
-				for (int i = 0; i < allBuffer.size(); i++) {
-					TaskWrapper tw = new TaskWrapper(allBuffer.get(i));
-					allWrapper.add(tw);
-				}
-
-				aList = (ObservableList) FXCollections.observableArrayList(allWrapper);
-
-				allContent.setItems(aList);
-
-			}
-
-		});*/
 
 		ATID.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("id"));
 		ATTask.setCellValueFactory(new PropertyValueFactory<TaskWrapper,String>("taskName"));
