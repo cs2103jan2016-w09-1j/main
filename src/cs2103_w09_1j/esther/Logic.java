@@ -1323,13 +1323,6 @@ class Logic {
 				previous.setIndices(oldIndices);
 				break;
 				
-			case SEARCH :
-				previous = new State(commandName);
-				previous.setState(_taskDisplayLists);
-				previous.setIndices(oldIndices);
-				previous.setAllTaskList(getAllTasks());
-				break;
-				
 			case SET :
 			  	previous = new State(commandName);
 			  	String oldFilePath = _config.getSavePath().toString();
@@ -1340,12 +1333,6 @@ class Logic {
 			  	break;
 
 			case UNDO :
-				break;
-
-			case HELP :
-				previous = new State(commandName);
-				previous.setState(_taskDisplayLists);
-				previous.setIndices(oldIndices);
 				break;
 				
 			default :
