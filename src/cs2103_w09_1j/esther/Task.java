@@ -806,17 +806,8 @@ public class Task implements Comparable<Task> {
 			case SORT_BY_NAME_KEYWORD:
 				return compareByName(task);
 
-			case SORT_FLOATING_BY_NAME_KEYWORD:
-				return compareFloatingByName(task);
-
 			case SORT_BY_PRIORITY_KEYWORD:
 				return compareByPriority(task);
-
-			case SORT_FLOATING_BY_PRIORITY_KEYWORD:
-				return compareFloatingByPriority(task);
-
-			case SORT_BY_ID_KEYWORD:
-				return compareById(task);
 
 			case SORT_BY_START_DATE_KEYWORD:
 				return compareByDate(task);
@@ -956,27 +947,6 @@ public class Task implements Comparable<Task> {
 	}
 
 	/**
-	 * The comparison method invoked when sorting criteria is by task name. This
-	 * comparison method is used only on floating tasks.
-	 * 
-	 * Comparison order is by name, then by priority and then by date.
-	 * 
-	 * @param task
-	 *            the Task object to compare to
-	 * @return 0 if the Task compared to is equal to itself; a value less than 0
-	 *         if the Task compared to comes after itself; and a value more than
-	 *         0 if the Task compared to comes before itself.
-	 * @@author A0130749A
-	 */
-	private int compareFloatingByName(Task task) {
-		if (_name.equals(task.getName())) {
-			return Integer.compare(_priority, task.getPriority());
-		} else {
-			return _name.compareTo(task.getName());
-		}
-	}
-
-	/**
 	 * The comparison method invoked when sorting criteria is by task priority.
 	 * 
 	 * @param task
@@ -1035,39 +1005,6 @@ public class Task implements Comparable<Task> {
 		} else {
 			return Integer.compare(_priority, task.getPriority());
 		}
-	}
-
-	/**
-	 * The comparison method invoked when sorting criteria is by task priority.
-	 * This comparison method is used only on floating tasks.
-	 * 
-	 * @param task
-	 *            the Task object to compare to
-	 * @return 0 if the Task compared to is equal to itself; a value less than 0
-	 *         if the Task compared to comes after itself; and a value more than
-	 *         0 if the Task compared to comes before itself.
-	 * @@author A0130749A
-	 */
-	private int compareFloatingByPriority(Task task) {
-		if (_priority == task.getPriority()) {
-			return _name.compareTo(task.getName());
-		} else {
-			return Integer.compare(_priority, task.getPriority());
-		}
-	}
-
-	/**
-	 * The comparison method invoked when sorting criteria is by task ID.
-	 * 
-	 * @param task
-	 *            the Task object to compare to
-	 * @return 0 if the Task compared to is equal to itself; a value less than 0
-	 *         if the Task compared to comes after itself; and a value more than
-	 *         0 if the Task compared to comes before itself.
-	 * @@author A0130749A
-	 */
-	private int compareById(Task task) {
-		return Integer.compare(_id, task.getId());
 	}
 
 }
