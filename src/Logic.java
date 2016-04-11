@@ -1,3 +1,4 @@
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
 import java.text.ParseException;
@@ -62,7 +63,7 @@ class Logic {
 	private static final int NUM_TASK_BUFFERS = 7;
 	
 	// To turn off logging, set this boolean to false
-	private static boolean toDebug = true;
+	private static boolean toDebug = false;
 	
 	private Parser _parser;
 	private Storage _storage;
@@ -382,6 +383,11 @@ class Logic {
 	private void initializeLogger() {
 		try {
 			logger = Logger.getLogger("Logic");
+			logger.setLevel(Level.SEVERE);
+			File logsDir = new File("logs");
+			if(!logsDir.exists()){
+			    logsDir.mkdirs();
+			}
 			if (toDebug) {
 				logger.setLevel(Level.SEVERE);
 			} else {
@@ -462,7 +468,7 @@ class Logic {
 	            try {
 	            	logger.log(Level.INFO, "Attaching shut-down handler.");
 	            	_config.setReferenceID(Task.getGlobalId());
-	            	_storage.updateConfig(_config);
+	            	_storage.setConfig(_config);
 	            } catch (IOException ioe) {
 	            	logger.log(Level.SEVERE, "Cannot attach shut-down handler.", ioe);
 	            }
@@ -491,7 +497,7 @@ class Logic {
 	 */
 	public void flushInternalStorage() {
 		try {
-			_storage.flushFile();
+			_storage.flushSaveFile();
 		} catch (IOException ioe) {
 			//ioe.printStackTrace();
 		}
@@ -706,7 +712,7 @@ class Logic {
 		updateUndoStack(oldState);
 		try {
 			_config.setSavePath(command.getSpecificParameter(Task.TaskField.PATH.getTaskKeyName()));
-			_storage.updateConfig(_config);
+			_storage.setConfig(_config);
 			initializeBuffers();
 			updateInternalStorage(); // refresh internal memory due to different file specified
 			Status._outcome = Status.Outcome.SUCCESS;
@@ -1478,7 +1484,7 @@ class Logic {
 			restoreOldState(state);
 			String filePath = state.getFilePath();
 			_config.setSavePath(filePath);
-			_storage.updateConfig(_config);
+			_storage.setConfig(_config);
 			initializeBuffers();
 			updateInternalStorage();
 			setUiTaskDisplays("undo", state.getIndices());

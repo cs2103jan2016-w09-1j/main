@@ -17,25 +17,13 @@ class DateTimeTester {
 	public DateTimeTester(Date date, String dateFormat, String timeFormat) {
 		setDatePattern(dateFormat);
 		setTimePattern(timeFormat);
-		if (dateFormat == null || dateFormat.length() == 0) {
-			setHasDate(false);
-			setHasTime(true);
-			dateTimeFormatter = new SimpleDateFormat(timeFormat);
-			timeFormatter = new SimpleDateFormat(timeFormat);
-		} else if (timeFormat == null || timeFormat.length() == 0) {
-			setHasTime(false);
-			setHasDate(true);
-			dateTimeFormatter = new SimpleDateFormat(dateFormat);
-			dateFormatter = new SimpleDateFormat(dateFormat);
-		} else {
-			setHasDate(true);
-			setHasTime(true);
-			setHasReverse(true);
-			dateTimeFormatter = new SimpleDateFormat(dateFormat + " " + timeFormat);
-			timeDateFormatter = new SimpleDateFormat(timeFormat + " " + dateFormat);
-			dateFormatter = new SimpleDateFormat(dateFormat);
-			timeFormatter = new SimpleDateFormat(timeFormat);
-		}
+		setHasDate(true);
+		setHasTime(true);
+		setHasReverse(true);
+		dateTimeFormatter = new SimpleDateFormat(dateFormat + " " + timeFormat);
+		timeDateFormatter = new SimpleDateFormat(timeFormat + " " + dateFormat);
+		dateFormatter = new SimpleDateFormat(dateFormat);
+		timeFormatter = new SimpleDateFormat(timeFormat);
 
 		if (hasTime()) {
 			if (getTimePattern().contains("m")) {
@@ -46,7 +34,7 @@ class DateTimeTester {
 		}
 
 		setCreationInstant(date);
-		if (isHasReverse()) {
+		if (hasReverse()) {
 		}
 	}
 
@@ -58,10 +46,6 @@ class DateTimeTester {
 		if (!isHasMinutes()) {
 			calendar.set(Calendar.MINUTE, 0);
 		}
-		if (!hasTime()) {
-			calendar.set(Calendar.HOUR, 23);
-			calendar.set(Calendar.MINUTE, 59);
-		}
 
 		return calendar.getTime();
 	}
@@ -71,31 +55,7 @@ class DateTimeTester {
 	}
 
 	public String getTDString() {
-		if (hasReverse) {
-			return timeDateFormatter.format(creationInstant);
-		} else {
-			return "";
-		}
-	}
-
-	public String getDString() {
-		if (hasDate) {
-			return dateFormatter.format(creationInstant);
-		} else {
-			return "";
-		}
-	}
-
-	public String getTString() {
-		if (hasTime) {
-			return timeFormatter.format(creationInstant);
-		} else {
-			return "";
-		}
-	}
-
-	public String getDatePattern() {
-		return datePattern;
+		return timeDateFormatter.format(creationInstant);
 	}
 
 	public void setDatePattern(String datePattern) {
@@ -135,9 +95,6 @@ class DateTimeTester {
 
 	public void setHasTime(boolean hasTime) {
 		this.hasTime = hasTime;
-		if (!hasTime) {
-			setHasMinutes(hasTime);
-		}
 	}
 
 	public boolean hasDate() {
@@ -148,7 +105,7 @@ class DateTimeTester {
 		this.hasDate = hasDate;
 	}
 
-	public boolean isHasReverse() {
+	public boolean hasReverse() {
 		return hasReverse;
 	}
 
