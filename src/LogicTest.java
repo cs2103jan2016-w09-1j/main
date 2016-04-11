@@ -1832,16 +1832,16 @@ public class LogicTest {
 	@Test
 	public void sortNonEmptyListByName() {
 		try {
-			makeNonEmptyFile(false);
+			makeNonEmptyFile(true);
 			logic.executeCommand(sortByName);
 			
 			// checks that inner memory does not face weird behavior
 			ArrayList<Task> mem = logic.getInternalStorage();
-			assertEquals("List should not experience a change in size.", 10, mem.size());
+			assertEquals("List should not experience a change in size.", 11, mem.size());
 
 			// checks that combined tasks memory does not face weird behavior
 			ArrayList<Task> allTasks = logic.getTemporarySortList();
-			assertEquals("List should not experience a change in size.", 10, allTasks.size());
+			assertEquals("List should not experience a change in size.", 11, allTasks.size());
 			
 			// checks that order is correct in combined list of tasks
 			assertEquals("First item should be 'floatingTask'.", "floatingTask", allTasks.get(0).getName());
@@ -1852,8 +1852,9 @@ public class LogicTest {
 			assertEquals("Sixth item should be 'thisWeekTask1'.", "thisWeekTask1", allTasks.get(5).getName());
 			assertEquals("Seventh item should be 'todayEvent'.", "todayEvent", allTasks.get(6).getName());
 			assertEquals("Eighth item should be 'todayTask'.", "todayTask", allTasks.get(7).getName());
-			assertEquals("Fifth item should be 'tomorrowEvent'.", "tomorrowEvent", allTasks.get(8).getName());
-			assertEquals("Sixth item should be 'tomorrowTask'.", "tomorrowTask", allTasks.get(9).getName());
+			assertEquals("Ninth item should be 'tomorrowEvent'.", "tomorrowEvent", allTasks.get(8).getName());
+			assertEquals("Tenth item should be 'tomorrowTask'.", "tomorrowTask", allTasks.get(9).getName());
+			assertEquals("Eleventh item should be 'tomorrowTask'.", "tomorrowTask", allTasks.get(9).getName());
 			
 			// checks that order is correct in each sublist
 			ArrayList<Task> overdues = logic.getOverdueBuffer();
@@ -1867,9 +1868,10 @@ public class LogicTest {
 			assertEquals("Second item should be 'todayTask'.", "todayTask", todayTasks.get(1).getName());
 			
 			ArrayList<Task> tomorrowTasks = logic.getTomorrowBuffer();
-			assertEquals("There should be 2 items in the list.", 2, tomorrowTasks.size());
+			assertEquals("There should be 3 items in the list.", 3, tomorrowTasks.size());
 			assertEquals("First item should be 'tomorrowEvent'.", "tomorrowEvent", tomorrowTasks.get(0).getName());
 			assertEquals("Second item should be 'tomorrowTask'.", "tomorrowTask", tomorrowTasks.get(1).getName());
+			assertEquals("Second item should be 'tomorrowTask'.", "tomorrowTask", tomorrowTasks.get(2).getName());
 			
 			ArrayList<Task> thisWeekTasks = logic.getThisWeekBuffer();
 			assertEquals("There should be 2 items in the list.", 2, thisWeekTasks.size());
@@ -1894,16 +1896,16 @@ public class LogicTest {
 	@Test
 	public void sortNonEmptyListByDate() {
 		try {
-			makeNonEmptyFile(false);
+			makeNonEmptyFile(true);
 			logic.executeCommand(sortByDate);
 			
 			// checks that inner memory does not face weird behavior
 			ArrayList<Task> mem = logic.getInternalStorage();
-			assertEquals("List should not experience a change in size.", 10, mem.size());
+			assertEquals("List should not experience a change in size.", 11, mem.size());
 			
 			// checks that combined tasks memory does not face weird behavior
 			ArrayList<Task> allTasks = logic.getTemporarySortList();
-			assertEquals("List should not experience a change in size.", 10, allTasks.size());
+			assertEquals("List should not experience a change in size.", 11, allTasks.size());
 			
 			// checks that order is correct in combined list of tasks
 			assertEquals("First item should be 'overdueTask'.", "overdueTask", allTasks.get(0).getName());
@@ -1911,11 +1913,12 @@ public class LogicTest {
 			assertEquals("Third item should be 'todayTask'.", "todayTask", allTasks.get(2).getName());
 			assertEquals("Fourth item should be 'todayEvent'.", "todayEvent", allTasks.get(3).getName());
 			assertEquals("Fifth item should be 'tomorrowTask'.", "tomorrowTask", allTasks.get(4).getName());
-			assertEquals("Sixth item should be 'tomorrowEvent'.", "tomorrowEvent", allTasks.get(5).getName());
-			assertEquals("Seventh item should be 'thisWeekTask1'.", "thisWeekTask1", allTasks.get(6).getName());
-			assertEquals("Eighth item should be 'thisWeekEvent1'.", "thisWeekEvent1", allTasks.get(7).getName());
-			assertEquals("Ninth item should be 'generalTask'.", "generalTask", allTasks.get(8).getName());
-			assertEquals("Tenth item should be 'floatingTask'.", "floatingTask", allTasks.get(9).getName());
+			assertEquals("Sixth item should be 'tomorrowTask'.", "tomorrowTask", allTasks.get(5).getName());
+			assertEquals("Seventh item should be 'tomorrowEvent'.", "tomorrowEvent", allTasks.get(6).getName());
+			assertEquals("Eighth item should be 'thisWeekTask1'.", "thisWeekTask1", allTasks.get(7).getName());
+			assertEquals("Ninth item should be 'thisWeekEvent1'.", "thisWeekEvent1", allTasks.get(8).getName());
+			assertEquals("Tenth item should be 'generalTask'.", "generalTask", allTasks.get(9).getName());
+			assertEquals("Eleventh item should be 'floatingTask'.", "floatingTask", allTasks.get(10).getName());
 			
 			// checks that order is correct in each sublist
 			ArrayList<Task> overdues = logic.getOverdueBuffer();
@@ -1929,9 +1932,10 @@ public class LogicTest {
 			assertEquals("Second item should be 'todayEvent'.", "todayEvent", todayTasks.get(1).getName());
 			
 			ArrayList<Task> tomorrowTasks = logic.getTomorrowBuffer();
-			assertEquals("There should be 2 items in the list.", 2, tomorrowTasks.size());
+			assertEquals("There should be 3 items in the list.", 3, tomorrowTasks.size());
 			assertEquals("First item should be 'tomorrowTask'.", "tomorrowTask", tomorrowTasks.get(0).getName());
-			assertEquals("Second item should be 'tomorrowEvent'.", "tomorrowEvent", tomorrowTasks.get(1).getName());
+			assertEquals("Second item should be 'tomorrowTask'.", "tomorrowTask", tomorrowTasks.get(1).getName());
+			assertEquals("Third item should be 'tomorrowEvent'.", "tomorrowEvent", tomorrowTasks.get(2).getName());
 			
 			ArrayList<Task> thisWeekTasks = logic.getThisWeekBuffer();
 			assertEquals("There should be 2 items in the list.", 2, thisWeekTasks.size());
@@ -1956,16 +1960,16 @@ public class LogicTest {
 	@Test
 	public void sortNonEmptyListByPriority() {
 		try {
-			makeNonEmptyFile(false);
+			makeNonEmptyFile(true);
 			logic.executeCommand(sortByPriority);
 			
 			// checks that inner memory does not face weird behavior
 			ArrayList<Task> mem = logic.getInternalStorage();
-			assertEquals("List should not experience a change in size.", 10, mem.size());
+			assertEquals("List should not experience a change in size.", 11, mem.size());
 
 			// checks that combined tasks memory does not face weird behavior
 			ArrayList<Task> allTasks = logic.getTemporarySortList();
-			assertEquals("List should not experience a change in size.", 10, allTasks.size());
+			assertEquals("List should not experience a change in size.", 11, allTasks.size());
 			
 			// checks that order is correct in combined list of tasks
 			assertEquals("First item should be 'overdueTask'.", "overdueTask", allTasks.get(0).getName());
@@ -1973,11 +1977,12 @@ public class LogicTest {
 			assertEquals("Third item should be 'todayEvent'.", "todayEvent", allTasks.get(2).getName());
 			assertEquals("Fourth item should be 'generalTask'.", "generalTask", allTasks.get(3).getName());
 			assertEquals("Fifth item should be 'tomorrowTask'.", "tomorrowTask", allTasks.get(4).getName());
-			assertEquals("Sixth item should be 'floatingTask'.", "floatingTask", allTasks.get(5).getName());
-			assertEquals("Seventh item should be 'overdueEvent'.", "overdueEvent", allTasks.get(6).getName());
-			assertEquals("Eighth item should be 'thisWeekEvent1'.", "thisWeekEvent1", allTasks.get(7).getName());
-			assertEquals("Ninth item should be 'tomorrowEvent'.", "tomorrowEvent", allTasks.get(8).getName());
-			assertEquals("Tenth item should be 'thisWeekTask1'.", "thisWeekTask1", allTasks.get(9).getName());
+			assertEquals("Sixth item should be 'tomorrowTask'.", "tomorrowTask", allTasks.get(5).getName());
+			assertEquals("Seventh item should be 'floatingTask'.", "floatingTask", allTasks.get(6).getName());
+			assertEquals("Eighth item should be 'overdueEvent'.", "overdueEvent", allTasks.get(7).getName());
+			assertEquals("Ninth item should be 'thisWeekEvent1'.", "thisWeekEvent1", allTasks.get(8).getName());
+			assertEquals("Tenth item should be 'tomorrowEvent'.", "tomorrowEvent", allTasks.get(9).getName());
+			assertEquals("Eleventh item should be 'thisWeekTask1'.", "thisWeekTask1", allTasks.get(10).getName());
 			
 			// checks that order is correct in each sublist
 			ArrayList<Task> overdues = logic.getOverdueBuffer();
@@ -1991,9 +1996,10 @@ public class LogicTest {
 			assertEquals("Second item should be 'todayEvent'.", "todayEvent", todayTasks.get(1).getName());
 			
 			ArrayList<Task> tomorrowTasks = logic.getTomorrowBuffer();
-			assertEquals("There should be 2 items in the list.", 2, tomorrowTasks.size());
+			assertEquals("There should be 3 items in the list.", 3, tomorrowTasks.size());
 			assertEquals("First item should be 'tomorrowTask'.", "tomorrowTask", tomorrowTasks.get(0).getName());
-			assertEquals("Second item should be 'tomorrowEvent'.", "tomorrowEvent", tomorrowTasks.get(1).getName());
+			assertEquals("Second item should be 'tomorrowTask'.", "tomorrowTask", tomorrowTasks.get(1).getName());
+			assertEquals("Third item should be 'tomorrowEvent'.", "tomorrowEvent", tomorrowTasks.get(2).getName());
 			
 			ArrayList<Task> thisWeekTasks = logic.getThisWeekBuffer();
 			assertEquals("There should be 2 items in the list.", 2, thisWeekTasks.size());
