@@ -1,10 +1,7 @@
 package cs2103_w09_1j.esther;
 
-import static org.junit.Assert.*;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -13,8 +10,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
-import cs2103_w09_1j.esther.Command;
-import cs2103_w09_1j.esther.Task;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * This class is the test-driver for the Logic component only.

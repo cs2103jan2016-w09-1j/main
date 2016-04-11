@@ -1,5 +1,7 @@
 package cs2103_w09_1j.esther;
 
+import java.text.ParseException;
+
 /**
  * ========== [ TASK OBJECT DEFINITIONS ] ==========
  * This class contains the representation of the
@@ -18,18 +20,13 @@ package cs2103_w09_1j.esther;
 
 // import java.util.Calendar;
 import java.text.SimpleDateFormat;
-import java.text.ParseException;
-import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import cs2103_w09_1j.esther.Status;
-
-import sun.util.resources.cldr.id.LocaleNames_id;
 
 public class Task implements Comparable<Task> {
 	public enum TaskField {
@@ -93,7 +90,7 @@ public class Task implements Comparable<Task> {
 	private String _name;
 	private Date _startDate;
 	private Date _endDate;
-	private int _priority; // for now, lower number indicates higher priority
+	private int _priority;
 	private int _id;
 	private boolean _isCompleted;
 	private boolean _isValid = false;
@@ -102,7 +99,7 @@ public class Task implements Comparable<Task> {
 	private static int _assignId = DEFAULT_STARTING_ID;
 	public static SimpleDateFormat _dateOnlyFormatter = new SimpleDateFormat("dd/MM/yyyy");
 	public static SimpleDateFormat _dateAndTimeFormatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-	private final static Logger taskLogger = Logger.getLogger("taskLogger");
+	private final static Logger taskLogger = Logger.getLogger("estherLogger");
 	private final static int NUM_FIELDS = 6;
 	private final static String completedStr = "Completed";
 	private final static String notCompletedStr = "Incomplete";
@@ -152,7 +149,7 @@ public class Task implements Comparable<Task> {
 		String startTimeString = command.hasParameter(TaskField.STARTTIME.getTaskKeyName())
 				? command.getSpecificParameter(TaskField.STARTTIME.getTaskKeyName())
 				: null;
-		startDate = parseDateTimeToString(today, startDateString, startTimeString, true);
+		startDate = parseStringsToDateTime(startDateString, startTimeString, today, true);
 
 		String endDateString = command.hasParameter(TaskField.ENDDATE.getTaskKeyName())
 				? command.getSpecificParameter(TaskField.ENDDATE.getTaskKeyName())
@@ -161,7 +158,7 @@ public class Task implements Comparable<Task> {
 		String endTimeString = command.hasParameter(TaskField.ENDTIME.getTaskKeyName())
 				? command.getSpecificParameter(TaskField.ENDTIME.getTaskKeyName())
 				: null;
-		endDate = parseDateTimeToString(today, endDateString, endTimeString, false);
+		endDate = parseStringsToDateTime(endDateString, endTimeString, today, false);
 
 		int priority = command.hasParameter(TaskField.PRIORITY.getTaskKeyName())
 				? Integer.parseInt(command.getSpecificParameter(TaskField.PRIORITY.getTaskKeyName()))
@@ -177,50 +174,37 @@ public class Task implements Comparable<Task> {
 	}
 
 	/**
+	 * Constructs a Task object from a String. The string is expected to have
+	 * the correct number of fields, separated by the <code>|</code> vertical
+	 * bar.
 	 * 
 	 * @param string
-	 * @@author A0127572A
+	 *            String containing all elements of a task object
 	 * @throws ParseException
+	 *             If parsing fails on any element
+	 * @@author A0127572A
 	 */
 	public Task(String string) throws ParseException {
 		this();
 		String[] resultsArray = new String[NUM_FIELDS];
 		String[] matcherInput = string.split(delimiterPattern);
 
+		// check number of fields
 		if (matcherInput.length != NUM_FIELDS) {
 			taskLogger.severe(
 					"Task constructor expected " + NUM_FIELDS + " arguments but received " + matcherInput.length + ".");
 			return;
 		}
 
-		for (int i = 0; i < regexArray.length; i++) {
-			resultsArray[i] = findMatch(regexArray[i], matcherInput[i]);
-			if (resultsArray[i] == null) {
-				// taskLogger.warning("Task builder could not parse " + i + "th
-				// element for task " + resultsArray[0]);
-				resultsArray[i] = "";
-			}
-		}
+		parseElementsToArray(resultsArray, matcherInput);
 
+		// check if an ID exists
 		if (resultsArray[0] == "") {
 			taskLogger.severe("Task constructor cannot find an ID");
 			return;
 		}
 
-		int localID = Integer.parseInt(resultsArray[0]);
-		Date sDate = parseDate(resultsArray[1]);
-		Date eDate = parseDate(resultsArray[2]);
-		String taskName = resultsArray[3];
-		int priority = Integer.parseInt(resultsArray[4]);
-		boolean complete = parseCompleted(resultsArray[5]);
-
-		this.setID(localID);
-		this.setName(taskName.trim());
-		this.setStartDate(sDate);
-		this.setEndDate(eDate);
-		this.setPriority(priority);
-		this.setCompleted(complete);
-		this.setIsValid(true);
+		setAllElements(resultsArray);
 	}
 
 	/**
@@ -242,6 +226,9 @@ public class Task implements Comparable<Task> {
 
 	@Override
 	/**
+	 * Converts the task object into a formatted String. Fields are separated by
+	 * a vertical bar | separator. This method is used when writing tasks to
+	 * file.
 	 * 
 	 * @@author A0127572A
 	 */
@@ -321,8 +308,10 @@ public class Task implements Comparable<Task> {
 	}
 
 	/**
+	 * Converts the startdate of a task to a string in the form
+	 * <code>dd/MM/yyyy HH:mm</code>
 	 * 
-	 * @return
+	 * @return start date in formatted string
 	 * @@author A0127572A
 	 */
 	public String sDateToString() {
@@ -330,8 +319,10 @@ public class Task implements Comparable<Task> {
 	}
 
 	/**
+	 * Converts the enddate of a task to a string in the form
+	 * <code>dd/MM/yyyy HH:mm</code>
 	 * 
-	 * @return
+	 * @return end date in formatted string form
 	 * @@author A0127572A
 	 */
 	public String eDateToString() {
@@ -339,47 +330,50 @@ public class Task implements Comparable<Task> {
 	}
 
 	/**
+	 * This method parses strings and returns a date depending on the contents
+	 * of the strings. Either the dateString or timeString may be null. In any
+	 * case, a fallback must be given if either is null. <br>
+	 * For a null date string, a fallback date must be given in the form of a
+	 * <code>Date</code> object. <br>
+	 * For a null time string, a boolean must be given to indicate whether to
+	 * fallback as a start time (which defaults to 0000) or an end time (which
+	 * defaults to 2359).
 	 * 
-	 * @param date
-	 * @return
-	 * @@author A0127572A
-	 */
-	private String dateToString(Date date) {
-		if (date == null) {
-			return "";
-		} else {
-			return _dateAndTimeFormatter.format(date);
-		}
-	}
-
-	/**
-	 * 
-	 * @param today
 	 * @param dateString
+	 *            A string containing either a formatted date or null to be
+	 *            parsed
 	 * @param timeString
-	 * @return
+	 *            A string containing either a formatted time or null to be
+	 *            parsed
+	 * @param fallbackDate
+	 *            A date object used as fallback if the dateString is null
+	 * @param start
+	 *            A boolean indicating whether to default to 0000 or 2359 if
+	 *            timeString is null. True will default to 0000
+	 * @return a date object containing the parsed date and time strings
 	 * @throws ParseException
 	 * @@author A0127572A
 	 */
-	public static Date parseDateTimeToString(Date today, String dateString, String timeString, boolean start)
+	public static Date parseStringsToDateTime(String dateString, String timeString, Date fallbackDate, boolean start)
 			throws ParseException {
 		Date date = null;
 		if (dateString != null && timeString != null) {
-			// System.out.println("Date and time parts are modified.");
 			date = _dateAndTimeFormatter.parse(dateString + " " + timeString);
 		} else if (dateString != null && timeString == null) {
 			date = _dateAndTimeFormatter.parse(dateString + " " + (start ? "00:00" : "23:59"));
 		} else if (dateString == null && timeString != null) {
-			// System.out.println("Time part is modified.");
-			date = _dateAndTimeFormatter.parse(_dateOnlyFormatter.format(today) + " " + timeString);
+			date = _dateAndTimeFormatter.parse(_dateOnlyFormatter.format(fallbackDate) + " " + timeString);
 		}
 		return date;
 	}
 
 	/**
+	 * Parses a date string to a date object. If the string is null or empty,
+	 * returns null.
 	 * 
 	 * @param dateStr
-	 * @return
+	 *            String to parse
+	 * @return Formatted date or null if string given is null or empty.
 	 * @throws ParseException
 	 * @@author A0127572A
 	 */
@@ -472,6 +466,8 @@ public class Task implements Comparable<Task> {
 	/**
 	 * Sets the global ID variable for system usage.
 	 * 
+	 * @param newId
+	 *            the ID to set
 	 * @return the global ID variable in this class
 	 * @@author A0130749A
 	 */
@@ -522,8 +518,9 @@ public class Task implements Comparable<Task> {
 	}
 
 	/**
+	 * Gets isComplete and returns a corresponding string
 	 * 
-	 * @return
+	 * @return completedStr if true and notCompletedStr if false
 	 * @@author A0127572A
 	 */
 	public String completedToString() {
@@ -535,9 +532,12 @@ public class Task implements Comparable<Task> {
 	}
 
 	/**
+	 * Parses a given string for the isCompleted attribute. Returns true if it
+	 * contains completedStr
 	 * 
 	 * @param completeStr
-	 * @return
+	 *            String to parse
+	 * @return true if contains completedStr
 	 * @@author A0127572A
 	 */
 	public boolean parseCompleted(String completeStr) {
@@ -545,21 +545,14 @@ public class Task implements Comparable<Task> {
 	}
 
 	/**
+	 * Gets the isValid boolean value. isValid is set to true if Task object was
+	 * constructed successfully.
 	 * 
-	 * @return
+	 * @return boolean value of isValid
 	 * @@author A0127572A
 	 */
 	public boolean isValid() {
 		return _isValid;
-	}
-
-	/**
-	 * 
-	 * @param _isValid
-	 * @@author A0127572A
-	 */
-	public void setIsValid(boolean _isValid) {
-		this._isValid = _isValid;
 	}
 
 	/**
@@ -568,6 +561,7 @@ public class Task implements Comparable<Task> {
 	 * @return a copy of the Task object
 	 * @@author A0130749A
 	 */
+	@Override
 	public Task clone() {
 		Task copy = new Task();
 		copy.setName(_name);
@@ -581,19 +575,20 @@ public class Task implements Comparable<Task> {
 	}
 
 	/**
-     * Updates the state of the Task object based on the Command object
-     * parameters.
-     * 
-     * @param command
-     *            the Command object containing the required parameters
-     * @throws ParseException
-     * @@author A0130749A
-     */
+	 * Updates the state of the Task object based on the Command object
+	 * parameters.
+	 * 
+	 * @param command
+	 *            the Command object containing the required parameters
+	 * @return
+	 * @throws ParseException
+	 * @@author A0130749A
+	 */
 	public boolean updateTask(Command command) throws ParseException {
 		String startDate = null;
 		String startTime = null;
 		String endDate = null;
-		String endTime = null;		
+		String endTime = null;
 
 		// DATE AND TIME HANDLING
 		if (command.hasParameter(TaskField.STARTDATE.getTaskKeyName())) {
@@ -618,29 +613,29 @@ public class Task implements Comparable<Task> {
 		Date oldEndDate = _endDate;
 		Date newStartDate = null;
 		Date newEndDate = null;
-		
+
 		if (_startDate == null) {
-			newStartDate = parseDateTimeToString(new Date(), startDate, startTime, true);
+			newStartDate = parseStringsToDateTime(startDate, startTime, new Date(), true);
 			this.setStartDate(newStartDate);
 		} else if (startTime == null) {
-			newStartDate = parseDateTimeToString(_startDate, startDate, oldStartTime, true);
+			newStartDate = parseStringsToDateTime(startDate, oldStartTime, _startDate, true);
 			this.setStartDate(newStartDate);
 		} else {
-			newStartDate = parseDateTimeToString(_startDate, startDate, startTime, true);
+			newStartDate = parseStringsToDateTime(startDate, startTime, _startDate, true);
 			this.setStartDate(newStartDate);
 		}
-		
+
 		if (_endDate == null) {
-			newEndDate = parseDateTimeToString(new Date(), endDate, endTime, false);
+			newEndDate = parseStringsToDateTime(endDate, endTime, new Date(), false);
 			this.setEndDate(newEndDate);
 		} else if (endTime == null) {
-			newEndDate = parseDateTimeToString(_endDate, endDate, oldEndTime, false);
+			newEndDate = parseStringsToDateTime(endDate, oldEndTime, _endDate, false);
 			this.setEndDate(newEndDate);
 		} else {
-			newEndDate = parseDateTimeToString(_endDate, endDate, endTime, false);
+			newEndDate = parseStringsToDateTime(endDate, endTime, _endDate, false);
 			this.setEndDate(newEndDate);
 		}
-		
+
 		if (isAcceptableDateChange(newStartDate, newEndDate)) {
 			// do nothing
 		} else {
@@ -649,11 +644,9 @@ public class Task implements Comparable<Task> {
 			Status._errorCode = Status.ErrorCode.UPDATE_START_END_VIOLATE;
 			return false;
 		}
-		//System.out.println(dateToString(_startDate));
-		//System.out.println(dateToString(_endDate));
 
 		if (command.hasParameter(TaskField.PRIORITY.getTaskKeyName())) {
-			int newPriority = Integer.parseInt(command.getSpecificParameter(TaskField.PRIORITY.getTaskKeyName())); 
+			int newPriority = Integer.parseInt(command.getSpecificParameter(TaskField.PRIORITY.getTaskKeyName()));
 			if (newPriority < HIGHEST_TASK_PRIORITY || newPriority > DEFAULT_TASK_PRIORITY) {
 				Status._errorCode = Status.ErrorCode.UPDATE_INVALID_PRIORITY;
 				return false;
@@ -661,7 +654,7 @@ public class Task implements Comparable<Task> {
 				this.setPriority(newPriority);
 			}
 		}
-		
+
 		if (command.hasParameter(TaskField.NAME.getTaskKeyName())) {
 			this.setName(command.getSpecificParameter(TaskField.NAME.getTaskKeyName()));
 		}
@@ -677,42 +670,8 @@ public class Task implements Comparable<Task> {
 		if (command.hasParameter(TaskField.COMPLETE.getTaskKeyName())) {
 			this.setCompleted(Boolean.parseBoolean(command.getSpecificParameter(TaskField.COMPLETE.getTaskKeyName())));
 		}
-		
-		return true;
-	}
 
-	/**
-	 * Checks if the date-time properties of the task satisfies the formal
-	 * definition of a task, event or floating task.
-	 * 
-	 * To maintain consistency in the logical processing of a Task object, we
-	 * define the date-time property of a task as below: <br>
-	 * <br>
-	 * 1. A typical task ALWAYS has a deadline (i.e. end date-time). <br>
-	 * 2. An event ALWAYS has start and end date-times. <br>
-	 * 3. A floating task will have NO date-times. <br>
-	 * <br>
-	 * 
-	 * @param startDate
-	 *            the starting date-time of the task
-	 * @param endDate
-	 *            the ending date-time of the task
-	 * @return true if the date change preserves a task's formal definition as a
-	 *         task, event or floating task; false otherwise.
-	 * @@author A0130749A
-	 */
-	private boolean isAcceptableDateChange(Date startDate, Date endDate) {
-		if (startDate != null && endDate == null) {
-			return false;
-		} else if (startDate == null && endDate == null) {
-			return true;
-		} else if (startDate == null && endDate != null) {
-			return true;
-		} else if (startDate.compareTo(endDate) < 0) {
-			return true;
-		} else {
-			return false;
-		}
+		return true;
 	}
 
 	/**
@@ -732,51 +691,37 @@ public class Task implements Comparable<Task> {
 	 * @return an Integer representing the status of the task/event.
 	 */
 	public int getTaskCode(Date today) {
-		// System.out.println(today);
-		Date todayEnd = (Date) today.clone();
-		todayEnd.setHours(23);
-		todayEnd.setMinutes(59);
-		// System.out.println(todayEnd);
-		Date tomorrow = (Date) today.clone();
-		tomorrow.setDate(today.getDate() + 1);
-		tomorrow.setHours(0);
-		tomorrow.setMinutes(0);
-		Date tomorrowEnd = (Date) tomorrow.clone();
-		tomorrowEnd.setHours(23);
-		tomorrowEnd.setMinutes(59);
-		// System.out.println(tomorrow);
-		Date afterTomorrow = (Date) today.clone();
-		afterTomorrow.setDate(today.getDate() + 2);
-		afterTomorrow.setHours(0);
-		afterTomorrow.setMinutes(0);
-		// System.out.println(afterTomorrow);
-		Date thisWeek = (Date) today.clone();
-		thisWeek.setDate(today.getDate() + 7);
-		thisWeek.setHours(23);
-		thisWeek.setMinutes(59);
-		if (isCompleted()) { // is completed task
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(today);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
+
+		calendar.set(Calendar.HOUR_OF_DAY, 23);
+		calendar.set(Calendar.MINUTE, 59);
+		Date todayEnd = calendar.getTime();
+
+		calendar.add(Calendar.DAY_OF_YEAR, 1);
+		Date tomorrowEnd = calendar.getTime();
+
+		calendar.add(Calendar.DAY_OF_YEAR, 6);
+		Date thisWeekEnd = calendar.getTime();
+		if (isCompleted()) {
+			// is completed task
 			return COMPLETED_TASK_INDEX;
-		} else if (isFloatingTask()) { // is floating task
+		} else if (isFloatingTask()) {
+			// is floating task
 			return FLOATING_TASK_INDEX;
-		} else if ((isEvent() && _startDate.compareTo(today) < 0) || _endDate.compareTo(today) < 0) { // overdue
-																										// event
-																										// or
-																										// task
+		} else if ((isEvent() && _startDate.compareTo(today) < 0) || _endDate.compareTo(today) < 0) {
+			// overdue event or task
 			return OVERDUE_TASK_INDEX;
-		} else if ((isEvent() && _startDate.compareTo(today) >= 0 && _startDate.compareTo(todayEnd) < 0)
-				|| (_endDate.compareTo(today) >= 0 && _endDate.compareTo(todayEnd) < 0)) { // today's
-																							// event
-																							// or
-																							// task
+		} else if ((isEvent() && _startDate.compareTo(todayEnd) < 0) || _endDate.compareTo(todayEnd) < 0) {
+			// today's event or task
 			return TODAY_TASK_INDEX;
-		} else if ((isEvent() && _startDate.compareTo(tomorrow) >= 0 && _startDate.compareTo(tomorrowEnd) < 0)
-				|| (_endDate.compareTo(tomorrow) >= 0 && _endDate.compareTo(tomorrowEnd) < 0)) { // tomorrow's
-																									// event
-																									// or
-																									// task
+		} else if ((isEvent() && _startDate.compareTo(tomorrowEnd) < 0) || _endDate.compareTo(tomorrowEnd) < 0) {
+			// tomorrow's event or task
 			return TOMORROW_TASK_INDEX;
-		} else if ((isEvent() && _startDate.compareTo(afterTomorrow) >= 0 && _startDate.compareTo(thisWeek) < 0)
-				|| (_endDate.compareTo(afterTomorrow) >= 0 && _endDate.compareTo(thisWeek) < 0)) {
+		} else if ((isEvent() && _startDate.compareTo(thisWeekEnd) < 0) || _endDate.compareTo(thisWeekEnd) < 0) {
+			// this week's event or task
 			return THIS_WEEK_TASK_INDEX;
 		} else {
 			return UNCODED_TASK_INDEX;
@@ -800,7 +745,6 @@ public class Task implements Comparable<Task> {
 	public int compareTo(Task task) {
 		switch (_sortCriterion) {
 			case SORT_BY_DATE_KEYWORD:
-				// System.out.println("Sorting by date.");
 				return compareByDate(task);
 
 			case SORT_BY_NAME_KEYWORD:
@@ -1001,4 +945,102 @@ public class Task implements Comparable<Task> {
 		}
 	}
 
+	/**
+	 * Sets all elements of a task object with an array of Strings
+	 * 
+	 * @param resultsArray
+	 *            An array of strings containing the elements to be parsed
+	 * @throws ParseException
+	 *             if an error is encountered while parsing
+	 */
+	private void setAllElements(String[] resultsArray) throws ParseException {
+		this.setID(Integer.parseInt(resultsArray[0]));
+		this.setName(resultsArray[3]);
+		this.setStartDate(parseDate(resultsArray[1]));
+		this.setEndDate(parseDate(resultsArray[2]));
+		this.setPriority(Integer.parseInt(resultsArray[4]));
+		this.setCompleted(parseCompleted(resultsArray[5]));
+		this.setIsValid(true);
+	}
+
+	/**
+	 * Converts a given date object to a string in the form
+	 * <code>dd/MM/yyyy HH:mm</code>
+	 * 
+	 * @param date
+	 *            given date object to format
+	 * @return formatted string
+	 * @@author A0127572A
+	 */
+	private String dateToString(Date date) {
+		if (date == null) {
+			return "";
+		} else {
+			return _dateAndTimeFormatter.format(date);
+		}
+	}
+
+	/**
+	 * Parses a list of strings into a list of elements in formatted string
+	 * form. Used in the Task(string) constructor.
+	 * 
+	 * @param resultsArray
+	 *            An array to contain the results of the parsing
+	 * @param matcherInput
+	 *            An array containing strings to parse
+	 * 
+	 */
+	private void parseElementsToArray(String[] resultsArray, String[] matcherInput) {
+		for (int i = 0; i < regexArray.length; i++) {
+			resultsArray[i] = findMatch(regexArray[i], matcherInput[i]);
+			if (resultsArray[i] == null) {
+				resultsArray[i] = "";
+			}
+		}
+	}
+
+	/**
+	 * Checks if the date-time properties of the task satisfies the formal
+	 * definition of a task, event or floating task.
+	 * 
+	 * To maintain consistency in the logical processing of a Task object, we
+	 * define the date-time property of a task as below: <br>
+	 * <br>
+	 * 1. A typical task ALWAYS has a deadline (i.e. end date-time). <br>
+	 * 2. An event ALWAYS has start and end date-times. <br>
+	 * 3. A floating task will have NO date-times. <br>
+	 * <br>
+	 * 
+	 * @param startDate
+	 *            the starting date-time of the task
+	 * @param endDate
+	 *            the ending date-time of the task
+	 * @return true if the date change preserves a task's formal definition as a
+	 *         task, event or floating task; false otherwise.
+	 * @@author A0130749A
+	 */
+	private boolean isAcceptableDateChange(Date startDate, Date endDate) {
+		if (startDate != null && endDate == null) {
+			return false;
+		} else if (startDate == null && endDate == null) {
+			return true;
+		} else if (startDate == null && endDate != null) {
+			return true;
+		} else if (startDate.compareTo(endDate) < 0) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Sets the isValid boolean value. isValid is set to true if Task object was
+	 * constructed successfully.
+	 * 
+	 * @param _isValid
+	 * @@author A0127572A
+	 */
+	private void setIsValid(boolean _isValid) {
+		this._isValid = _isValid;
+	}
 }

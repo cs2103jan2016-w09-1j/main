@@ -1,7 +1,6 @@
 package cs2103_w09_1j.esther;
 
 import java.util.ArrayList;
-import cs2103_w09_1j.esther.Task;
 
 /**
  * The <code>State</code> class represents a internal memory state in the <code>Logic</code> component.

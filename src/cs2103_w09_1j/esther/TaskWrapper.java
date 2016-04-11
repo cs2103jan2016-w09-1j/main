@@ -1,6 +1,5 @@
 package cs2103_w09_1j.esther;
 
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 
 public class TaskWrapper {

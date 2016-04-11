@@ -7,20 +7,14 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Stack;
-import java.util.logging.*;
-import cs2103_w09_1j.esther.Command;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import cs2103_w09_1j.esther.Command.CommandKey;
 import cs2103_w09_1j.esther.Task.TaskField;
-import cs2103_w09_1j.esther.UIResult;
-import cs2103_w09_1j.esther.Config;
-import cs2103_w09_1j.esther.Task;
-import cs2103_w09_1j.esther.State;
-import cs2103_w09_1j.esther.Status;
-import cs2103_w09_1j.esther.InvalidInputException;
 
 /**
  * The <code>Logic</code> handles all operations as requested by the user.
@@ -1236,9 +1230,9 @@ class Logic {
 			String timeString) throws ParseException {
 		Date referenceDate;
 		if (isSearchBeforeDate(searchDateKeyword)) {
-			referenceDate = Task.parseDateTimeToString(new Date(), dateString, timeString, true);
+			referenceDate = Task.parseStringsToDateTime(dateString, timeString, new Date(), true);
 		} else {
-			referenceDate = Task.parseDateTimeToString(new Date(), dateString, timeString, false);
+			referenceDate = Task.parseStringsToDateTime(dateString, timeString, new Date(), false);
 		}
 		return referenceDate;
 	}

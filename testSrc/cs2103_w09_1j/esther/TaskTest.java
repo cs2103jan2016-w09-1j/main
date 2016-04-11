@@ -4,12 +4,12 @@ package cs2103_w09_1j.esther;
 /**
  * @@author A0127572A
  */
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.text.ParseException;
 import java.util.Calendar;
-import java.util.HashMap;
 
 import org.junit.Test;
 

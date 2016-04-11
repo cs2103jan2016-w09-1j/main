@@ -1,8 +1,9 @@
 package cs2103_w09_1j.esther;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import java.awt.Event;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,8 +12,6 @@ import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
-
-import javax.naming.directory.DirContext;
 
 import org.junit.After;
 import org.junit.Before;

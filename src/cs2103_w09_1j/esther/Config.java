@@ -25,6 +25,10 @@ public class Config {
 
 	private static final int defaultReferenceID = 1;
 	private static final Path defaultSavePath = Paths.get("esther.txt");
+	private static final String[] attributeNames = { "ReferenceID", "SaveLocation", "FieldNameAliases" };
+	private static final String attributeFormat = "%1$s = %2$s;\n";
+	private static final String attributeRegex = " = ([^;]+);";
+	private static final String fieldNameRegex = "([\\w]+) = ([\\w]+);\n";
 	private static final String[][] defaultFieldNameAliases = {	{ "taskname", "taskName" },
 																{ "tname", "taskName" },
 																{ "name", "taskName" },
@@ -65,11 +69,6 @@ public class Config {
 																{ "done", "completed" },
 																{ "dn", "completed" } };
 
-	private static final String[] attributeNames = { "ReferenceID", "SaveLocation", "FieldNameAliases" };
-	private static final String attributeFormat = "%1$s = %2$s;\n";
-	private static final String attributeRegex = " = ([^;]+);";
-	private static final String fieldNameRegex = "([\\w]+) = ([\\w]+);\n";
-
 	/**
 	 * Constructor for default config with default values
 	 */
@@ -84,11 +83,14 @@ public class Config {
 	 * 
 	 * @param configString
 	 *            String containing information for config construction
-	 * @throws Exception
+	 * @throws ParseException 
+	 * 			If no match is found for the Ref ID or the Save Location 
 	 */
 	public Config(String configString) throws ParseException {
 		this();
 		String[] resultsArray = new String[2];
+		
+		//Parse for the first two elements: ref ID and save path
 		for (int i = 0; i < 2; i++) {
 			resultsArray[i] = findMatch(attributeNames[i], configString);
 			if (resultsArray[i] == null) {
@@ -98,13 +100,16 @@ public class Config {
 			}
 		}
 
+		//Set first two elements
 		setReferenceID(Integer.parseInt(resultsArray[0]));
+		
 		try {
 			setSavePath(Paths.get(resultsArray[1]));
 		} catch (InvalidPathException ipe) {
 			setSavePath(getDefaultSavePath());
 		}
 
+		//Parse and set all field names
 		findAndSetFieldNames(configString);
 	}
 
@@ -125,9 +130,8 @@ public class Config {
 	 * Prints all elements in a hashmap. A specific order is not guaranteed.
 	 * 
 	 * @param hashMap
-	 * 	The hashmap to print
-	 * @return
-	 * 	A string containing all elements of the hashmap
+	 *            The hashmap to print
+	 * @return A string containing all elements of the hashmap
 	 */
 	public String printHashMap(HashMap<String, String> hashMap) {
 		String hashMapString = "";
@@ -140,6 +144,8 @@ public class Config {
 	}
 
 	/**
+	 * Gets the locally stored reference ID used by Logic to set task IDs
+	 * 
 	 * @return the referenceID
 	 */
 	public int getReferenceID() {
@@ -147,6 +153,8 @@ public class Config {
 	}
 
 	/**
+	 * Sets the locally stored reference ID used by Logic to set task IDs
+	 * 
 	 * @param referenceID
 	 *            the referenceID to set
 	 */
@@ -155,6 +163,9 @@ public class Config {
 	}
 
 	/**
+	 * Gets the hashmap of fieldname aliases used by Parser when parsing
+	 * commands that have fieldnames (like update)
+	 * 
 	 * @return the fieldNameAliases
 	 */
 	public HashMap<String, String> getFieldNameAliases() {
@@ -162,6 +173,9 @@ public class Config {
 	}
 
 	/**
+	 * Sets the hashmap of fieldname aliases used by Parser when parsing
+	 * commands that have fieldnames (like update)
+	 * 
 	 * @param fieldNameAliases
 	 *            the fieldNameAliases to set
 	 */
@@ -170,6 +184,8 @@ public class Config {
 	}
 
 	/**
+	 * Gets the stored save location for the save file
+	 * 
 	 * @return the saveLocation
 	 */
 	public Path getSavePath() {
@@ -177,23 +193,34 @@ public class Config {
 	}
 
 	/**
+	 * Sets the stored save location for the save file
+	 * 
 	 * @param saveLocation
-	 *            the saveLocation to set
+	 *            the saveLocation to set (must be a Path)
 	 */
 	public void setSavePath(Path saveLocation) {
 		this.savePath = saveLocation;
 	}
 
 	/**
+	 * Sets the stored save location for the save file using a string
 	 * 
 	 * @param saveLocation
+	 *            the saveLocation to set (must be a String)
 	 * @throws InvalidPathException
+	 *             If an invalid path was given
 	 */
 	public void setSavePath(String saveLocation) throws InvalidPathException {
 		this.savePath = Paths.get(saveLocation);
 	}
 
+	// ==================PRIVATE METHODS=================
+	// These methods are mostly used in the construction of the default Config
+	// object
+
 	/**
+	 * Gets the default reference ID for use in the default constructor
+	 * 
 	 * @return the defaultReferenceID
 	 */
 	private int getDefaultReferenceID() {
@@ -201,6 +228,8 @@ public class Config {
 	}
 
 	/**
+	 * Gets the default save location for use in the default constructor
+	 * 
 	 * @return the defaultSaveLocation
 	 */
 	private Path getDefaultSavePath() {
@@ -208,6 +237,8 @@ public class Config {
 	}
 
 	/**
+	 * Gets the default field name aliases in the form of a 2D array
+	 * 
 	 * @return the defaultFieldNameAliases
 	 */
 	private String[][] getDefaultFieldNameAliases() {
@@ -215,10 +246,11 @@ public class Config {
 	}
 
 	/**
-	 * Finds field names and their aliases in the given string and sets the field name hashmap
+	 * Finds field names and their aliases in the given string and sets the
+	 * field name hashmap
 	 * 
 	 * @param configString
-	 * 			String to be parsed containing field names and their aliases
+	 *            String to be parsed containing field names and their aliases
 	 */
 	private void findAndSetFieldNames(String configString) {
 		Matcher fieldNameMatcher = Pattern.compile(fieldNameRegex).matcher(configString);
@@ -245,10 +277,10 @@ public class Config {
 	}
 
 	/**
-	 * Constructs the default field name aliases hashmap. Uses an array of field name aliases.
+	 * Constructs the default field name aliases hashmap. Uses an array of field
+	 * name aliases.
 	 * 
-	 * @return
-	 * 		Constructed hashmap of field name and their aliases
+	 * @return Constructed hashmap of field name and their aliases
 	 */
 	private HashMap<String, String> constructDefaultFieldNameAliases() {
 		HashMap<String, String> fieldNameAliases = new HashMap<>();
