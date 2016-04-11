@@ -10,10 +10,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * This class handles and stores the configuration metadata of Esther. The three
+ * main things stored are (1) the reference ID, (2) the save path of the save
+ * file and (3) field name aliases for commands
  * 
  * @author Jeremy Hon
  * @@author A0127572A
- *
  */
 public class Config {
 
@@ -69,7 +71,7 @@ public class Config {
 	private static final String fieldNameRegex = "([\\w]+) = ([\\w]+);\n";
 
 	/**
-	 * Constructor for default config
+	 * Constructor for default config with default values
 	 */
 	public Config() {
 		setReferenceID(getDefaultReferenceID());
@@ -103,14 +105,11 @@ public class Config {
 			setSavePath(getDefaultSavePath());
 		}
 
-		Matcher fieldNameMatcher = Pattern.compile(fieldNameRegex).matcher(configString);
-		while (fieldNameMatcher.find()) {
-			fieldNameAliases.put(fieldNameMatcher.group(1), fieldNameMatcher.group(2));
-		}
+		findAndSetFieldNames(configString);
 	}
 
 	/**
-	 * 
+	 * Formats the Config object into a string for writing to string.
 	 */
 	public String toString() {
 		String configStr = "";
@@ -123,9 +122,12 @@ public class Config {
 	}
 
 	/**
+	 * Prints all elements in a hashmap. A specific order is not guaranteed.
 	 * 
 	 * @param hashMap
+	 * 	The hashmap to print
 	 * @return
+	 * 	A string containing all elements of the hashmap
 	 */
 	public String printHashMap(HashMap<String, String> hashMap) {
 		String hashMapString = "";
@@ -135,22 +137,6 @@ public class Config {
 			hashMapString += pair.getKey() + " = " + pair.getValue() + ";\n";
 		}
 		return hashMapString;
-	}
-
-	private String findMatch(String regex, String input) {
-		return Task.findMatch(regex + attributeRegex, input);
-	}
-
-	/**
-	 * 
-	 * @return
-	 */
-	private HashMap<String, String> constructDefaultFieldNameAliases() {
-		HashMap<String, String> fieldNameAliases = new HashMap<>();
-		for (int i = 0; i < getDefaultFieldNameAliases().length; i++) {
-			fieldNameAliases.put(getDefaultFieldNameAliases()[i][0], getDefaultFieldNameAliases()[i][1]);
-		}
-		return fieldNameAliases;
 	}
 
 	/**
@@ -197,8 +183,13 @@ public class Config {
 	public void setSavePath(Path saveLocation) {
 		this.savePath = saveLocation;
 	}
-	
-	public void setSavePath(String saveLocation) throws InvalidPathException{
+
+	/**
+	 * 
+	 * @param saveLocation
+	 * @throws InvalidPathException
+	 */
+	public void setSavePath(String saveLocation) throws InvalidPathException {
 		this.savePath = Paths.get(saveLocation);
 	}
 
@@ -221,5 +212,49 @@ public class Config {
 	 */
 	private String[][] getDefaultFieldNameAliases() {
 		return defaultFieldNameAliases;
+	}
+
+	/**
+	 * Finds field names and their aliases in the given string and sets the field name hashmap
+	 * 
+	 * @param configString
+	 * 			String to be parsed containing field names and their aliases
+	 */
+	private void findAndSetFieldNames(String configString) {
+		Matcher fieldNameMatcher = Pattern.compile(fieldNameRegex).matcher(configString);
+		while (fieldNameMatcher.find()) {
+			fieldNameAliases.put(fieldNameMatcher.group(1), fieldNameMatcher.group(2));
+		}
+	}
+
+	/**
+	 * Returns the matching string given a regex and a string
+	 * 
+	 * @param regex
+	 * @param input
+	 * @return
+	 * @@author A0127572A
+	 */
+	private String findMatch(String regex, String input) {
+		Matcher matcher = Pattern.compile(regex + attributeRegex).matcher(input);
+		if (matcher.find()) {
+			return matcher.group(1);
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * Constructs the default field name aliases hashmap. Uses an array of field name aliases.
+	 * 
+	 * @return
+	 * 		Constructed hashmap of field name and their aliases
+	 */
+	private HashMap<String, String> constructDefaultFieldNameAliases() {
+		HashMap<String, String> fieldNameAliases = new HashMap<>();
+		for (int i = 0; i < getDefaultFieldNameAliases().length; i++) {
+			fieldNameAliases.put(getDefaultFieldNameAliases()[i][0], getDefaultFieldNameAliases()[i][1]);
+		}
+		return fieldNameAliases;
 	}
 }
