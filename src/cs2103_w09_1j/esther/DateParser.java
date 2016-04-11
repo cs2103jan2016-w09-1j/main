@@ -40,7 +40,7 @@ public class DateParser {
 	private final static ArrayList<String> dateFormatList = new ArrayList<String>(Arrays.asList("dd/MM/yy", "dd.MM.yy",
 			"dd-MM-yy", "ddMMyy", "dd MMM,yy", "MMM dd,yy", "dd/MM", "dd.MM", "dd MMM", "ddMMM", "MMM dd", "MMMd"));
 	private final static ArrayList<String> timeFormatList = new ArrayList<String>(
-			Arrays.asList("hh:mma", "hh:mm a", "hhmma", "hhmm a", "hha", "hh a", "HH:mm", "HHmm", "HH"));
+			Arrays.asList("hh:mma", "hh:mm a", "hha", "hh a", "hhmma", "hhmm a", "HH:mm", "HHmm", "HH"));
 
 	// Name of the possible wordy dates
 	private final static LinkedHashMap<String, String> monthWords = createMonthMap();
@@ -99,7 +99,7 @@ public class DateParser {
 					dateTime[0] = dp.getDate(input, dateFormat);
 					String givenDate = convertToProperDateFormat(input, dateFormat);
 					int lastIndexOfDate = input.indexOf(givenDate.toLowerCase());
-					input = input.substring(lastIndexOfDate + givenDate.length());
+					input = input.substring(lastIndexOfDate + givenDate.length()).trim();
 				}
 			}
 
@@ -119,7 +119,7 @@ public class DateParser {
 						givenTime = givenTime.substring(1);
 					}
 					int lastIndexOfTime = input.toLowerCase().lastIndexOf(givenTime.toLowerCase());
-					input = input.substring(lastIndexOfTime + givenTime.length());
+					input = input.substring(lastIndexOfTime + givenTime.length()).trim();
 				}
 			}
 			input = input.trim();

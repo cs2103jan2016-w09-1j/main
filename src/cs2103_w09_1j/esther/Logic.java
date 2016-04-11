@@ -1,6 +1,45 @@
-# A0129660A
-###### \src\cs2103_w09_1j\esther\Logic.java
-``` java
+package cs2103_w09_1j.esther;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.InvalidPathException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import cs2103_w09_1j.esther.Command.CommandKey;
+import cs2103_w09_1j.esther.Task.TaskField;
+
+/**
+ * The <code>Logic</code> handles all operations as requested by the user.
+ * A list of operations that are supported are:
+ * <br>
+ * 1. CRUD
+ * <br>
+ * 2. Sort
+ * <br>
+ * 3. Search
+ * <br>
+ * 4. Set save file-path
+ * <br>
+ * <br>
+ * Generally, when these operations succeed or fail,
+ * relevant messages confirming the statuses of these
+ * operations shall be passed to the UI via the Parser,
+ * which will then be shown to the user.
+ * <br>
+ * <br>
+ * For all operations, a <code>UIResult</code> is passed to UI for
+ * display to the user and a message indicating the status of the
+ * user operation is displayed to the user through the UI.
+ * 
+ * @@author A0129660A
  */
 class Logic {
 
@@ -340,11 +379,6 @@ class Logic {
 	private void initializeLogger() {
 		try {
 			logger = Logger.getLogger("estherLogger");
-			logger.setLevel(Level.SEVERE);
-			File logsDir = new File("logs");
-			if(!logsDir.exists()){
-			    logsDir.mkdirs();
-			}
 			if (toDebug) {
 				logger.setLevel(Level.SEVERE);
 			} else {
@@ -1191,9 +1225,9 @@ class Logic {
 			String timeString) throws ParseException {
 		Date referenceDate;
 		if (isSearchBeforeDate(searchDateKeyword)) {
-			referenceDate = Task.parseDateTimeToString(new Date(), dateString, timeString, true);
+			referenceDate = Task.parseStringsToDateTime(dateString, timeString, new Date(), true);
 		} else {
-			referenceDate = Task.parseDateTimeToString(new Date(), dateString, timeString, false);
+			referenceDate = Task.parseStringsToDateTime(dateString, timeString, new Date(), false);
 		}
 		return referenceDate;
 	}
@@ -1653,4 +1687,3 @@ class Logic {
 	// ====================== LOWER-LEVEL USER OPERATION METHODS FOR LOGIC ======================= //
 	// =========================================================================================== //
 }
-```

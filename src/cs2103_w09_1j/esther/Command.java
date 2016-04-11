@@ -156,17 +156,17 @@ public class Command {
 		case SHOW:
 			value = _parameters.get(parameter);
 			break;
-
+			
 		case KEYWORD:
 			value = _parameters.get(parameter);
 			break;
-
+			
 		case PATH:
 			value = _parameters.get(parameter);
 			break;
 
 		default:
-			value = "Unrecognized key.";
+			value = null;
 			break;
 		}
 

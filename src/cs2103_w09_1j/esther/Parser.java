@@ -1,3 +1,4 @@
+package cs2103_w09_1j.esther;
 
 /**
  * ============= [PARSER COMPONENT FOR ESTHER] =============
@@ -48,11 +49,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import cs2103_w09_1j.esther.Command;
-import cs2103_w09_1j.esther.Config;
 import cs2103_w09_1j.esther.Command.CommandKey;
-import cs2103_w09_1j.esther.DateParser;
-import cs2103_w09_1j.esther.InvalidInputException;
 import cs2103_w09_1j.esther.Task.TaskField;
 
 public class Parser {
@@ -221,9 +218,8 @@ public class Parser {
 	}
 
 	/**
-	 * This method breaks down the input to the proper fields that is acceptable
-	 * by the add command.
-	 * 
+	 * This method breaks down the input to the proper fields that is 
+	 * acceptable by the add command.
 	 * @param input
 	 *            add command variables
 	 * @throws InvalidInputException
@@ -231,7 +227,7 @@ public class Parser {
 	 */
 	private void parseAdd(String input) throws InvalidInputException {
 
-		// Incorrect format case 1: add
+		//Incorrect format case 1: add 
 		if (input.isEmpty()) {
 			throw new InvalidInputException(ERROR_ADDFORMAT);
 		}
@@ -446,7 +442,7 @@ public class Parser {
 			currentCommand.addFieldToMap(TaskField.NAME.getTaskKeyName(), input.trim());
 		}
 	}
-
+	
 	/**
 	 * This method breaks down the input to the proper fields that is acceptable
 	 * by the search command.
@@ -488,7 +484,6 @@ public class Parser {
 			throw new InvalidInputException(ERROR_SEARCHFORMAT);
 		}
 	}
-
 	/**
 	 * This method breaks down the input to the proper fields that is acceptable
 	 * by the show command.
@@ -593,7 +588,7 @@ public class Parser {
 	private void parseHelp() {
 		currentCommand.addFieldToMap(TaskField.HELP.getTaskKeyName(), "");
 	}
-
+	
 	/**
 	 * This method breaks down the input to the proper fields that is acceptable
 	 * by the set command.
@@ -604,7 +599,6 @@ public class Parser {
 	 *             wrong set command format
 	 */
 	private void parseSet(String input) throws InvalidInputException {
-
 		if (input.isEmpty()) {
 			throw new InvalidInputException(ERROR_SETFORMAT);
 		}
@@ -613,7 +607,7 @@ public class Parser {
 		}
 		currentCommand.addFieldToMap(TaskField.PATH.getTaskKeyName(), input);
 	}
-
+	
 	/**
 	 * This method checks if the string is all integers.
 	 * 
@@ -629,7 +623,7 @@ public class Parser {
 			return 0;
 		}
 	}
-
+	
 	/**
 	 * This method checks if there is a ParseKey.
 	 * 

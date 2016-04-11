@@ -1,14 +1,5 @@
 package cs2103_w09_1j.esther;
-/**
- * ============= [DATEPARSER TEST FOR ESTHER] =============
- * 
- * This class used to check the acceptable input for Parser.
- * The testing is split into two types: basic and alternate.
- * Basic refers to inputs that acceptable by Parser.
- * Alternate refers to inputs that are rejected by Parser.
- * 
- * @@author A0126000H
- */
+
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -76,7 +67,7 @@ public class DateParserTest {
 		input = "12 jan";
 		date = dateParser.getDateTime(input)[0];
 		Assert.assertEquals("For Format dd MMM: ", "12/01/2017", date);
-
+		
 		input = "8FEBRUARY";
 		date = dateParser.getDateTime(input)[0];
 		Assert.assertEquals("For Format ddMMM: ", "08/02/2017", date);
@@ -103,11 +94,11 @@ public class DateParserTest {
 		input = "0300pm";
 		time = dateParser.getDateTime(input)[1];
 		Assert.assertEquals("For Format hhmma : ", "15:00", time);
-
+		
 		input = "03:00";
 		time = dateParser.getDateTime(input)[1];
 		Assert.assertEquals("For Format HH:mm : ", "03:00", time);
-
+		
 		input = "15:00";
 		time = dateParser.getDateTime(input)[1];
 		Assert.assertEquals("For Format HH:mm : ", "15:00", time);
