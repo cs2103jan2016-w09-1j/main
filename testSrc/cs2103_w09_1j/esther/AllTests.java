@@ -1,7 +1,8 @@
+package cs2103_w09_1j.esther;
+
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
-import cs2103_w09_1j.esther.*;
 
 /**
  * 

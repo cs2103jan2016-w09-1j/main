@@ -1,3 +1,4 @@
+package cs2103_w09_1j.esther;
 
 /**
  * ============= [PARSER COMPONENT FOR ESTHER] =============
@@ -48,10 +49,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import cs2103_w09_1j.esther.Command;
 import cs2103_w09_1j.esther.Command.CommandKey;
-import cs2103_w09_1j.esther.DateParser;
-import cs2103_w09_1j.esther.InvalidInputException;
 import cs2103_w09_1j.esther.Task.TaskField;
 
 public class Parser {

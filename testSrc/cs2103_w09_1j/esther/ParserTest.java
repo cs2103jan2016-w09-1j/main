@@ -1,3 +1,5 @@
+package cs2103_w09_1j.esther;
+
 
 /**
  * ============= [PARSER TEST FOR ESTHER] =============
@@ -16,10 +18,6 @@ import java.util.Date;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import cs2103_w09_1j.esther.Command;
-import cs2103_w09_1j.esther.Config;
-import cs2103_w09_1j.esther.InvalidInputException;
 
 public class ParserTest {
 

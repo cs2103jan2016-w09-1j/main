@@ -1,9 +1,6 @@
 package cs2103_w09_1j.esther;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-
-import cs2103_w09_1j.esther.Status;
 
 /**
  * The <code>UIResult</code> class contains a view of tasks that will be shown
