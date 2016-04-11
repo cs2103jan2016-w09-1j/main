@@ -1,3 +1,4 @@
+package cs2103_w09_1j.esther;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -9,9 +10,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import cs2103_w09_1j.esther.Config;
-import cs2103_w09_1j.esther.Task;
 
 /**
  * Storage class for saving and loading tasks to file, as well as program
@@ -30,7 +28,7 @@ public class Storage {
 	private static final String BY_NEXTLINE = "\\n";
 	private static final String configName = "estherconfig.txt";
 	private static final Path configPath = Paths.get(configName);
-	private static final Logger storageLogger = Logger.getLogger("storageLogger");
+	private static final Logger storageLogger = Logger.getLogger("estherLogger");
 
 	// ===================PUBLIC METHODS=======================
 

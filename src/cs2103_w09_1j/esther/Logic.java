@@ -1,3 +1,5 @@
+package cs2103_w09_1j.esther;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
@@ -5,20 +7,14 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Stack;
-import java.util.logging.*;
-import cs2103_w09_1j.esther.Command;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import cs2103_w09_1j.esther.Command.CommandKey;
 import cs2103_w09_1j.esther.Task.TaskField;
-import cs2103_w09_1j.esther.UIResult;
-import cs2103_w09_1j.esther.Config;
-import cs2103_w09_1j.esther.Task;
-import cs2103_w09_1j.esther.State;
-import cs2103_w09_1j.esther.Status;
-import cs2103_w09_1j.esther.InvalidInputException;
 
 /**
  * The <code>Logic</code> handles all operations as requested by the user.
@@ -382,27 +378,16 @@ class Logic {
 	 */
 	private void initializeLogger() {
 		try {
-			logger = Logger.getLogger("Logic");
-			logger.setLevel(Level.SEVERE);
-			File logsDir = new File("logs");
-			if(!logsDir.exists()){
-			    logsDir.mkdirs();
-			}
+			logger = Logger.getLogger("estherLogger");
 			if (toDebug) {
 				logger.setLevel(Level.SEVERE);
 			} else {
 				logger.setLevel(Level.OFF);
-			}/*
-			FileHandler fh = new FileHandler("Logic.log");
-			logger.addHandler(fh);
-			SimpleFormatter formatter = new SimpleFormatter();
-			fh.setFormatter(formatter);*/
+			}
 			logger.log(Level.CONFIG, "Initializing logger.");
 		} catch (SecurityException se) {
 			logger.log(Level.SEVERE, "Not granted permission for logging.", se);
-		} /*catch (IOException ioe) {
-			logger.log(Level.SEVERE, "Cannot create file for logging.", ioe);
-		}*/
+		}
 	}
 	
 	/**
@@ -1240,9 +1225,9 @@ class Logic {
 			String timeString) throws ParseException {
 		Date referenceDate;
 		if (isSearchBeforeDate(searchDateKeyword)) {
-			referenceDate = Task.parseDateTimeToString(new Date(), dateString, timeString, true);
+			referenceDate = Task.parseStringsToDateTime(dateString, timeString, new Date(), true);
 		} else {
-			referenceDate = Task.parseDateTimeToString(new Date(), dateString, timeString, false);
+			referenceDate = Task.parseStringsToDateTime(dateString, timeString, new Date(), false);
 		}
 		return referenceDate;
 	}

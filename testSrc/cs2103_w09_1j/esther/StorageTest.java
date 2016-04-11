@@ -1,4 +1,7 @@
-import static org.junit.Assert.*;
+package cs2103_w09_1j.esther;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -12,9 +15,6 @@ import java.util.Date;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import cs2103_w09_1j.esther.Config;
-import cs2103_w09_1j.esther.Task;
 
 public class StorageTest {
 
