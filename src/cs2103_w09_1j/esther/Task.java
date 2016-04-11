@@ -809,12 +809,6 @@ public class Task implements Comparable<Task> {
 			case SORT_BY_PRIORITY_KEYWORD:
 				return compareByPriority(task);
 
-			case SORT_BY_START_DATE_KEYWORD:
-				return compareByDate(task);
-
-			case SORT_BY_END_DATE_KEYWORD:
-				return compareByDate(task);
-
 			default:
 				return compareByDate(task);
 		}
