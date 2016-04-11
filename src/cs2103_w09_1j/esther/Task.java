@@ -955,7 +955,7 @@ public class Task implements Comparable<Task> {
 	 */
 	private void setAllElements(String[] resultsArray) throws ParseException {
 		this.setID(Integer.parseInt(resultsArray[0]));
-		this.setName(resultsArray[3]);
+		this.setName(resultsArray[3].trim());
 		this.setStartDate(parseDate(resultsArray[1]));
 		this.setEndDate(parseDate(resultsArray[2]));
 		this.setPriority(Integer.parseInt(resultsArray[4]));

@@ -1315,8 +1315,6 @@ public class LogicTest {
 		
 		ArrayList<Task> floatingTasks = logic.getFloatingBuffer();
 		assertEquals("There should be no change in list size.", 1, floatingTasks.size());
-		
-		System.out.println("terminated");
 	}
 	
 	@Test

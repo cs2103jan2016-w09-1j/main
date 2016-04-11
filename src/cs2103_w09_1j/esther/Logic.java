@@ -379,7 +379,6 @@ class Logic {
 	private void initializeLogger() {
 		try {
 			logger = Logger.getLogger("estherLogger");
-			logger.setLevel(Level.SEVERE);
 			File logsDir = new File("logs");
 			if(!logsDir.exists()){
 			    logsDir.mkdirs();
