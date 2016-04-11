@@ -392,19 +392,17 @@ class Logic {
 				logger.setLevel(Level.SEVERE);
 			} else {
 				logger.setLevel(Level.OFF);
-			}
+			}/*
 			FileHandler fh = new FileHandler("Logic.log");
 			logger.addHandler(fh);
 			SimpleFormatter formatter = new SimpleFormatter();
-			fh.setFormatter(formatter);
+			fh.setFormatter(formatter);*/
 			logger.log(Level.CONFIG, "Initializing logger.");
 		} catch (SecurityException se) {
 			logger.log(Level.SEVERE, "Not granted permission for logging.", se);
-			System.exit(1);
-		} catch (IOException ioe) {
+		} /*catch (IOException ioe) {
 			logger.log(Level.SEVERE, "Cannot create file for logging.", ioe);
-			System.exit(1);
-		}
+		}*/
 	}
 	
 	/**
@@ -487,7 +485,6 @@ class Logic {
 			filterTasksToLists(DEFAULT_TASKS_SORT_ORDER, true, true);
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Cannot read from save file in Storage.", e);
-			e.printStackTrace();
 			System.exit(1);
 		}
 	}
