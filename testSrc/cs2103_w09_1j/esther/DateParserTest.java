@@ -1,14 +1,5 @@
 package cs2103_w09_1j.esther;
-/**
- * ============= [DATEPARSER TEST FOR ESTHER] =============
- * 
- * This class used to check the acceptable input for Parser.
- * The testing is split into two types: basic and alternate.
- * Basic refers to inputs that acceptable by Parser.
- * Alternate refers to inputs that are rejected by Parser.
- * 
- * @@author A0126000H
- */
+
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

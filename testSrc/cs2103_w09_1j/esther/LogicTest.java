@@ -1,3 +1,5 @@
+package cs2103_w09_1j.esther;
+
 import static org.junit.Assert.*;
 
 import org.junit.After;
@@ -10,9 +12,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-
-import cs2103_w09_1j.esther.Command;
-import cs2103_w09_1j.esther.Task;
 
 /**
  * This class is the test-driver for the Logic component only.

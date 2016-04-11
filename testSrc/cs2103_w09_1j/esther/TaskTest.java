@@ -1,5 +1,6 @@
 package cs2103_w09_1j.esther;
 
+
 /**
  * @@author A0127572A
  */
@@ -11,8 +12,6 @@ import java.util.Calendar;
 import java.util.HashMap;
 
 import org.junit.Test;
-
-import cs2103_w09_1j.esther.Task.TaskField;
 
 public class TaskTest {
 

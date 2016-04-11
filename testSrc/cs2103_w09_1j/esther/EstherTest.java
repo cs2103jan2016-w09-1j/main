@@ -1,3 +1,5 @@
+package cs2103_w09_1j.esther;
+
 import static org.junit.Assert.*;
 
 import java.awt.Event;
@@ -15,9 +17,6 @@ import javax.naming.directory.DirContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import cs2103_w09_1j.esther.Task;
-import cs2103_w09_1j.esther.UIResult;
 
 /**
  * 

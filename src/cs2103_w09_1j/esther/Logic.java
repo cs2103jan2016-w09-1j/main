@@ -1,3 +1,4 @@
+package cs2103_w09_1j.esther;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
@@ -10,15 +11,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Stack;
 import java.util.logging.*;
-import cs2103_w09_1j.esther.Command;
+
 import cs2103_w09_1j.esther.Command.CommandKey;
 import cs2103_w09_1j.esther.Task.TaskField;
-import cs2103_w09_1j.esther.UIResult;
-import cs2103_w09_1j.esther.Config;
-import cs2103_w09_1j.esther.Task;
-import cs2103_w09_1j.esther.State;
-import cs2103_w09_1j.esther.Status;
-import cs2103_w09_1j.esther.InvalidInputException;
 
 /**
  * The <code>Logic</code> handles all operations as requested by the user.

@@ -1,3 +1,4 @@
+package cs2103_w09_1j.esther;
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;

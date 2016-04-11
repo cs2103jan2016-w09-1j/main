@@ -1,11 +1,11 @@
+package cs2103_w09_1j.esther;
+
 import static org.junit.Assert.*;
 
 import java.awt.Robot;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import cs2103_w09_1j.esther.UIResult;
 
 public class UiMainControllerTest {
 
