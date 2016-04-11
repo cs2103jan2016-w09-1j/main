@@ -327,35 +327,42 @@ public class LogicTest {
 		parameters.put("taskName", "overdueTask");
 		parameters.put("endDate", "01/04/2016");
 		parameters.put("endTime", TASK_END_TIME);
+		parameters.put("priority", "1");
 		overdueTask = new Command("add", parameters);
 		parameters = new HashMap<String, String>();
 		parameters.put("taskName", "todayTask");
 		parameters.put("endDate", todayString);
 		parameters.put("endTime", TASK_END_TIME);
+		parameters.put("priority", "1");
 		todayTask = new Command("add", parameters);
 		parameters = new HashMap<String, String>();
 		parameters.put("taskName", "tomorrowTask");
 		parameters.put("endDate", tomorrowString);
 		parameters.put("endTime", TASK_END_TIME);
+		parameters.put("priority", "2");
 		tomorrowTask = new Command("add", parameters);
 		parameters = new HashMap<String, String>();
 		parameters.put("taskName", "tomorrowTask");
 		parameters.put("endDate", tomorrowString);
 		parameters.put("endTime", TASK_END_TIME);
+		parameters.put("priority", "2");
 		tomorrowTask2 = new Command("add", parameters);
 		parameters = new HashMap<String, String>();
 		parameters.put("taskName", "thisWeekTask1");
 		parameters.put("endDate", somewhereThisWeekString);
 		parameters.put("endTime", TASK_END_TIME);
+		parameters.put("priority", "4");
 		thisWeekTask1 = new Command("add", parameters);
 		parameters = new HashMap<String, String>();
 		parameters.put("taskName", "generalTask");
 		parameters.put("endDate", "01/06/2016");
 		parameters.put("endTime", TASK_END_TIME);
+		parameters.put("priority", "1");
 		generalTask = new Command("add", parameters);
 		
 		parameters = new HashMap<String, String>();
 		parameters.put("taskName", "floatingTask");
+		parameters.put("priority", "2");
 		floatingTask = new Command("add", parameters);
 		
 		parameters = new HashMap<String, String>();
@@ -373,6 +380,7 @@ public class LogicTest {
 		parameters.put("startTime", EVENT_START_TIME);
 		parameters.put("endDate", "01/04/2016");
 		parameters.put("endTime", EVENT_END_TIME);
+		parameters.put("priority", "3");
 		overdueEvent = new Command("add", parameters);
 		parameters = new HashMap<String, String>();
 		parameters.put("taskName", "todayEvent");
@@ -380,6 +388,7 @@ public class LogicTest {
 		parameters.put("startTime", EVENT_START_TIME);
 		parameters.put("endDate", todayString);
 		parameters.put("endTime", EVENT_END_TIME);
+		parameters.put("priority", "1");
 		todayEvent = new Command("add", parameters);
 		parameters = new HashMap<String, String>();
 		parameters.put("taskName", "tomorrowEvent");
@@ -387,6 +396,7 @@ public class LogicTest {
 		parameters.put("startTime", EVENT_START_TIME);
 		parameters.put("endDate", tomorrowString);
 		parameters.put("endTime", EVENT_END_TIME);
+		parameters.put("priority", "4");
 		tomorrowEvent = new Command("add", parameters);
 		parameters = new HashMap<String, String>();
 		parameters.put("taskName", "thisWeekEvent1");
@@ -394,6 +404,7 @@ public class LogicTest {
 		parameters.put("startTime", EVENT_START_TIME);
 		parameters.put("endDate", somewhereThisWeekString);
 		parameters.put("endTime", EVENT_END_TIME);
+		parameters.put("priority", "3");
 		thisWeekEvent1 = new Command("add", parameters);
 		
 		// ================= create update commands ================== //
@@ -1464,7 +1475,7 @@ public class LogicTest {
 		assertEquals("There should be no change in list size.", 2, todayTasks.size());
 		assertEquals("First item should be 'todayTask'.", "todayTask", todayTasks.get(0).getName());
 		assertEquals("Second item should be 'todayEvent'.", "todayEvent", todayTasks.get(1).getName());
-		assertEquals("'todayTask' should have priority level 5.", 5, todayTasks.get(0).getPriority());
+		assertEquals("'todayTask' should have priority level 1.", 1, todayTasks.get(0).getPriority());
 		
 		ArrayList<Task> tomorrowTasks = logic.getTomorrowBuffer();
 		assertEquals("There should be no change in list size.", 2, tomorrowTasks.size());
@@ -1496,7 +1507,7 @@ public class LogicTest {
 		assertEquals("There should be no change in list size.", 2, todayTasks.size());
 		assertEquals("First item should be 'todayTask'.", "todayTask", todayTasks.get(0).getName());
 		assertEquals("Second item should be 'todayEvent'.", "todayEvent", todayTasks.get(1).getName());
-		assertEquals("'todayTask' should have priority level 5.", 5, todayTasks.get(0).getPriority());
+		assertEquals("'todayTask' should have priority level 1.", 1, todayTasks.get(0).getPriority());
 		
 		ArrayList<Task> tomorrowTasks = logic.getTomorrowBuffer();
 		assertEquals("There should be no change in list size.", 2, tomorrowTasks.size());
@@ -1926,6 +1937,68 @@ public class LogicTest {
 			assertEquals("There should be 2 items in the list.", 2, thisWeekTasks.size());
 			assertEquals("First item should be 'thisWeekTask1'.", "thisWeekTask1", thisWeekTasks.get(0).getName());
 			assertEquals("Second item should be 'thisWeekEvent1'.", "thisWeekEvent1", thisWeekTasks.get(1).getName());
+			
+			ArrayList<Task> remainingTasks = logic.getRemainingBuffer();
+			assertEquals("There should be 1 item in the list.", 1, remainingTasks.size());
+			assertEquals("First item should be 'generalTask'.", "generalTask", remainingTasks.get(0).getName());
+			
+			ArrayList<Task> floatingTasks = logic.getFloatingBuffer();
+			assertEquals("There should be 1 item in the list.", 1, floatingTasks.size());
+			assertEquals("First item should be 'floatingTask'.", "floatingTask", floatingTasks.get(0).getName());
+			
+			ArrayList<Task> completed = logic.getCompletedBuffer();
+			assertEquals("There should be NO items in the list.", 0, completed.size());
+		} catch (Exception e) {
+			fail("No exceptions should be encountered.");
+		}
+	}
+	
+	@Test
+	public void sortNonEmptyListByPriority() {
+		try {
+			makeNonEmptyFile(false);
+			logic.executeCommand(sortByPriority);
+			
+			// checks that inner memory does not face weird behavior
+			ArrayList<Task> mem = logic.getInternalStorage();
+			assertEquals("List should not experience a change in size.", 10, mem.size());
+
+			// checks that combined tasks memory does not face weird behavior
+			ArrayList<Task> allTasks = logic.getTemporarySortList();
+			assertEquals("List should not experience a change in size.", 10, allTasks.size());
+			
+			// checks that order is correct in combined list of tasks
+			assertEquals("First item should be 'overdueTask'.", "overdueTask", allTasks.get(0).getName());
+			assertEquals("Second item should be 'todayTask'.", "todayTask", allTasks.get(1).getName());
+			assertEquals("Third item should be 'todayEvent'.", "todayEvent", allTasks.get(2).getName());
+			assertEquals("Fourth item should be 'generalTask'.", "generalTask", allTasks.get(3).getName());
+			assertEquals("Fifth item should be 'tomorrowTask'.", "tomorrowTask", allTasks.get(4).getName());
+			assertEquals("Sixth item should be 'floatingTask'.", "floatingTask", allTasks.get(5).getName());
+			assertEquals("Seventh item should be 'overdueEvent'.", "overdueEvent", allTasks.get(6).getName());
+			assertEquals("Eighth item should be 'thisWeekEvent1'.", "thisWeekEvent1", allTasks.get(7).getName());
+			assertEquals("Ninth item should be 'tomorrowEvent'.", "tomorrowEvent", allTasks.get(8).getName());
+			assertEquals("Tenth item should be 'thisWeekTask1'.", "thisWeekTask1", allTasks.get(9).getName());
+			
+			// checks that order is correct in each sublist
+			ArrayList<Task> overdues = logic.getOverdueBuffer();
+			assertEquals("There should be 2 items in the list.", 2, overdues.size());
+			assertEquals("First item should be 'overdueTask'.", "overdueTask", overdues.get(0).getName());
+			assertEquals("Second item should be 'overdueEvent'.", "overdueEvent", overdues.get(1).getName());
+			
+			ArrayList<Task> todayTasks = logic.getTodayBuffer();
+			assertEquals("There should be 2 items in the list.", 2, todayTasks.size());
+			assertEquals("First item should be 'todayTask'.", "todayTask", todayTasks.get(0).getName());
+			assertEquals("Second item should be 'todayEvent'.", "todayEvent", todayTasks.get(1).getName());
+			
+			ArrayList<Task> tomorrowTasks = logic.getTomorrowBuffer();
+			assertEquals("There should be 2 items in the list.", 2, tomorrowTasks.size());
+			assertEquals("First item should be 'tomorrowTask'.", "tomorrowTask", tomorrowTasks.get(0).getName());
+			assertEquals("Second item should be 'tomorrowEvent'.", "tomorrowEvent", tomorrowTasks.get(1).getName());
+			
+			ArrayList<Task> thisWeekTasks = logic.getThisWeekBuffer();
+			assertEquals("There should be 2 items in the list.", 2, thisWeekTasks.size());
+			assertEquals("First item should be 'thisWeekEvent1'.", "thisWeekEvent1", thisWeekTasks.get(0).getName());
+			assertEquals("Second item should be 'thisWeekTask1'.", "thisWeekTask1", thisWeekTasks.get(1).getName());
 			
 			ArrayList<Task> remainingTasks = logic.getRemainingBuffer();
 			assertEquals("There should be 1 item in the list.", 1, remainingTasks.size());
