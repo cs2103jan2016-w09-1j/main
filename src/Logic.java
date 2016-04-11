@@ -109,7 +109,7 @@ class Logic {
 	 * @return a message indicating the status of the operation carried out
 	 */
 	public String executeCommand(String userInput) {		
-		logger.logp(Level.INFO, "Logic", "executeCommand", "Parsing user input into Command object for execution.", userInput);
+		logger.log(Level.INFO, "Parsing user input into Command object for execution.");
 		int[] indices = createDefaultIndices();		
 		try {			
 			Command command = _parser.acceptUserInput(userInput);			
@@ -146,7 +146,7 @@ class Logic {
 	protected String executeCommand(Command command) {
 		String commandName = command.getCommand();
 		CommandKey commandType = CommandKey.get(commandName);
-		logger.logp(Level.INFO, "Logic", "executeCommand(Command command)",	"Executing on Command object.", commandType);
+		logger.log(Level.INFO, "Executing on Command object.");
 		String statusMessage;
 		
 		switch (commandType) {
@@ -391,12 +391,12 @@ class Logic {
 			logger.addHandler(fh);
 			SimpleFormatter formatter = new SimpleFormatter();
 			fh.setFormatter(formatter);
-			logger.logp(Level.CONFIG, "Logic", "initializeLogger()", "Initializing logger.");
+			logger.log(Level.CONFIG, "Initializing logger.");
 		} catch (SecurityException se) {
-			logger.logp(Level.SEVERE, "Logic", "initializeLogger()", "Not granted permission for logging.", se);
+			logger.log(Level.SEVERE, "Not granted permission for logging.", se);
 			System.exit(1);
 		} catch (IOException ioe) {
-			logger.logp(Level.SEVERE, "Logic", "initializeLogger()", "Cannot create file for logging.", ioe);
+			logger.log(Level.SEVERE, "Cannot create file for logging.", ioe);
 			System.exit(1);
 		}
 	}
@@ -409,10 +409,10 @@ class Logic {
 	 */
 	private void initializeStorageAndConfig() throws ParseException, IOException {
 		_storage = new Storage();
-		logger.logp(Level.CONFIG, "Storage", "Storage()", "Initializing Storage.");
+		logger.log(Level.CONFIG, "Initializing Storage.");
 		assert _storage != null;
 		_config = _storage.getConfig();
-		logger.logp(Level.CONFIG, "Storage", "getConfig()", "Initializing Config.");
+		logger.log(Level.CONFIG, "Initializing Config.");
 		assert _config != null;
 		Task.setGlobalId(_config.getReferenceID());
 	}
@@ -421,7 +421,7 @@ class Logic {
 	 * Initializes Parser system in Logic.
 	 */
 	private void initializeParser() {
-		logger.logp(Level.CONFIG, "Parser", "Parser()", "Initializing Parser.");
+		logger.log(Level.CONFIG, "Initializing Parser.");
 		HashMap<String, String> fieldNameAliases = _config.getFieldNameAliases();
 		_parser = new Parser(fieldNameAliases);
 		assert _parser != null;
@@ -435,7 +435,7 @@ class Logic {
 	 */
 	private void initializeLogicSystemVariables() throws ParseException, IOException {
 		initializeBuffers();
-		logger.logp(Level.CONFIG, "Logic", "updateInternalStorage()", "Reading tasks into inner memory upon initialization.");
+		logger.log(Level.CONFIG, "Reading tasks into inner memory upon initialization.");
 		updateInternalStorage();
 		_undoStack = new Stack<State>();
 		int indices[] = createDefaultIndices();
@@ -460,11 +460,11 @@ class Logic {
 	        @Override
 	        public void run() {
 	            try {
-	            	logger.logp(Level.INFO, "Logic", "addTask(Command command)", "Updating Config file in Logic and Storage.");
+	            	logger.log(Level.INFO, "Attaching shut-down handler.");
 	            	_config.setReferenceID(Task.getGlobalId());
 	            	_storage.updateConfig(_config);
 	            } catch (IOException ioe) {
-	            	logger.logp(Level.SEVERE, "Logic", "addTask(Command command)", "Cannot update Config file in Logic and Storage.", ioe);
+	            	logger.log(Level.SEVERE, "Cannot attach shut-down handler.", ioe);
 	            }
 	        }   
 	    });
@@ -474,13 +474,13 @@ class Logic {
 	 * Updates the internal memory of the Logic to account for any changes done to the text file.
 	 */
 	public void updateInternalStorage() {
-		logger.logp(Level.INFO, "Logic", "updateInternalStorage()", "Retrieving tasks list from Storage.");
+		logger.log(Level.INFO, "Retrieving tasks list from Storage.");
 		try {
 			_fullTaskList = _storage.readSaveFile();
 			assert _fullTaskList != null;
 			filterTasksToLists(DEFAULT_TASKS_SORT_ORDER, true, true);
 		} catch (Exception e) {
-			logger.logp(Level.SEVERE, "Storage", "readSaveFile()", "Cannot read from save file in Storage.", e);
+			logger.log(Level.SEVERE, "Cannot read from save file in Storage.", e);
 			e.printStackTrace();
 			System.exit(1);
 		}
@@ -609,7 +609,7 @@ class Logic {
 	 * 
 	 */
 	private String addTask(Command command) {		
-		logger.logp(Level.INFO, "Logic", "addTask(Command command)", "Adding a task.");
+		logger.log(Level.INFO, "Adding a task.");
 		createAndAddTaskToFile(command);
 		return getOperationStatus(command);
 	}
@@ -622,7 +622,7 @@ class Logic {
 	 * 
 	 */
 	private String removeTask(Command command) {
-		logger.logp(Level.INFO, "Logic", "removeTask(Command command)", "Removing a task.");
+		logger.log(Level.INFO, "Removing a task.");
 		removeTaskAndUpdateFile(command);
 		return getOperationStatus(command);
 	}
@@ -635,7 +635,7 @@ class Logic {
 	 * 
 	 */
 	private String updateTask(Command command) {
-		logger.logp(Level.INFO, "Logic", "updateTask(Command command)", "Updating a task.");
+		logger.log(Level.INFO, "Logic", "Updating a task.");
 		updateTaskInFile(command);
 		return getOperationStatus(command);
 	}
@@ -648,7 +648,7 @@ class Logic {
 	 * 
 	 */
 	private String completeTask(Command command) {
-		logger.logp(Level.INFO, "Logic", "completeTask(Command command)", "Completing a task.");
+		logger.log(Level.INFO, "Completing a task.");
 		completeTaskInFile(command);
 		return getOperationStatus(command);
 	}
@@ -660,6 +660,7 @@ class Logic {
 	 * @return	a message indicating the status of the sort operation
 	 */
 	private String sortFile(Command command) {
+		logger.log(Level.INFO, "Sorting tasks.");
 		int indices[] = createDefaultIndices();
 		State oldState = createPreviousState(command, indices);
 		if (isSortedBefore()) {
@@ -672,15 +673,6 @@ class Logic {
 		setUiTaskDisplays(command.getCommand(), indices);
 		return getOperationStatus(command);
 	}
-
-	/**
-	 * Checks if a sort operation has been performed before by the user.
-	 * 
-	 * @return true if a sort operation was performed previously; false otherwise.
-	 */
-	private boolean isSortedBefore() {
-		return _temporarySortList != null && _temporarySortList.size() != 0;  
-	}
 	
 	/**
 	 * Searches for tasks based on the user-specified criterion.
@@ -689,6 +681,7 @@ class Logic {
 	 * @return		  a message indicating the status of the search operation
 	 */
 	private String searchFile(Command command) {
+		logger.log(Level.INFO, "Searching for tasks.");
 		int indices[] = createDefaultIndices();
 		getInternalStorage();
 		_searchList = new ArrayList<Task>();
@@ -704,241 +697,10 @@ class Logic {
 		} else {
 			return searchForTasks(command, indices, searchKeyword, searchDateKeyword, dateString, timeString);
 		}
-	}
-
-	/**
-	 * Searches for tasks based on criteria specified by the user.
-	 * 
-	 * @param command				the Command object representing the user operation being carried out
-	 * @param indices				indices to be included into a <code>UIResult</code>
-	 * @param searchKeyword			user-specified keyword(s) if he wishes to search by task name
-	 * @param searchDateKeyword		a user-specified date-related keyword if he wishes to search by date
-	 * @param dateString			a user-specified date
-	 * @param timeString			a user-specified time
-	 * @return						a message indicating the status of the search operation
-	 */
-	private String searchForTasks(Command command, int[] indices, String searchKeyword, String searchDateKeyword,
-			String dateString, String timeString) {
-		logger.logp(Level.INFO, "Logic", "searchFile(Command command)", "Searching tasks in file.", searchKeyword);
-		if (isSearchByName(searchKeyword)) {
-			searchTasksByName(searchKeyword);
-		} else {
-			Date referenceDate;
-			try {
-				referenceDate = setReferenceDate(command, searchDateKeyword, dateString, timeString);
-			} catch (ParseException pe) {
-				Status._outcome = Status.Outcome.ERROR;
-				Status._errorCode = Status.ErrorCode.SEARCH_INVALID;
-				return getOperationStatus(command);
-			}
-			searchByDate(searchDateKeyword, referenceDate);
-		}
-		setUiTaskDisplays(command.getCommand(), indices);
-		Status._outcome = Status.Outcome.SUCCESS;
-		return getOperationStatus(command);
-	}
-
-	/**
-	 * Searches tasks by date, as specified by the user.
-	 * 
-	 * @param searchDateKeyword	a reference keyword with respect to the Date specified ('before', 'on', 'after')
-	 * @param referenceDate		the Date specified by the user
-	 */
-	private void searchByDate(String searchDateKeyword, Date referenceDate) {
-		for (Task entry: _fullTaskList) {
-			if (isSearchBeforeDate(searchDateKeyword)) {
-				addToSearchResultsIfBeforeDate(referenceDate, entry);
-			} else if (isSearchOnDate(searchDateKeyword)) {
-				Date intervalStart = createDateStart(referenceDate);
-				Date intervalEnd = createDateEnd(referenceDate);
-				addToSearchResultIfOnDate(entry, intervalStart, intervalEnd);
-			} else if (isSearchAfterDate(searchDateKeyword)){
-				addToSearchResultIfAfterDate(referenceDate, entry);
-			} else {
-				
-			}
-		}
-	}
-
-	/**
-	 * Adds target task to search results if the task is after a specified date.
-	 * 
-	 * @param referenceDate	a reference Date to compare the task date with
-	 * @param entry			the Task to be checked
-	 */
-	private void addToSearchResultIfAfterDate(Date referenceDate, Task entry) {
-		if (entry.isEvent() && referenceDate.compareTo(entry.getStartDate()) <= 0) {
-			_searchList.add(entry);
-		} else if (!entry.isFloatingTask() && referenceDate.compareTo(entry.getEndDate()) <= 0) {
-			_searchList.add(entry);
-		} else {
-			
-		}
-	}
-
-	/**
-	 * Adds target task to search results if the task is on a specified date.
-	 * 
-	 * @param entry			the Task to be checked
-	 * @param intervalStart	starting interval of the Date to compare the task date with
-	 * @param intervalEnd	ending interval of the Date to compare the task date with
-	 */
-	private void addToSearchResultIfOnDate(Task entry, Date intervalStart, Date intervalEnd) {
-		if (entry.isEvent() && intervalStart.compareTo(entry.getStartDate()) <= 0 &&
-			intervalEnd.compareTo(entry.getStartDate()) >= 0) {
-			_searchList.add(entry);
-		} else if (!entry.isFloatingTask() && intervalStart.compareTo(entry.getEndDate()) <= 0
-				   && intervalEnd.compareTo(entry.getEndDate()) >= 0) {
-			_searchList.add(entry);
-		} else {
-			
-		}
-	}
-
-	/**
-	 * Sets the hours and minutes of the date to 23:59.
-	 * 
-	 * Used in searching for tasks due on a certain date.
-	 * 
-	 * @param referenceDate	the date used as the reference for a search query
-	 * @return				the date with time set to 23:59
-	 */
-	private Date createDateEnd(Date referenceDate) {
-		Date intervalEnd = (Date) referenceDate.clone();
-		intervalEnd.setHours(23);
-		intervalEnd.setMinutes(59);
-		return intervalEnd;
-	}
-
-	/**
-	 * Sets the hours and minutes of the date to 00:00.
-	 * 
-	 * Used in searching for tasks due on a certain date.
-	 * 
-	 * @param referenceDate	the date used as the reference for a search query
-	 * @return				the date with time set to 00:00
-	 */
-	private Date createDateStart(Date referenceDate) {
-		Date intervalStart = (Date) referenceDate.clone();
-		intervalStart.setHours(0);
-		intervalStart.setMinutes(0);
-		return intervalStart;
-	}
-
-	/**
-	 * Adds target task to search results if the task is before a specified date.
-	 * 
-	 * @param referenceDate	a reference Date to compare the task date with
-	 * @param entry			the Task to be checked
-	 */
-	private void addToSearchResultsIfBeforeDate(Date referenceDate, Task entry) {
-		if (entry.isEvent() && referenceDate.compareTo(entry.getStartDate()) > 0) {
-			_searchList.add(entry);
-		} else if (!entry.isFloatingTask() && referenceDate.compareTo(entry.getEndDate()) > 0) {
-			_searchList.add(entry);
-		} else {
-			
-		}
-	}
-
-	/**
-	 * Checks if search query is to search tasks after a certain date.
-	 * 
-	 * @param searchDateKeyword	the date-reference keyword specified by the user
-	 * @return					true if search query is to search tasks after a certain date; false otherwise
-	 */
-	private boolean isSearchAfterDate(String searchDateKeyword) {
-		return searchDateKeyword.trim().equalsIgnoreCase(SEARCH_AFTER);
-	}
-
-	/**
-	 * Checks if search query is to search tasks on a certain date.
-	 * 
-	 * @param searchDateKeyword	the date-reference keyword specified by the user
-	 * @return					true if search query is to search tasks on a certain date; false otherwise
-	 */
-	private boolean isSearchOnDate(String searchDateKeyword) {
-		return searchDateKeyword.trim().equalsIgnoreCase(SEARCH_ON);
-	}
-
-	/**
-	 * Checks if search query is to search tasks before a certain date.
-	 * 
-	 * @param searchDateKeyword	the date-reference keyword specified by the user
-	 * @return					true if search query is to search tasks before a certain date; false otherwise
-	 */
-	private boolean isSearchBeforeDate(String searchDateKeyword) {
-		return searchDateKeyword.trim().equalsIgnoreCase(SEARCH_BEFORE);
-	}
-
-	/**
-	 * @param command
-	 * @param searchDateKeyword
-	 * @param dateString
-	 * @param timeString
-	 * @return
-	 */
-	private Date setReferenceDate(Command command, String searchDateKeyword, String dateString,
-			String timeString) throws ParseException {
-		Date referenceDate;
-		if (isSearchBeforeDate(searchDateKeyword)) {
-			referenceDate = Task.parseDateTimeToString(new Date(), dateString, timeString, true);
-		} else {
-			referenceDate = Task.parseDateTimeToString(new Date(), dateString, timeString, false);
-		}
-		return referenceDate;
-	}
-
-	/**
-	 * Searches for tasks containing the specified keyword(s). 
-	 * 
-	 * @param searchKeyword	the keyword to look out for when searching tasks
-	 */
-	private void searchTasksByName(String searchKeyword) {
-		String keywords[] = searchKeyword.toLowerCase().split(" ");
-		for (Task entry: _fullTaskList) {
-			String taskNameCopy = entry.getName();
-			String taskNameLowerCase = taskNameCopy.toLowerCase();
-			for (String word: keywords) {
-				if (taskNameLowerCase.contains(word)) {
-					if (!_searchList.contains(entry)) {
-						_searchList.add(entry);
-					} else {
-						
-					}
-				}
-			}
-		}
-	}
-
-	/**
-	 * Checks if search query is by task name.
-	 * 
-	 * @param searchKeyword	the keyword to search for, supplied by the user
-	 * @return				true if search query is by task name; false otherwise
-	 */
-	private boolean isSearchByName(String searchKeyword) {
-		return searchKeyword != null;
-	}
-
-	/**
-	 * Checks if search is valid. More precisely, it checks if the search query has a keyword for
-	 * searching tasks by name, or checks if the search query has the date references for searching
-	 * tasks by date.
-	 * 
-	 * @param searchKeyword			the keyword to look out for in the Task name
-	 * @param searchDateKeyword		the keyword for searching tasks by date ('before', 'on', 'after')
-	 * @param dateString			the date for reference when searching tasks by date
-	 * @param timeString			the time for reference when searching tasks by date
-	 * @return						true if important data for search query is omitted; false otherwise
-	 */
-	private boolean isInvalidSearch(String searchKeyword, String searchDateKeyword, String dateString,
-			String timeString) {
-		return (isUnspecifiedSortOrder(searchKeyword) && isUnspecifiedSortOrder(searchDateKeyword)) ||
-			   (isSearchByName(searchDateKeyword) && isUnspecifiedSortOrder(dateString) && isUnspecifiedSortOrder(timeString));
-	}
+	}	
 	
 	private String setSaveFilePath(Command command) {
+		logger.log(Level.INFO, "Setting new save-path.");
 		int indices[] = {-1, -1};
 		State oldState = createPreviousState(command, indices);
 		updateUndoStack(oldState);
@@ -968,13 +730,13 @@ class Logic {
 	 */
 	private String undo(Command command) {
 		if (_undoStack.size() == 0) {
-			logger.logp(Level.INFO, "Logic", "undo()", "User cannot undo any further.");
+			logger.log(Level.INFO, "User cannot undo any further.");
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.UNDO;
 		} else {
 			State previousState = _undoStack.pop();
 			CommandKey commandType = CommandKey.get(previousState.getCommand());
-			logger.logp(Level.INFO, "Logic", "undo()", "Undoing a previous operation.", commandType);
+			logger.log(Level.INFO, "Undoing a previous operation.");
 			switch (commandType) {
 				case ADD :
 					undoAdd(previousState);
@@ -1007,7 +769,7 @@ class Logic {
 					break;
 			
 				default :
-					logger.logp(Level.INFO, "Logic", "undo()", "Dummy State encountered.");
+					logger.log(Level.INFO, "Dummy State encountered.");
 					Status._outcome = Status.Outcome.ERROR;
 					Status._errorCode = Status.ErrorCode.SYSTEM;
 					return getOperationStatus(command);
@@ -1023,6 +785,7 @@ class Logic {
 	 * @return a message indicating status of the undo operation
 	 */
 	private String help(Command command) {
+		logger.log(Level.INFO, "Accessing helpsheet.");
 		int indices[] = createDefaultIndices();
 		setUiTaskDisplays(command.getCommand(), indices);
 		Status._outcome = Status.Outcome.SUCCESS;
@@ -1057,11 +820,11 @@ class Logic {
 			updateUndoStack(oldState);
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (ParseException pe) {
-			logger.logp(Level.SEVERE, "Logic", "addTask(Command command)", "Add task: Inappropriate date format passed into Task.", pe);
+			logger.log(Level.SEVERE, "Add task: Inappropriate date format passed into Task.", pe);
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.ADD_INVALID_FORMAT;
 		} catch (IOException ioe) {
-			logger.logp(Level.SEVERE, "Logic", "addTask(Command command)", "Add task: Error in writing to file.", ioe);
+			logger.log(Level.SEVERE, "Add task: Error in writing to file.", ioe);
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
@@ -1109,8 +872,6 @@ class Logic {
 		String taskID = command.hasParameter(TaskField.ID.getTaskKeyName())
 						? command.getSpecificParameter(TaskField.ID.getTaskKeyName())
 						: String.valueOf(NOT_FOUND_INDEX);
-		String[] params = {taskName, command.getSpecificParameter(TaskField.ID.getTaskKeyName())};
-		logger.logp(Level.INFO, "Logic", "removeTask(Command command)",	"Removing a task.", params);
 		for (int i = 0; i < NUM_TASK_BUFFERS; i++) {
 			for (int j = 0; j < _taskDisplayLists.get(i).size(); j++) {
 				if (_taskDisplayLists.get(i).get(j).getName().equals(taskName) ||
@@ -1148,17 +909,16 @@ class Logic {
 				updateUndoStack(oldState);
 				Status._outcome = Status.Outcome.SUCCESS;
 			} else if (taskIndex[TASK_LIST_POSITION] == DUPLICATE_TASK_INDEX) {
+				logger.log(Level.WARNING, "Delete task: Duplicate task names found.");
 				Status._outcome = Status.Outcome.ERROR;
 				Status._errorCode = Status.ErrorCode.DELETE_DUPLICATES_PRESENT;
 			} else {
-				logger.logp(Level.WARNING, "Logic", "removeTask(Command command)",
-							"Delete task: Task not found. Possible user-side error or no name/ID matching.");
+				logger.log(Level.WARNING, "Delete task: Task not found. Possible user-side error or no name/ID matching.");
 				Status._outcome = Status.Outcome.ERROR;
 				Status._errorCode = Status.ErrorCode.DELETE_NOT_FOUND;
 			}
 		} catch (IOException ioe) {
-			logger.logp(Level.SEVERE, "Logic", "removeTask(Command command)",
-						"Delete task: cannot write to file.", ioe);
+			logger.log(Level.SEVERE, "Delete task: cannot write to file.", ioe);
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
@@ -1188,22 +948,24 @@ class Logic {
 					updateUndoStack(oldState);
 					Status._outcome = Status.Outcome.SUCCESS;
 				} else {
+					logger.log(Level.WARNING, "Update task: Task could not be updated successfully.");
 					Status._outcome = Status.Outcome.ERROR;
 				}
 			} else if (taskIndex[TASK_LIST_POSITION] == DUPLICATE_TASK_INDEX) {
+				logger.log(Level.WARNING, "Update task: Duplicate task names found.");
 				Status._outcome = Status.Outcome.ERROR;
 				Status._errorCode = Status.ErrorCode.UPDATE_DUPLICATES_PRESENT;
 			} else {
-				logger.logp(Level.WARNING, "Logic", "updateTask(Command command)", "Update task: Task not found. Possible user-side error or no name/ID matching.");
+				logger.log(Level.WARNING, "Update task: Task not found. Possible user-side error or no name/ID matching.");
 				Status._outcome = Status.Outcome.ERROR;
 				Status._errorCode = Status.ErrorCode.UPDATE_NOT_FOUND;
 			}
 		} catch (ParseException pe) {
-			logger.logp(Level.SEVERE, "Logic", "updateTask(Command command)", "Update task: Inappropriate date formated passed into Task.", pe);
+			logger.log(Level.SEVERE, "Update task: Inappropriate date formated passed into Task.", pe);
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.UPDATE_INVALID_FIELD;
 		} catch (IOException ioe) {
-			logger.logp(Level.SEVERE, "Logic", "updateTask(Command command)", "Update task: cannot write to file.", ioe);
+			logger.log(Level.SEVERE, "Update task: cannot write to file.", ioe);
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
@@ -1247,6 +1009,7 @@ class Logic {
 				taskIndex[TASK_LIST_POSITION] != DUPLICATE_TASK_INDEX) {
 				toUpdate = _taskDisplayLists.get(taskIndex[TASK_LIST_POSITION]).get(taskIndex[TASK_ITEM_POSITION]);
 				if (toUpdate.isCompleted()) {
+					logger.log(Level.WARNING, "Complete task: Task is already completed.");
 					Status._outcome = Status.Outcome.ERROR;
 					Status._errorCode = Status.ErrorCode.COMPLETED_ALREADY_COMPLETED;
 				}
@@ -1258,15 +1021,16 @@ class Logic {
 					Status._outcome = Status.Outcome.SUCCESS;
 				}
 			} else if (taskIndex[TASK_LIST_POSITION] == DUPLICATE_TASK_INDEX) {
+				logger.log(Level.WARNING, "Complete task: Duplicate task names present.");
 				Status._outcome = Status.Outcome.ERROR;
 				Status._errorCode = Status.ErrorCode.COMPLETED_DUPLICATES_PRESENT;
 			} else {
-				logger.logp(Level.WARNING, "Logic", "completeTask(Command command)", "Complete task: Task not found. Possible user-side error or no name/ID matching.");
+				logger.log(Level.WARNING, "Complete task: Task not found. Possible user-side error or no name/ID matching.");
 				Status._outcome = Status.Outcome.ERROR;
 				Status._errorCode = Status.ErrorCode.COMPLETED_NOT_FOUND;
 			}
 		} catch (IOException ioe) {
-			logger.logp(Level.SEVERE, "Logic", "completeTask(Command command)",	"Complete task: cannot write to file.", ioe);
+			logger.log(Level.SEVERE, "Complete task: cannot write to file.", ioe);
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
@@ -1304,7 +1068,7 @@ class Logic {
 	private void sortAndUpdateFile(Command command) {
 		String sortOrder = command.getSpecificParameter(TaskField.SORT.getTaskKeyName());
 		try {
-			logger.logp(Level.INFO, "Logic", "sortFile(Command command)", "Sorting all tasks by user-specified order.", sortOrder);
+			logger.log(Level.INFO, "Sorting all tasks by user-specified order.", sortOrder);
 			if (isUnspecifiedSortOrder(sortOrder)) {
 				sortOrder = DEFAULT_TASKS_SORT_ORDER;
 			}
@@ -1312,10 +1076,193 @@ class Logic {
 			updateTextFile();
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
-			logger.logp(Level.SEVERE, "Logic", "sortFile(Command command)",
-						"Sort file: cannot write to file.", ioe);
+			logger.log(Level.SEVERE, "Sort file: cannot write to file.", ioe);
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SYSTEM;
+		}
+	}
+	
+	/**
+	 * Searches for tasks based on criteria specified by the user.
+	 * 
+	 * @param command				the Command object representing the user operation being carried out
+	 * @param indices				indices to be included into a <code>UIResult</code>
+	 * @param searchKeyword			user-specified keyword(s) if he wishes to search by task name
+	 * @param searchDateKeyword		a user-specified date-related keyword if he wishes to search by date
+	 * @param dateString			a user-specified date
+	 * @param timeString			a user-specified time
+	 * @return						a message indicating the status of the search operation
+	 */
+	private String searchForTasks(Command command, int[] indices, String searchKeyword, String searchDateKeyword,
+			String dateString, String timeString) {
+		logger.log(Level.INFO, "Searching prerequisites met, now searching tasks in file.");
+		if (isSearchByName(searchKeyword)) {
+			searchTasksByName(searchKeyword);
+		} else {
+			Date referenceDate;
+			try {
+				referenceDate = setReferenceDate(command, searchDateKeyword, dateString, timeString);
+			} catch (ParseException pe) {
+				logger.log(Level.SEVERE, "Search date is not valid.");
+				Status._outcome = Status.Outcome.ERROR;
+				Status._errorCode = Status.ErrorCode.SEARCH_INVALID;
+				return getOperationStatus(command);
+			}
+			searchByDate(searchDateKeyword, referenceDate);
+		}
+		setUiTaskDisplays(command.getCommand(), indices);
+		Status._outcome = Status.Outcome.SUCCESS;
+		return getOperationStatus(command);
+	}
+
+	/**
+	 * Searches tasks by date, as specified by the user.
+	 * 
+	 * @param searchDateKeyword	a reference keyword with respect to the Date specified ('before', 'on', 'after')
+	 * @param referenceDate		the Date specified by the user
+	 */
+	private void searchByDate(String searchDateKeyword, Date referenceDate) {
+		for (Task entry: _fullTaskList) {
+			if (isSearchBeforeDate(searchDateKeyword)) {
+				addToSearchResultsIfBeforeDate(referenceDate, entry);
+			} else if (isSearchOnDate(searchDateKeyword)) {
+				Date intervalStart = createDateStart(referenceDate);
+				Date intervalEnd = createDateEnd(referenceDate);
+				addToSearchResultIfOnDate(entry, intervalStart, intervalEnd);
+			} else if (isSearchAfterDate(searchDateKeyword)){
+				addToSearchResultIfAfterDate(referenceDate, entry);
+			} else {
+				
+			}
+		}
+	}
+
+	/**
+	 * Adds target task to search results if the task is after a specified date.
+	 * 
+	 * @param referenceDate	a reference Date to compare the task date with
+	 * @param entry			the Task to be checked
+	 */
+	private void addToSearchResultIfAfterDate(Date referenceDate, Task entry) {
+		if (entry.isFloatingTask()) {
+			
+		} else if (entry.isEvent() && referenceDate.compareTo(entry.getStartDate()) <= 0) {
+			_searchList.add(entry);
+		} else if (referenceDate.compareTo(entry.getEndDate()) <= 0) {
+			_searchList.add(entry);
+		} else {
+			
+		}
+	}
+
+	/**
+	 * Adds target task to search results if the task is on a specified date.
+	 * 
+	 * @param entry			the Task to be checked
+	 * @param intervalStart	starting interval of the Date to compare the task date with
+	 * @param intervalEnd	ending interval of the Date to compare the task date with
+	 */
+	private void addToSearchResultIfOnDate(Task entry, Date intervalStart, Date intervalEnd) {
+		if (entry.isFloatingTask()) {
+			
+		} else if (entry.isEvent() && intervalStart.compareTo(entry.getStartDate()) <= 0 &&
+			intervalEnd.compareTo(entry.getStartDate()) >= 0) {
+			_searchList.add(entry);
+		} else if (intervalStart.compareTo(entry.getEndDate()) <= 0
+				   && intervalEnd.compareTo(entry.getEndDate()) >= 0) {
+			_searchList.add(entry);
+		} else {
+			
+		}
+	}
+
+	/**
+	 * Sets the hours and minutes of the date to 23:59.
+	 * 
+	 * Used in searching for tasks due on a certain date.
+	 * 
+	 * @param referenceDate	the date used as the reference for a search query
+	 * @return				the date with time set to 23:59
+	 */
+	private Date createDateEnd(Date referenceDate) {
+		Date intervalEnd = (Date) referenceDate.clone();
+		intervalEnd.setHours(23);
+		intervalEnd.setMinutes(59);
+		return intervalEnd;
+	}
+
+	/**
+	 * Sets the hours and minutes of the date to 00:00.
+	 * 
+	 * Used in searching for tasks due on a certain date.
+	 * 
+	 * @param referenceDate	the date used as the reference for a search query
+	 * @return				the date with time set to 00:00
+	 */
+	private Date createDateStart(Date referenceDate) {
+		Date intervalStart = (Date) referenceDate.clone();
+		intervalStart.setHours(0);
+		intervalStart.setMinutes(0);
+		return intervalStart;
+	}
+
+	/**
+	 * Adds target task to search results if the task is before a specified date.
+	 * 
+	 * @param referenceDate	a reference Date to compare the task date with
+	 * @param entry			the Task to be checked
+	 */
+	private void addToSearchResultsIfBeforeDate(Date referenceDate, Task entry) {
+		if (entry.isFloatingTask()) {
+			
+		} else if (entry.isEvent() && referenceDate.compareTo(entry.getStartDate()) > 0) {
+			_searchList.add(entry);
+		} else if (referenceDate.compareTo(entry.getEndDate()) > 0) {
+			_searchList.add(entry);
+		} else {
+			
+		}
+	}
+
+	/**
+	 * Sets reference date for searching tasks by date.
+	 * 
+	 * @param command				the Command object representing the user operation being carried out
+	 * @param searchDateKeyword		the search-by-date keyword ('before', 'on', 'after')
+	 * @param dateString			the String representing the date
+	 * @param timeString			the String representing the time
+	 * @return						a reference date for search operation
+	 */
+	private Date setReferenceDate(Command command, String searchDateKeyword, String dateString,
+			String timeString) throws ParseException {
+		Date referenceDate;
+		if (isSearchBeforeDate(searchDateKeyword)) {
+			referenceDate = Task.parseDateTimeToString(new Date(), dateString, timeString, true);
+		} else {
+			referenceDate = Task.parseDateTimeToString(new Date(), dateString, timeString, false);
+		}
+		return referenceDate;
+	}
+
+	/**
+	 * Searches for tasks containing the specified keyword(s). 
+	 * 
+	 * @param searchKeyword	the keyword to look out for when searching tasks
+	 */
+	private void searchTasksByName(String searchKeyword) {
+		String keywords[] = searchKeyword.toLowerCase().split(" ");
+		for (Task entry: _fullTaskList) {
+			String taskNameCopy = entry.getName();
+			String taskNameLowerCase = taskNameCopy.toLowerCase();
+			for (String word: keywords) {
+				if (taskNameLowerCase.contains(word)) {
+					if (!_searchList.contains(entry)) {
+						_searchList.add(entry);
+					} else {
+						
+					}
+				}
+			}
 		}
 	}
 	
@@ -1347,8 +1294,7 @@ class Logic {
 	 * @return				the previous state of the program
 	 */
 	private State createPreviousState(Command command, int[] oldIndices) {
-		logger.logp(Level.INFO, "Logic", "createPreviousState(Command command, Task original)",
-					"Storing previous program memory state.");
+		logger.log(Level.INFO, "Storing previous program memory state.");
 		String commandName = command.getCommand();
 		CommandKey commandType = CommandKey.get(commandName);
 		State previous = null;
@@ -1419,8 +1365,7 @@ class Logic {
 				previous.setState(_taskDisplayLists);
 				previous.setIndices(oldIndices);
 				previous.setAllTaskList(getAllTasks());
-				logger.logp(Level.INFO, "Logic", "createPreviousState(Command command, Task original)",
-							"Dummy state is created.");
+				logger.log(Level.INFO, "Dummy state is created.");
 				break;
 		}
 		return previous;
@@ -1439,6 +1384,7 @@ class Logic {
 			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
+			logger.log(Level.SEVERE, "Failed to undo add operation.");
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
@@ -1457,6 +1403,7 @@ class Logic {
 			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
+			logger.log(Level.SEVERE, "Failed to undo delete operation.");
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
@@ -1475,6 +1422,7 @@ class Logic {
 			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
+			logger.log(Level.SEVERE, "Failed to undo update operation.");
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
@@ -1493,6 +1441,7 @@ class Logic {
 			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
+			logger.log(Level.SEVERE, "Failed to undo complete operation.");
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
@@ -1513,6 +1462,7 @@ class Logic {
 			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (IOException ioe) {
+			logger.log(Level.SEVERE, "Failed to undo sort operation.");
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
@@ -1534,9 +1484,11 @@ class Logic {
 			setUiTaskDisplays("undo", state.getIndices());
 			Status._outcome = Status.Outcome.SUCCESS;
 		} catch (InvalidPathException ipe) {
+			logger.log(Level.SEVERE, "Failed to undo set filepath operation: invalid path.");
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SET_SAVEPATH;
 		} catch (IOException ioe) {
+			logger.log(Level.SEVERE, "Failed to undo set filepath operation: cannot read from file.");
 			Status._outcome = Status.Outcome.ERROR;
 			Status._errorCode = Status.ErrorCode.SYSTEM;
 		}
@@ -1644,6 +1596,15 @@ class Logic {
 	}
 	
 	/**
+	 * Checks if a sort operation has been performed before by the user.
+	 * 
+	 * @return true if a sort operation was performed previously; false otherwise.
+	 */
+	private boolean isSortedBefore() {
+		return _temporarySortList != null && _temporarySortList.size() != 0;  
+	}
+	
+	/**
 	 * Checks if a command is the search-task command.
 	 * 
 	 * @param commandType	the type of command
@@ -1651,6 +1612,63 @@ class Logic {
 	 */
 	private boolean isSearchCommand(String commandType) {
 		return commandType.equals("search");
+	}
+	
+	/**
+	 * Checks if search query is to search tasks after a certain date.
+	 * 
+	 * @param searchDateKeyword	the date-reference keyword specified by the user
+	 * @return					true if search query is to search tasks after a certain date; false otherwise
+	 */
+	private boolean isSearchAfterDate(String searchDateKeyword) {
+		return searchDateKeyword.trim().equalsIgnoreCase(SEARCH_AFTER);
+	}
+
+	/**
+	 * Checks if search query is to search tasks on a certain date.
+	 * 
+	 * @param searchDateKeyword	the date-reference keyword specified by the user
+	 * @return					true if search query is to search tasks on a certain date; false otherwise
+	 */
+	private boolean isSearchOnDate(String searchDateKeyword) {
+		return searchDateKeyword.trim().equalsIgnoreCase(SEARCH_ON);
+	}
+
+	/**
+	 * Checks if search query is to search tasks before a certain date.
+	 * 
+	 * @param searchDateKeyword	the date-reference keyword specified by the user
+	 * @return					true if search query is to search tasks before a certain date; false otherwise
+	 */
+	private boolean isSearchBeforeDate(String searchDateKeyword) {
+		return searchDateKeyword.trim().equalsIgnoreCase(SEARCH_BEFORE);
+	}
+	
+	/**
+	 * Checks if search query is by task name.
+	 * 
+	 * @param searchKeyword	the keyword to search for, supplied by the user
+	 * @return				true if search query is by task name; false otherwise
+	 */
+	private boolean isSearchByName(String searchKeyword) {
+		return searchKeyword != null;
+	}
+
+	/**
+	 * Checks if search is valid. More precisely, it checks if the search query has a keyword for
+	 * searching tasks by name, or checks if the search query has the date references for searching
+	 * tasks by date.
+	 * 
+	 * @param searchKeyword			the keyword to look out for in the Task name
+	 * @param searchDateKeyword		the keyword for searching tasks by date ('before', 'on', 'after')
+	 * @param dateString			the date for reference when searching tasks by date
+	 * @param timeString			the time for reference when searching tasks by date
+	 * @return						true if important data for search query is omitted; false otherwise
+	 */
+	private boolean isInvalidSearch(String searchKeyword, String searchDateKeyword, String dateString,
+			String timeString) {
+		return (isUnspecifiedSortOrder(searchKeyword) && isUnspecifiedSortOrder(searchDateKeyword)) ||
+			   (isSearchByName(searchDateKeyword) && isUnspecifiedSortOrder(dateString) && isUnspecifiedSortOrder(timeString));
 	}
 	
 	/**
