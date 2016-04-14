@@ -17,7 +17,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox spacing="5.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UiMainController">
+<VBox spacing="5.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cs2103_w09_1j.esther.UiMainController">
 	<children>
 		<TabPane fx:id="tabSum" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" nodeOrientation="LEFT_TO_RIGHT" prefHeight="400.0" prefWidth="600.0" tabClosingPolicy="ALL_TABS" VBox.vgrow="ALWAYS">
 			<tabs>
@@ -40,7 +40,7 @@
       											<children>
       												<Button fx:id="overdueButton" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onMouseClicked="#overdueClick" text="Overdue" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS" />
       												<Button fx:id="upcomingButton" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onMouseClicked="#upcomingClick" text="Upcoming" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS" />
-      												<TableView fx:id="overdueList" stylesheets="@cs2103_w09_1j/esther/Resources/UI.css" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.rowSpan="2" GridPane.vgrow="ALWAYS">
+      												<TableView fx:id="overdueList" stylesheets="@Resources/UI.css" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.rowSpan="2" GridPane.vgrow="ALWAYS">
       													<columns>
       														<TableColumn fx:id="HOID" minWidth="-1.0" prefWidth="-1.0" text="ID" />
       														<TableColumn fx:id="HOTask" prefWidth="75.0" text="Task" />

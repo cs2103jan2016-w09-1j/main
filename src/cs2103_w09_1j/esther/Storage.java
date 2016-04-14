@@ -1,4 +1,5 @@
 package cs2103_w09_1j.esther;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -85,7 +86,6 @@ public class Storage {
 	 */
 	public ArrayList<Task> readSaveFile() throws ParseException, IOException {
 		storageLogger.info("Loading saved file");
-		//assert (savePath != null);
 		return readSaveFile(savePath);
 	}
 
@@ -98,7 +98,6 @@ public class Storage {
 	 *             when an IO error occurs when accessing files
 	 */
 	public void writeSaveFile(ArrayList<Task> tasks) throws IOException {
-		//assert (tasks != null);
 		storageLogger.info("Saving tasks to save file");
 		tasksBuffer = tasks;
 		validifyTasksBuffer();
@@ -334,7 +333,6 @@ public class Storage {
 	 * @@A0127572A
 	 */
 	private void setSavePathWithCurrentConfig() {
-		//assert (currentConfig != null);
 		storageLogger.info("Retreiving save path from current Config");
 		savePath = currentConfig.getSavePath();
 	}
