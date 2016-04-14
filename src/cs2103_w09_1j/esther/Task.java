@@ -705,7 +705,6 @@ public class Task implements Comparable<Task> {
 
 		calendar.add(Calendar.DAY_OF_YEAR, 6);
 		Date thisWeekEnd = calendar.getTime();
-		System.out.println(_endDate.toString());
 		System.out.println(todayEnd.toString());
 		if (isCompleted()) {
 			// is completed task
