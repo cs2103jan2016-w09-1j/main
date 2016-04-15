@@ -705,22 +705,23 @@ public class Task implements Comparable<Task> {
 
 		calendar.add(Calendar.DAY_OF_YEAR, 6);
 		Date thisWeekEnd = calendar.getTime();
+		System.out.println(todayEnd.toString());
 		if (isCompleted()) {
 			// is completed task
 			return COMPLETED_TASK_INDEX;
 		} else if (isFloatingTask()) {
 			// is floating task
 			return FLOATING_TASK_INDEX;
-		} else if ((isEvent() && _startDate.compareTo(today) < 0) || _endDate.compareTo(today) < 0) {
+		} else if ((isEvent() && _startDate.compareTo(today) <= 0) || _endDate.compareTo(today) <= 0) {
 			// overdue event or task
 			return OVERDUE_TASK_INDEX;
-		} else if ((isEvent() && _startDate.compareTo(todayEnd) < 0) || _endDate.compareTo(todayEnd) < 0) {
+		} else if ((isEvent() && _startDate.compareTo(todayEnd) <= 0) || _endDate.compareTo(todayEnd) <= 0) {
 			// today's event or task
 			return TODAY_TASK_INDEX;
-		} else if ((isEvent() && _startDate.compareTo(tomorrowEnd) < 0) || _endDate.compareTo(tomorrowEnd) < 0) {
+		} else if ((isEvent() && _startDate.compareTo(tomorrowEnd) <= 0) || _endDate.compareTo(tomorrowEnd) <= 0) {
 			// tomorrow's event or task
 			return TOMORROW_TASK_INDEX;
-		} else if ((isEvent() && _startDate.compareTo(thisWeekEnd) < 0) || _endDate.compareTo(thisWeekEnd) < 0) {
+		} else if ((isEvent() && _startDate.compareTo(thisWeekEnd) <= 0) || _endDate.compareTo(thisWeekEnd) <= 0) {
 			// this week's event or task
 			return THIS_WEEK_TASK_INDEX;
 		} else {
